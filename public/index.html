@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Three.js + AI Customizer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Use import maps for Three.js modules -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <!-- Top Bar -->
+  <header class="top-bar">
+    <div class="logo">TypograpAI</div>
+    <div class="top-right">
+      <div class="toggle-group">
+        <span>AI TYPO</span>
+        <input type="range" min="0" max="1" step="1" />
+        <span>TETRIS TYPO</span>
+      </div>
+      <div class="website">WWW.ORMITUS.COM</div>
+    </div>
+  </header>
+
+  <div class="container">
+    <!-- Left controls section (same IDs as before) -->
+    <div class="controls">
+      <!-- Row for text input + "Render Text" button -->
+      <div class="input-row">
+        <input id="textInput" placeholder="Enter Text" />
+        <button id="generate">Render Text</button>
+      </div>
+
+      <!-- Font dropdown (new) -->
+      <select class="font-select">
+        <option>Choose Font</option>
+        <option>Arial</option>
+        <option>Helvetica</option>
+        <option>Times New Roman</option>
+      </select>
+
+      <h3>AI Chat with Us!</h3>
+
+      <!-- Chat box (same ID) -->
+      <div id="chat-box" class="chat-box"></div>
+
+      <!-- Original prompt input and "Send Prompt" button -->
+      <input id="promptInput" placeholder="Describe how to customize the scene..." />
+      <button id="send">Send Prompt</button>
+
+      <!-- Parameter sliders (new) -->
+      <div class="slider-section">
+        <div class="slider-group">
+          <label>PARAMETER</label>
+          <input type="range" min="0" max="100" />
+        </div>
+        <div class="slider-group">
+          <label>PARAMETER</label>
+          <input type="range" min="0" max="100" />
+        </div>
+        <div class="slider-group">
+          <label>PARAMETER</label>
+          <input type="range" min="0" max="100" />
+        </div>
+        <div class="slider-group">
+          <label>PARAMETER</label>
+          <input type="range" min="0" max="100" />
+        </div>
+        <div class="slider-group">
+          <label>PARAMETER</label>
+          <input type="range" min="0" max="100" />
+        </div>
+      </div>
+
+      <!-- New "SAVE" button -->
+      <button class="save-btn">SAVE</button>
+    </div>
+
+    <!-- Right side for Three.js Canvas (same ID) -->
+    <div id="canvas-container"></div>
+  </div>
+
+  <!-- Footer note -->
+  <footer class="footer-note">
+    EXPERIMENTAL DESIGN COURSE SHENKAR 2025
+  </footer>
+
+  <script type="module" src="main.js"></script>
+</body>
+</html>
