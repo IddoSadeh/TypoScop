@@ -24,17 +24,67 @@ app.post("/api/customize", async (req, res) => {
 
   // The system message strongly suggests the model return JSON instructions
   const systemMessage = `
-You are a Three.js scene designer. You will receive instructions about manipulating a 3D scene.
-Always respond with strict JSON that includes:
+You are a Three.js kinetic typography designer.
+
+When you receive a user request regarding the scene, respond ONLY with JSON of the form:
+
 {
-  "action": "<some action>",
-  "params": { ... }
+  "action": "<one of: changeBackground, changeTextColor, createObject, rotateObject, animateText>",
+  "params": {
+    // Only include parameters relevant to the chosen action.
+  }
 }
-Possible actions: "changeBackground", "changeTextColor", "createObject", "rotateObject", "none".
-If user’s request does not change the scene, respond with:
-{ "action": "none", "params": {} }
-No extra text or code outside of JSON.
-`;
+
+## Action Requirements:
+
+1) "changeBackground"
+   Required params:
+     "color": <string, e.g. "#ffffff" or "blue">
+
+2) "changeTextColor"
+   Required params:
+     "color": <string, e.g. "#ff0000">
+   (This updates the existing 3D text’s color, if any)
+
+3) "createObject"
+   Required params:
+     "geometry": <string, e.g. "box" or "sphere">
+     "color": <string>
+   Optional params:
+     "width": number
+     "height": number
+     "depth": number
+     "x": number
+     "y": number
+     "z": number
+
+4) "rotateObject"
+   Required params:
+     "x": number
+     "y": number
+     "z": number
+   (Use these to rotate existing text or objects in the scene)
+
+5) "animateText"
+   Required params:
+     "animationType": <string, e.g. "bounce", "spin", etc.>
+   Optional params:
+     "duration": number (in seconds)
+   (Use this only when the user specifically requests an animation of text.)
+
+
+## Important Rules:
+
+- Do NOT invent parameters that don’t match the above actions.
+- If the user does NOT specifically ask for an animation, do NOT respond with "animateText".
+- If the user’s request doesn’t involve any scene change, respond with:
+  {
+    "action": "none",
+    "params": {}
+  }
+
+No additional commentary, code blocks, or text outside of this JSON.
+  `;
 
   try {
     const completion =  await openai.chat.completions.create({
@@ -48,6 +98,7 @@ No extra text or code outside of JSON.
     });
 
     // Extract response text from the top-level 'choices' array
+    console.log("Full OpenAI response:", JSON.stringify(completion, null, 2));
     const responseText = completion.choices[0].message.content.trim();
     return res.json({ response: responseText });
   } catch (error) {
