@@ -1,113 +1,115 @@
-const express = require("express");
-const OpenAI = require("openai");
-const dotenv = require("dotenv");
-const path = require("path");
+const express = require('express');
+const OpenAI = require('openai');
+const dotenv = require('dotenv');
 
 dotenv.config();
 
 const app = express();
 const port = 3000;
 
-// Middleware
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static('public'));
 
-// OpenAI Initialization
+// Initialize OpenAI client and current state
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+let currentState = {
+    text: 'Hello, World!',
+    size: 50,
+    depth: 1,
+    font: 'helvetiker',
+    color: '#ffffff',
+    curveSegments: 12,
+    bevelEnabled: false,
+    bevelThickness: 2,
+    bevelSize: 1.5,
+    bevelOffset: 0,
+    bevelSegments: 3,
+    backgroundColor: '#000000', // Default background color
+};
 
-// API Endpoint
-app.post("/api/customize", async (req, res) => {
-  const { prompt } = req.body;
-  if (!prompt) {
-    return res.status(400).json({ error: "Prompt is required" });
-  }
+app.post('/api/customize', async (req, res) => {
+    const { prompt } = req.body;
 
-  // The system message strongly suggests the model return JSON instructions
-  const systemMessage = `
-You are a Three.js kinetic typography designer.
+    const functionSchema = {
+        name: 'createText',
+        description: 'Generate text with fully adjustable TextGeometry parameters. Modify the current state based on the user prompt.',
+        parameters: {
+            type: 'object',
+            properties: {
+                text: { type: 'string', description: 'The text to display. If not specified, reuse the current text. (No longer than 30 characters)' },
+                size: { type: 'number', description: 'Size of the text (always 50).' },
+                depth: { type: 'number', description: 'Thickness of the text (reasonable range: 1-5).' },
+                font: { type: 'string', description: 'Font name (e.g., helvetiker, optimer, gentilis).' },
+                curveSegments: { type: 'integer', description: 'Number of points on the curves (reasonable range: 4-20).' },
+                bevelEnabled: { type: 'boolean', description: 'Enable beveling on the text.' },
+                bevelThickness: { type: 'number', description: 'Thickness of the bevel (reasonable range: 1-10).' },
+                bevelSize: { type: 'number', description: 'Size of the bevel (reasonable range: 1-8).' },
+                bevelOffset: { type: 'number', description: 'Offset for the bevel (reasonable range: 0-5).' },
+                bevelSegments: { type: 'integer', description: 'Number of bevel segments (reasonable range: 1-10).' },
+                color: { type: 'string', description: 'Hexadecimal color of the text (e.g., #ff5733 for vibrant orange).' },
+                backgroundColor: { type: 'string', description: 'Hexadecimal color for the scene background (e.g., #000000 for black).' },
+            },
+        },
+    };
 
-When you receive a user request regarding the scene, respond ONLY with JSON of the form:
+    try {
+        // Include the current state in the system message
+        const completion = await openai.chat.completions.create({
+            model: 'gpt-4o',
+            messages: [
+                {
+                    role: 'system',
+                    content: `You are a creative graphic designer. Here's the current state of the text geometry and scene:
+Text: "${currentState.text}"
+Size: ${currentState.size}
+Depth: ${currentState.depth}
+Font: "${currentState.font}"
+Color: ${currentState.color}
+Background Color: ${currentState.backgroundColor}
+Curve Segments: ${currentState.curveSegments}
+Bevel Enabled: ${currentState.bevelEnabled}
+Bevel Thickness: ${currentState.bevelThickness}
+Bevel Size: ${currentState.bevelSize}
+Bevel Offset: ${currentState.bevelOffset}
+Bevel Segments: ${currentState.bevelSegments}
 
-{
-  "action": "<one of: changeBackground, changeTextColor, createObject, rotateObject, animateText>",
-  "params": {
-    // Only include parameters relevant to the chosen action.
-  }
-}
+Modify this state based on the user's input. If the user doesn't specify a new word, keep the curernt word. Otherwise, change all arguments and get as creative as possible with all arguments.`,
+                },
+                { role: 'user', content: prompt },
+            ],
+            functions: [functionSchema],
+            function_call: { name: 'createText' },
+        });
 
-## Action Requirements:
+        console.log(completion);
 
-1) "changeBackground"
-   Required params:
-     "color": <string, e.g. "#ffffff" or "blue">
+        const response = completion.choices[0]?.message?.function_call;
+        console.log('Response:', response);
 
-2) "changeTextColor"
-   Required params:
-     "color": <string, e.g. "#ff0000">
-   (This updates the existing 3D text’s color, if any)
+        // Safeguard for invalid responses
+        if (!response || !response.arguments) {
+            console.error('Invalid function_call response:', response);
 
-3) "createObject"
-   Required params:
-     "geometry": <string, e.g. "box" or "sphere">
-     "color": <string>
-   Optional params:
-     "width": number
-     "height": number
-     "depth": number
-     "x": number
-     "y": number
-     "z": number
+            // Return the current state as fallback
+            return res.status(400).json({
+                error: 'The model did not return a valid function call. Reusing the current state.',
+                response: currentState,
+            });
+        }
 
-4) "rotateObject"
-   Required params:
-     "x": number
-     "y": number
-     "z": number
-   (Use these to rotate existing text or objects in the scene)
+        // Parse the response and update the current state
+        const newState = JSON.parse(response.arguments);
 
-5) "animateText"
-   Required params:
-     "animationType": <string, e.g. "bounce", "spin", etc.>
-   Optional params:
-     "duration": number (in seconds)
-   (Use this only when the user specifically requests an animation of text.)
+        // Update only the parameters specified in the response
+        currentState = { ...currentState, ...newState };
 
-
-## Important Rules:
-
-- Do NOT invent parameters that don’t match the above actions.
-- If the user does NOT specifically ask for an animation, do NOT respond with "animateText".
-- If the user’s request doesn’t involve any scene change, respond with:
-  {
-    "action": "none",
-    "params": {}
-  }
-
-No additional commentary, code blocks, or text outside of this JSON.
-  `;
-
-  try {
-    const completion =  await openai.chat.completions.create({
-      model: "gpt-4o",  
-      messages: [
-        { role: "system", content: systemMessage },
-        { role: "user", content: prompt },
-      ],
-      temperature: 0.7,
-      max_tokens: 200,
-    });
-
-    // Extract response text from the top-level 'choices' array
-    console.log("Full OpenAI response:", JSON.stringify(completion, null, 2));
-    const responseText = completion.choices[0].message.content.trim();
-    return res.json({ response: responseText });
-  } catch (error) {
-    console.error("Error calling OpenAI:", error);
-    return res.status(500).json({ error: error.message });
-  }
+        res.json({ response: currentState });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: error.message });
+    }
 });
 
-// Start server
 app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+    console.log(`Server running at http://localhost:${port}`);
 });

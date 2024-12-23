@@ -6,7 +6,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
 
-  <!-- Use import maps for Three.js modules -->
   <script type="importmap">
     {
       "imports": {
@@ -17,81 +16,57 @@
   </script>
 </head>
 <body>
-  <!-- Top Bar -->
   <header class="top-bar">
     <div class="logo">TypograpAI</div>
     <div class="top-right">
-      <div class="toggle-group">
-        <span>AI TYPO</span>
-        <input type="range" min="0" max="1" step="1" />
-        <span>TETRIS TYPO</span>
-      </div>
-      <div class="website">WWW.ORMITUS.COM</div>
+      <span>AI TYPO</span>
+      <span>TETRIS TYPO</span>
     </div>
   </header>
 
   <div class="container">
-    <!-- Left controls section (same IDs as before) -->
     <div class="controls">
-      <!-- Row for text input + "Render Text" button -->
-      <div class="input-row">
-        <input id="textInput" placeholder="Enter Text" />
-        <button id="generate">Render Text</button>
-      </div>
-
-      <!-- Font dropdown (new) -->
-      <select class="font-select">
-        <option>Choose Font</option>
-        <option>Arial</option>
-        <option>Helvetica</option>
-        <option>Times New Roman</option>
-      </select>
-
       <h3>AI Chat with Us!</h3>
-
-      <!-- Chat box (same ID) -->
       <div id="chat-box" class="chat-box"></div>
 
-      <!-- Original prompt input and "Send Prompt" button -->
       <input id="promptInput" placeholder="Describe how to customize the scene..." />
       <button id="send">Send Prompt</button>
 
-      <!-- Parameter sliders (new) -->
       <div class="slider-section">
         <div class="slider-group">
-          <label>PARAMETER</label>
-          <input type="range" min="0" max="100" />
+          <label>Size</label>
+          <input id="size-slider" type="range" min="10" max="100" value="50" />
         </div>
         <div class="slider-group">
-          <label>PARAMETER</label>
-          <input type="range" min="0" max="100" />
+          <label>Depth</label>
+          <input id="depth-slider" type="range" min="1" max="20" value="5" />
         </div>
         <div class="slider-group">
-          <label>PARAMETER</label>
-          <input type="range" min="0" max="100" />
+          <label>Curve Segments</label>
+          <input id="curveSegments-slider" type="range" min="4" max="20" value="12" />
         </div>
         <div class="slider-group">
-          <label>PARAMETER</label>
-          <input type="range" min="0" max="100" />
+          <label>Bevel Thickness</label>
+          <input id="bevelThickness-slider" type="range" min="1" max="10" value="2" />
         </div>
         <div class="slider-group">
-          <label>PARAMETER</label>
-          <input type="range" min="0" max="100" />
+          <label>Bevel Size</label>
+          <input id="bevelSize-slider" type="range" min="1" max="8" value="1.5" />
         </div>
       </div>
 
-      <!-- New "SAVE" button -->
-      <button class="save-btn">SAVE</button>
+      <h3>Font Options</h3>
+      <select id="font-name">
+        <option value="helvetiker">Helvetiker</option>
+        <option value="optimer">Optimer</option>
+        <option value="gentilis">Gentilis</option>
+      </select>
     </div>
 
-    <!-- Right side for Three.js Canvas (same ID) -->
     <div id="canvas-container"></div>
   </div>
 
-  <!-- Footer note -->
-  <footer class="footer-note">
-    EXPERIMENTAL DESIGN COURSE SHENKAR 2025
-  </footer>
+  <footer class="footer-note">EXPERIMENTAL DESIGN COURSE SHENKAR 2025</footer>
 
   <script type="module" src="main.js"></script>
 </body>
