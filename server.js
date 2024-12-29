@@ -12,19 +12,76 @@ app.use(express.static('public'));
 
 // Initialize OpenAI client and current state
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+// Extended state object to include all parameters
 let currentState = {
+    // Text Geometry Parameters
     text: 'Hello, World!',
     size: 50,
     depth: 1,
     font: 'helvetiker',
-    color: '#ffffff',
     curveSegments: 12,
     bevelEnabled: false,
     bevelThickness: 2,
     bevelSize: 1.5,
     bevelOffset: 0,
     bevelSegments: 3,
-    backgroundColor: '#000000', // Default background color
+
+    // Standard Material Properties
+    color: '#ffffff',
+    metalness: 0,
+    roughness: 0.5,
+    wireframe: false,
+    flatShading: false,
+    
+    // Physical Properties
+    ior: 1.5,
+    reflectivity: 0.5,
+    transmission: 0,
+    thickness: 0,
+
+    // Clearcoat Properties
+    clearcoat: 0,
+    clearcoatRoughness: 0,
+    
+    // Sheen Properties
+    sheen: 0,
+    sheenRoughness: 1.0,
+    sheenColor: '#000000',
+    
+    // Specular Properties
+    specularIntensity: 1.0,
+    specularColor: '#ffffff',
+    
+    // Anisotropy Properties
+    anisotropy: 0,
+    anisotropyRotation: 0,
+    
+    // Iridescence Properties
+    iridescence: 0,
+    iridescenceIOR: 1.3,
+    
+    // Emission Properties
+    emissive: '#000000',
+    emissiveIntensity: 0,
+    
+    // Common Material Properties
+    opacity: 1,
+    transparent: false,
+    depthTest: true,
+    depthWrite: true,
+    alphaTest: 0,
+    
+    // Scene Properties
+    backgroundColor: '#000000',
+    fogEnabled: false,
+    fogColor: '#3f7b9d',
+    fogDensity: 0.1,
+    
+    // Camera Properties
+    cameraDistance: 20,
+    cameraHeight: 0,
+    rotationSpeed: 0
 };
 
 app.post('/api/customize', async (req, res) => {
@@ -32,48 +89,110 @@ app.post('/api/customize', async (req, res) => {
 
     const functionSchema = {
         name: 'createText',
-        description: 'Generate text with fully adjustable TextGeometry parameters. Modify the current state based on the user prompt.',
+        description: 'Generate text with fully adjustable geometry, material, and scene parameters.',
         parameters: {
             type: 'object',
             properties: {
-                text: { type: 'string', description: 'The text to display. If not specified, reuse the current text. (No longer than 30 characters)' },
-                size: { type: 'number', description: 'Size of the text (always 50).' },
-                depth: { type: 'number', description: 'Thickness of the text (reasonable range: 1-5).' },
-                font: { type: 'string', description: 'Font name (e.g., helvetiker, optimer, gentilis).' },
-                curveSegments: { type: 'integer', description: 'Number of points on the curves (reasonable range: 4-20).' },
-                bevelEnabled: { type: 'boolean', description: 'Enable beveling on the text.' },
-                bevelThickness: { type: 'number', description: 'Thickness of the bevel (reasonable range: 1-10).' },
-                bevelSize: { type: 'number', description: 'Size of the bevel (reasonable range: 1-8).' },
-                bevelOffset: { type: 'number', description: 'Offset for the bevel (reasonable range: 0-5).' },
-                bevelSegments: { type: 'integer', description: 'Number of bevel segments (reasonable range: 1-10).' },
-                color: { type: 'string', description: 'Hexadecimal color of the text (e.g., #ff5733 for vibrant orange).' },
-                backgroundColor: { type: 'string', description: 'Hexadecimal color for the scene background (e.g., #000000 for black).' },
-            },
-        },
+                // Text Content and Geometry
+                text: { type: 'string', description: 'The text to display (max 30 characters)' },
+                size: { type: 'number', description: 'Size of the text (range: 10-50)' },
+                depth: { type: 'number', description: 'Thickness of the text (range: 1-20)' },
+                font: { type: 'string', description: 'Font name (options: helvetiker, optimer, gentilis)' },
+                curveSegments: { type: 'integer', description: 'Number of curves (range: 4-20)' },
+                bevelEnabled: { type: 'boolean', description: 'Enable beveling' },
+                bevelThickness: { type: 'number', description: 'Bevel thickness (range: 1-10)' },
+                bevelSize: { type: 'number', description: 'Bevel size (range: 1-8)' },
+    
+                // Material Properties
+                color: { type: 'string', description: 'Hexadecimal color (e.g., #ff5733)' },
+                metalness: { type: 'number', description: 'Metallic quality (range: 0-1)' },
+                roughness: { type: 'number', description: 'Surface roughness (range: 0-1)' },
+                
+                // Advanced Material Properties
+                ior: { type: 'number', description: 'Index of refraction (range: 1-2.333)' },
+                transmission: { type: 'number', description: 'Transmission/transparency (range: 0-1)' },
+                clearcoat: { type: 'number', description: 'Clearcoat strength (range: 0-1)' },
+                reflectivity: { type: 'number', description: 'Reflectivity (range: 0-1)' },
+                specularIntensity: { type: 'number', description: 'Specular highlight intensity (range: 0-1)' },
+                specularColor: { type: 'string', description: 'Hexadecimal color for specular highlights' },
+                
+                // Special Effects
+                anisotropy: { type: 'number', description: 'Anisotropy level (range: 0-1)' },
+                anisotropyRotation: { type: 'number', description: 'Anisotropy rotation (range: 0-6.28)' },
+                iridescence: { type: 'number', description: 'Iridescence strength (range: 0-1)' },
+                iridescenceIOR: { type: 'number', description: 'Iridescence IOR (range: 1-2.333)' },
+                
+                // Scene Properties
+                backgroundColor: { type: 'string', description: 'Hexadecimal color for background' },
+                fogEnabled: { type: 'boolean', description: 'Enable fog effect' },
+                fogColor: { type: 'string', description: 'Hexadecimal color for fog' },
+                fogDensity: { type: 'number', description: 'Fog density (range: 0-1)' },
+                
+                // Camera Properties
+                // cameraDistance: { type: 'number', description: 'Camera distance (range: 0-20)' },
+                // cameraHeight: { type: 'number', description: 'Camera height (range: -20-20)' },
+                // rotationSpeed: { type: 'number', description: 'Auto-rotation speed (range: 0-2)' }
+            }
+        }
     };
 
     try {
-        // Include the current state in the system message
         const completion = await openai.chat.completions.create({
             model: 'gpt-4o',
             messages: [
                 {
                     role: 'system',
-                    content: `You are a creative graphic designer. Here's the current state of the text geometry and scene:
-Text: "${currentState.text}"
-Size: ${currentState.size}
-Depth: ${currentState.depth}
-Font: "${currentState.font}"
-Color: ${currentState.color}
-Background Color: ${currentState.backgroundColor}
-Curve Segments: ${currentState.curveSegments}
-Bevel Enabled: ${currentState.bevelEnabled}
-Bevel Thickness: ${currentState.bevelThickness}
-Bevel Size: ${currentState.bevelSize}
-Bevel Offset: ${currentState.bevelOffset}
-Bevel Segments: ${currentState.bevelSegments}
+                    content: `You are a 3D graphics designer specializing in typography and materials. Your task is to create visually striking 3D text effects by manipulating various material and scene properties.
 
-Modify this state based on the user's input. If the user doesn't specify a new word, keep the curernt word. Otherwise, change all arguments and get as creative as possible with all arguments.`,
+                        Current state:
+                        ${Object.entries(currentState).map(([key, value]) => `${key}: ${value}`).join('\n')}
+
+                        Creative Effect Guidelines:
+                        1. Glass Effects:
+                        - Use high transmission (0.8-1.0)
+                        - Set appropriate IOR (1.5 for glass)
+                        - Lower roughness (0-0.2)
+                        - Enable transparency
+
+                        2. Metallic Effects:
+                        - High metalness (0.8-1.0)
+                        - Adjust roughness for shine
+                        - Use appropriate colors
+                        - Consider anisotropy for brushed metal
+
+                        3. Pearlescent/Iridescent Effects:
+                        - Enable clearcoat (0.8-1.0)
+                        - Add iridescence (0.5-1.0)
+                        - Subtle sheenColor
+                        - Low roughness
+
+                        4. Glowing Effects:
+                        - Use emissive colors
+                        - High emissiveIntensity
+                        - Consider fog for atmosphere
+
+                        5. Environmental Enhancement:
+                        - Use fog for depth
+                        - Coordinate backgroundColor
+                        - Adjust camera for best view
+                        - Consider auto-rotation for showcase
+
+                        When responding to prompts:
+                        - Keep the current text unless specifically asked to change it
+                        - Maintain parameter ranges within specified limits
+                        - Consider combining effects for unique looks
+                        - DO NOT Update camera position for best viewing angle
+                        - Coordinate colors between materials, emission, and background
+
+                        Special Instructions:
+                        - For glass, always enable transparency
+                        - For metals, keep transmission at 0
+                        - For glowing effects, coordinate emissive and background colors
+                        - For pearlescent, combine clearcoat with subtle iridescence
+                    
+                    If the user doesn't specify text content, keep the current text.
+                    Always ensure parameters stay within their specified ranges.
+                    You do not have to change all parameters when prompted.`,
                 },
                 { role: 'user', content: prompt },
             ],
@@ -81,26 +200,16 @@ Modify this state based on the user's input. If the user doesn't specify a new w
             function_call: { name: 'createText' },
         });
 
-        console.log(completion);
-
         const response = completion.choices[0]?.message?.function_call;
-        console.log('Response:', response);
 
-        // Safeguard for invalid responses
         if (!response || !response.arguments) {
-            console.error('Invalid function_call response:', response);
-
-            // Return the current state as fallback
             return res.status(400).json({
-                error: 'The model did not return a valid function call. Reusing the current state.',
+                error: 'Invalid response from AI model.',
                 response: currentState,
             });
         }
 
-        // Parse the response and update the current state
         const newState = JSON.parse(response.arguments);
-
-        // Update only the parameters specified in the response
         currentState = { ...currentState, ...newState };
 
         res.json({ response: currentState });
