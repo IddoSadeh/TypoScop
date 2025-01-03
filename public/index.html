@@ -3,24 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Three.js + AI Customizer</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Three.js + AI Typography</title>
+  <link rel="stylesheet" href="/css/style.css">
   <script type="importmap">
     {
-      "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js",
-        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/"
-      }
+        "imports": {
+            "three": "https://unpkg.com/three@0.152.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.152.0/examples/jsm/"
+        }
     }
-  </script>
+    </script>
 </head>
 
 <body>
   <header class="top-bar">
     <div class="logo">TypograpAI</div>
     <nav class="top-right">
-      <span>AI TYPO</span>
-      <span>TETRIS TYPO</span>
+      <span>3D Typography</span>
     </nav>
   </header>
 
@@ -31,8 +30,27 @@
         <button class="tab-button" data-tab="manual">Manual Edit</button>
       </nav>
 
+      <!-- AI Chat Tab -->
       <section class="tab-content active" id="ai-tab">
-        <h3>AI Chat with Us!</h3>
+        <!-- Text Input with Send Button -->
+        <div class="text-input-container">
+          <input type="text" id="ai-text-input" placeholder="Enter Text" value="Hello World">
+          <button class="send-text-btn">
+            <svg viewBox="0 0 24 24" width="24" height="24">
+              <path fill="currentColor" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Font Selector -->
+        <select id="ai-font-name" class="font-selector">
+          <option value="helvetiker" selected>Helvetiker</option>
+          <option value="optimer">Optimer</option>
+          <option value="gentilis">Gentilis</option>
+        </select>
+
+        <!-- Chat Interface -->
+        <h3>AI Chat Assistant</h3>
         <div id="chat-box" class="chat-box"></div>
         <div class="chat-input">
           <input id="promptInput" 
@@ -43,247 +61,40 @@
         </div>
       </section>
 
-     <!-- Replace the current #manual-tab content with this -->
-<div class="tab-content" id="manual-tab">
-  <!-- Basic Controls Section -->
-  <div class="control-section">
-    <button class="collapsible active">Basic Properties</button>
-    <div class="collapsible-content show">
-      <div class="slider-group">
-        <label for="size-slider">Size</label>
-        <input id="size-slider" type="range" min="10" max="100" value="50">
-        <span class="value-display">50</span>
-      </div>
-      <div class="slider-group">
-        <label for="depth-slider">Depth</label>
-        <input id="depth-slider" type="range" min="1" max="20" value="5">
-        <span class="value-display">5</span>
-      </div>
-      <div class="slider-group">
-        <label for="curveSegments-slider">Curve Segments</label>
-        <input id="curveSegments-slider" type="range" min="4" max="20" value="12">
-        <span class="value-display">12</span>
-      </div>
-    </div>
-  </div>
+      <!-- Manual Controls Tab -->
+      <section class="tab-content" id="manual-tab">
+        <!-- Material Section -->
+        <div class="control-section">
+          <button class="collapsible active">Material</button>
+          <div class="collapsible-content show">
+            <div class="color-group">
+              <label for="color-picker">Color</label>
+              <input type="color" id="color-picker" value="#ffffff">
+            </div>
+            <div class="slider-group">
+              <label for="metalness-slider">Metalness</label>
+              <input id="metalness-slider" type="range" min="0" max="1" step="0.1" value="0">
+              <span class="value-display">0</span>
+            </div>
+            <div class="slider-group">
+              <label for="roughness-slider">Roughness</label>
+              <input id="roughness-slider" type="range" min="0" max="1" step="0.1" value="0.5">
+              <span class="value-display">0.5</span>
+            </div>
+          </div>
+        </div>
 
-  <!-- Material Controls Section -->
-  <div class="control-section">
-    <button class="collapsible">Material</button>
-    <div class="collapsible-content">
-      <div class="color-group">
-        <label for="color-picker">Color</label>
-        <input type="color" id="color-picker" value="#ffffff">
-      </div>
-      <div class="slider-group">
-        <label for="metalness-slider">Metalness</label>
-        <input id="metalness-slider" type="range" min="0" max="1" step="0.1" value="0">
-        <span class="value-display">0</span>
-      </div>
-      <div class="slider-group">
-        <label for="roughness-slider">Roughness</label>
-        <input id="roughness-slider" type="range" min="0" max="1" step="0.1" value="0.5">
-        <span class="value-display">0.5</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Bevel Controls Section -->
-  <div class="control-section">
-    <button class="collapsible">Bevel</button>
-    <div class="collapsible-content">
-      <div class="checkbox-group">
-        <label for="bevel-enabled">Enable Bevel</label>
-        <input type="checkbox" id="bevel-enabled">
-      </div>
-      <div class="bevel-controls">
-        <div class="slider-group">
-          <label for="bevelThickness-slider">Thickness</label>
-          <input id="bevelThickness-slider" type="range" min="1" max="10" value="2">
-          <span class="value-display">2</span>
+        <!-- Background -->
+        <div class="control-section">
+          <button class="collapsible">Background</button>
+          <div class="collapsible-content">
+            <div class="color-group">
+              <label for="background-color">Background Color</label>
+              <input type="color" id="background-color" value="#000000">
+            </div>
+          </div>
         </div>
-        <div class="slider-group">
-          <label for="bevelSize-slider">Size</label>
-          <input id="bevelSize-slider" type="range" min="1" max="8" value="1.5">
-          <span class="value-display">1.5</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Advanced Material Section -->
-  <div class="control-section">
-    <button class="collapsible">Advanced Material</button>
-    <div class="collapsible-content">
-      <div class="slider-group">
-        <label for="ior-slider">IOR</label>
-        <input id="ior-slider" type="range" min="1" max="2.333" step="0.001" value="1.5">
-        <span class="value-display">1.5</span>
-      </div>
-      <div class="slider-group">
-        <label for="transmission-slider">Transmission</label>
-        <input id="transmission-slider" type="range" min="0" max="1" step="0.1" value="0">
-        <span class="value-display">0</span>
-      </div>
-      <div class="slider-group">
-        <label for="clearcoat-slider">Clearcoat</label>
-        <input id="clearcoat-slider" type="range" min="0" max="1" step="0.1" value="0">
-        <span class="value-display">0</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Font Selection -->
-  <div class="control-section">
-    <button class="collapsible">Font</button>
-    <div class="collapsible-content">
-      <select id="font-name">
-        <option value="helvetiker">Helvetiker</option>
-        <option value="optimer">Optimer</option>
-        <option value="gentilis">Gentilis</option>
-      </select>
-    </div>
-  </div>
-
-
-  <div class="control-section">
-    <button class="collapsible">Scene Settings</button>
-    <div class="collapsible-content">
-        <div class="control-group">
-            <label for="fog-enabled">Enable Fog</label>
-            <input type="checkbox" id="fog-enabled">
-        </div>
-        <div class="control-group">
-            <label for="fog-color">Fog Color</label>
-            <input type="color" id="fog-color" value="#3f7b9d">
-        </div>
-        <div class="control-group">
-            <label>Fog Density</label>
-            <input type="range" id="fog-density" min="0" max="1" step="0.01" value="0.1">
-            <span class="value-display">0.1</span>
-        </div>
-    </div>
-  </div>
-  
-  <div class="control-section">
-    <button class="collapsible">Camera Controls</button>
-    <div class="collapsible-content">
-        <div class="control-group">
-            <label>Distance</label>
-            <input type="range" id="camera-distance" min="0" max="20" value="20">
-            <span class="value-display">20</span>
-        </div>
-        <div class="control-group">
-          
-            <label>Height</label>
-            <input type="range" id="camera-height" min="0" max="5" value="0">
-            <span class="value-display">0</span>
-        </div>
-        <div class="control-group">
-            <label>Auto Rotation Speed</label>
-            <input type="range" id="rotation-speed" min="0" max="2" step="0.1" value="0">
-            <span class="value-display">0</span>
-        </div>
-    </div>
-  </div>
-  
-  <div class="control-section">
-    <button class="collapsible">Advanced Material</button>
-    <div class="collapsible-content">
-        <div class="control-group">
-            <label>Reflectivity</label>
-            <input type="range" id="reflectivity-slider" min="0" max="1" step="0.01" value="0.5">
-            <span class="value-display">0.5</span>
-        </div>
-        <div class="control-group">
-            <label>Specular Intensity</label>
-            <input type="range" id="specular-intensity" min="0" max="1" step="0.01" value="1">
-            <span class="value-display">1</span>
-        </div>
-        <div class="control-group">
-            <label>Specular Color</label>
-            <input type="color" id="specular-color" value="#ffffff">
-        </div>
-    </div>
-  </div>
-  
-  <div class="control-section">
-    <button class="collapsible">Anisotropy</button>
-    <div class="collapsible-content">
-        <div class="control-group">
-            <label>Anisotropy</label>
-            <input type="range" id="anisotropy-slider" min="0" max="1" step="0.01" value="0">
-            <span class="value-display">0</span>
-        </div>
-        <div class="control-group">
-            <label>Anisotropy Rotation</label>
-            <input type="range" id="anisotropy-rotation" min="0" max="6.28" step="0.01" value="0">
-            <span class="value-display">0</span>
-        </div>
-    </div>
-  </div>
-  
-  <div class="control-section">
-    <button class="collapsible">Iridescence</button>
-    <div class="collapsible-content">
-        <div class="control-group">
-            <label>Iridescence</label>
-            <input type="range" id="iridescence-slider" min="0" max="1" step="0.01" value="0">
-            <span class="value-display">0</span>
-        </div>
-        <div class="control-group">
-            <label>Iridescence IOR</label>
-            <input type="range" id="iridescence-ior" min="1" max="2.333" step="0.001" value="1.3">
-            <span class="value-display">1.3</span>
-        </div>
-    </div>
-  </div>
-  
-  <div class="control-section">
-    <button class="collapsible">Attenuation</button>
-    <div class="collapsible-content">
-        <div class="control-group">
-            <label>Attenuation Distance</label>
-            <input type="range" id="attenuation-distance" min="0" max="1000" step="1" value="1000">
-            <span class="value-display">1000</span>
-        </div>
-        <div class="control-group">
-            <label>Attenuation Color</label>
-            <input type="color" id="attenuation-color" value="#ffffff">
-        </div>
-    </div>
-  </div>
-  
-  <div class="control-section">
-    <button class="collapsible">Rendering Options</button>
-    <div class="collapsible-content">
-        <div class="control-group">
-            <label>Alpha Test</label>
-            <input type="range" id="alpha-test" min="0" max="1" step="0.01" value="0">
-            <span class="value-display">0</span>
-        </div>
-        <div class="control-group">
-            <label>Depth Test</label>
-            <input type="checkbox" id="depth-test" checked>
-        </div>
-        <div class="control-group">
-            <label>Depth Write</label>
-            <input type="checkbox" id="depth-write" checked>
-        </div>
-        <div class="control-group">
-            <label>Side</label>
-            <select id="side-select">
-                <option value="front">Front</option>
-                <option value="back">Back</option>
-                <option value="double">Double</option>
-            </select>
-        </div>
-    </div>
-  </div>
-</div>
-<!-- Add these sections inside your #manual-tab div -->
-
-
+      </section>
     </aside>
 
     <div id="canvas-container" role="main" aria-label="3D Text Preview"></div>
@@ -291,6 +102,6 @@
 
   <footer class="footer-note">EXPERIMENTAL DESIGN COURSE SHENKAR 2025</footer>
 
-  <script type="module" src="main.js"></script>
+  <script type="module" src="/js/main.js"></script>
 </body>
 </html>
