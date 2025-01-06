@@ -7,5 +7,13 @@ export const animationParams = {
     // Individual toggle states
     rotateXEnabled: false,
     rotateYEnabled: false,
-    rotateZEnabled: false
+    rotateZEnabled: false,
+
+    // Scale/Pulse animation parameters
+    scaleEnabled: false,   // Toggle for scale animation
+    scaleSpeed: 0.02,     // Speed of scale oscillation
+    scaleMin: 0.8,        // Minimum scale factor
+    scaleMax: 1.2,        // Maximum scale factor
+    currentScale: 1,      // Current scale value (internal tracking)
+    scaleDirection: 1     // 1 for increasing, -1 for decreasing
 };

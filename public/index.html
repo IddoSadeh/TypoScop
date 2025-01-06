@@ -146,7 +146,32 @@
               </div>
           </div>
       </div>
+            <!-- Scale/Pulse Animation Controls -->
+            <div class="axis-control">
+              <div class="axis-header">
+                  <label>Scale/Pulse</label>
+                  <input type="checkbox" id="scale-toggle" class="axis-toggle">
+              </div>
+              <div class="slider-group">
+                  <label for="scale-speed">Speed</label>
+                  <input id="scale-speed" type="range" min="0.01" max="0.1" step="0.01" value="0.02">
+                  <span id="scale-speed-value" class="value-display">0.02</span>
+              </div>
+              <div class="slider-group">
+                  <label for="scale-min">Min Scale</label>
+                  <input id="scale-min" type="range" min="0.5" max="1" step="0.1" value="0.8">
+                  <span id="scale-min-value" class="value-display">0.8</span>
+              </div>
+              <div class="slider-group">
+                  <label for="scale-max">Max Scale</label>
+                  <input id="scale-max" type="range" min="1" max="2" step="0.1" value="1.2">
+                  <span id="scale-max-value" class="value-display">1.2</span>
+              </div>
+          </div>
+      </div>
+    </div>
   </div>
+  
 </div>
 
       </section>

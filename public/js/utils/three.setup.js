@@ -214,6 +214,7 @@ export function updateSceneBackground() {
 function updateAnimation() {
     if (!textMesh) return;
     
+    // rotations
     if (animationParams.rotateXEnabled) {
         textMesh.rotation.x += animationParams.rotateX;
     }
@@ -224,6 +225,28 @@ function updateAnimation() {
     
     if (animationParams.rotateZEnabled) {
         textMesh.rotation.z += animationParams.rotateZ;
+    }
+
+    // scale/pulse animation
+    if (animationParams.scaleEnabled) {
+        // Update scale value
+        animationParams.currentScale += animationParams.scaleSpeed * animationParams.scaleDirection;
+        
+        // Check bounds and reverse direction if needed
+        if (animationParams.currentScale >= animationParams.scaleMax) {
+            animationParams.scaleDirection = -1;
+            animationParams.currentScale = animationParams.scaleMax;
+        } else if (animationParams.currentScale <= animationParams.scaleMin) {
+            animationParams.scaleDirection = 1;
+            animationParams.currentScale = animationParams.scaleMin;
+        }
+        
+        // Apply scale uniformly to all axes
+        textMesh.scale.set(
+            animationParams.currentScale,
+            animationParams.currentScale,
+            animationParams.currentScale
+        );
     }
 }
 

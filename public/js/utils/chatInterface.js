@@ -54,7 +54,7 @@ function handleAPIResponse(result) {
         
         updateChatHistory('ai', message);
         
-        // Update parameters
+        // Update static typography parameters
         Object.assign(textParams, {
             text: result.response.text || textParams.text,
             font: result.response.font || textParams.font,
@@ -71,6 +71,7 @@ function handleAPIResponse(result) {
             backgroundColor: result.response.backgroundColor || sceneParams.backgroundColor
         });
 
+        // Update rotation parameters
         Object.assign(animationParams, {
             rotateX: result.response.rotateX ?? animationParams.rotateX,
             rotateY: result.response.rotateY ?? animationParams.rotateY,
@@ -80,6 +81,13 @@ function handleAPIResponse(result) {
             rotateZEnabled: result.response.rotateZEnabled ?? animationParams.rotateZEnabled
         });
 
+        // Update scale parameters
+        Object.assign(animationParams, {
+            scaleEnabled: result.response.scaleEnabled ?? animationParams.scaleEnabled,
+            scaleSpeed: result.response.scaleSpeed ?? animationParams.scaleSpeed,
+            scaleMin: result.response.scaleMin ?? animationParams.scaleMin,
+            scaleMax: result.response.scaleMax ?? animationParams.scaleMax
+        });
 
         // Update UI
         updateUIControls();
@@ -93,6 +101,12 @@ function handleAPIResponse(result) {
 }
 
 function updateUIControls() {
+    updateStaticTypography();
+    updateRotationControls();
+    updateScaleControls();
+}
+
+function updateStaticTypography() {
     // Update text input
     const textInput = document.getElementById('ai-text-input');
     if (textInput) {
@@ -105,18 +119,12 @@ function updateUIControls() {
         fontSelect.value = textParams.font;
     }
 
-    // Update color pickers
+    // Update material controls
     const colorPicker = document.getElementById('color-picker');
     if (colorPicker) {
         colorPicker.value = materialParams.color;
     }
 
-    const backgroundPicker = document.getElementById('background-color');
-    if (backgroundPicker) {
-        backgroundPicker.value = sceneParams.backgroundColor;
-    }
-
-    // Update sliders
     const metalnessSlider = document.getElementById('metalness-slider');
     if (metalnessSlider) {
         metalnessSlider.value = materialParams.metalness;
@@ -129,14 +137,21 @@ function updateUIControls() {
         roughnessSlider.nextElementSibling.textContent = materialParams.roughness;
     }
 
-
+    // Update geometry controls
     const heightSlider = document.getElementById('text-height-slider');
     if (heightSlider) {
         heightSlider.value = textParams.height;
         heightSlider.nextElementSibling.textContent = textParams.height;
     }
 
+    // Update scene controls
+    const backgroundPicker = document.getElementById('background-color');
+    if (backgroundPicker) {
+        backgroundPicker.value = sceneParams.backgroundColor;
+    }
+}
 
+function updateRotationControls() {
     updateAnimationControl('rotate-x', 'rotateX', 'rotate-x-toggle', 'rotateXEnabled');
     updateAnimationControl('rotate-y', 'rotateY', 'rotate-y-toggle', 'rotateYEnabled');
     updateAnimationControl('rotate-z', 'rotateZ', 'rotate-z-toggle', 'rotateZEnabled');
@@ -156,5 +171,29 @@ function updateAnimationControl(sliderId, speedParam, toggleId, enabledParam) {
 
     if (toggle) {
         toggle.checked = animationParams[enabledParam];
+    }
+}
+
+function updateScaleControls() {
+    const controls = {
+        toggle: ['scale-toggle', 'scaleEnabled'],
+        speed: ['scale-speed', 'scaleSpeed', 3],
+        min: ['scale-min', 'scaleMin', 2],
+        max: ['scale-max', 'scaleMax', 2]
+    };
+
+    for (const [type, [elementId, paramName, decimals]] of Object.entries(controls)) {
+        const element = document.getElementById(elementId);
+        if (!element) continue;
+
+        if (type === 'toggle') {
+            element.checked = animationParams[paramName];
+        } else {
+            element.value = animationParams[paramName];
+            const valueDisplay = document.getElementById(`${elementId}-value`);
+            if (valueDisplay) {
+                valueDisplay.textContent = animationParams[paramName].toFixed(decimals);
+            }
+        }
     }
 }

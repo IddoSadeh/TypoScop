@@ -18,7 +18,13 @@ const defaultState = {
     rotateZ: 0,
     rotateXEnabled: false,
     rotateYEnabled: false,
-    rotateZEnabled: false
+    rotateZEnabled: false,
+
+    // Scale/Pulse parameters
+    scaleEnabled: false,
+    scaleSpeed: 0.02,
+    scaleMin: 0.8,
+    scaleMax: 1.2
 };
 
 const functionSchema = {
@@ -87,6 +93,29 @@ const functionSchema = {
             rotateZEnabled: {
                 type: 'boolean',
                 description: 'Enable/disable Z-axis rotation'
+            },
+            // Scale/Pulse parameters
+            scaleEnabled: {
+                type: 'boolean',
+                description: 'Enable/disable scale/pulse animation'
+            },
+            scaleSpeed: {
+                type: 'number',
+                description: 'Speed of scale/pulse animation (0.01 to 0.1)',
+                minimum: 0.01,
+                maximum: 0.1
+            },
+            scaleMin: {
+                type: 'number',
+                description: 'Minimum scale factor (0.5 to 1)',
+                minimum: 0.5,
+                maximum: 1
+            },
+            scaleMax: {
+                type: 'number',
+                description: 'Maximum scale factor (1 to 2)',
+                minimum: 1,
+                maximum: 2
             }
         },
         required: [],
@@ -106,35 +135,35 @@ Guidelines:
 - For metallic looks: use high metalness (0.8-1.0) and low roughness (0-0.2)
 - For matte looks: use low metalness (0-0.2) and high roughness (0.7-1.0)
 
-Examples:
-- If user says "make it red", only update the 'color' parameter
-- If user says "make it metal", only update 'metalness' and 'roughness' parameters
-- If user says "change the text to Hello", only update the 'text' parameter
-- Do not change any parameters unless explicitly requested by the user
+Guidelines for Animations:
+1. Rotation Animation:
+   - When user mentions rotation, set appropriate speeds and enable relevant axes
+   - Use smaller values (0.01-0.03) for slower rotation, larger (0.05-0.1) for faster
+   - For "spin" or "rotate" without direction, default to Y-axis
+   - When user mentions specific axes, enable only those axes
+   - When user says "stop" or "stop spinning", disable all rotations
 
-Guidelines for Rotation Animation:
-- When user mentions rotation, set appropriate rotation speeds and enable the relevant axes
-- Use smaller values (0.01-0.03) for slower rotation, larger values (0.05-0.1) for faster rotation
-- For "spin" or "rotate" without direction, default to Y-axis rotation
-- When user mentions specific axes, enable only those axes
-- When user says "stop" or "stop spinning", disable all rotations (set enabled to false)
-- Keep all unmentioned parameters unchanged
+2. Scale/Pulse Animation:
+   - Respond to words like "pulse", "breathe", "throb", "scale", "grow"
+   - For gentle pulse: scaleSpeed: 0.02, scaleMin: 0.9, scaleMax: 1.1
+   - For dramatic pulse: scaleSpeed: 0.05, scaleMin: 0.7, scaleMax: 1.3
+   - "Fast pulse" increases scaleSpeed (0.05-0.1)
+   - "Slow pulse" decreases scaleSpeed (0.01-0.02)
+   - "Stop pulsing" sets scaleEnabled to false
 
 Examples:
-- "make it spin" → set rotateY: 0.03, rotateYEnabled: true
-- "rotate faster" → increase current rotation speeds by ~2x
-- "spin on all axes" → enable all axes with moderate speed (0.03)
-- "stop rotation" → set all rotation enabled flags to false
-- "rotate on x and z" → enable only X and Z rotation
-- "spin slowly" → set lower speed values (0.01)
-- "spin very fast" → set higher speed values (0.08-0.1)
+- "make it pulse slowly" → scaleEnabled: true, scaleSpeed: 0.01
+- "make it throb dramatically" → scaleEnabled: true, scaleSpeed: 0.05, scaleMin: 0.7, scaleMax: 1.3
+- "stop all animations" → disable both rotation and scale
+- "spin and pulse" → enable both rotation and scale with moderate speeds
+- "pulse subtly" → gentle pulse settings
+- "make it breathe naturally" → moderate pulse settings
 
 Remember to:
 - ONLY change parameters that the user specifically mentions
 - Keep all other parameters unchanged from their current values
-- Consider words like "spin", "rotate", and "turn" as rotation requests
-- Pay attention to speed modifiers (slowly, quickly, faster, etc.)
-`;
+- Consider natural language variations for animation requests
+- Pay attention to speed and intensity modifiers`;
 
 module.exports = {
     defaultState,
