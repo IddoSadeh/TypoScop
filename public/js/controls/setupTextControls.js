@@ -4,6 +4,7 @@ import { createText } from '../utils/three.setup.js';
 export function setupTextControls() {
     const textInput = document.getElementById('ai-text-input');
     const fontSelect = document.getElementById('ai-font-name');
+    const heightSlider = document.getElementById('text-height-slider');
 
     // Text input
     textInput?.addEventListener('input', (e) => {
@@ -16,4 +17,12 @@ export function setupTextControls() {
         textParams.font = e.target.value;
         createText();
     });
+
+    // Height
+    heightSlider?.addEventListener('input', (e) => {
+        textParams.height = parseFloat(e.target.value);
+        e.target.nextElementSibling.textContent = textParams.height;
+        createText();
+    });
+    
 }

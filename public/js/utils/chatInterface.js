@@ -52,7 +52,8 @@ function handleAPIResponse(result) {
         // Update parameters
         Object.assign(textParams, {
             text: result.response.text || textParams.text,
-            font: result.response.font || textParams.font
+            font: result.response.font || textParams.font,
+            height: result.response.height ?? textParams.height
         });
 
         Object.assign(materialParams, {
@@ -111,5 +112,12 @@ function updateUIControls() {
     if (roughnessSlider) {
         roughnessSlider.value = materialParams.roughness;
         roughnessSlider.nextElementSibling.textContent = materialParams.roughness;
+    }
+
+
+    const heightSlider = document.getElementById('text-height-slider');
+    if (heightSlider) {
+        heightSlider.value = textParams.height;
+        heightSlider.nextElementSibling.textContent = textParams.height;
     }
 }

@@ -31,6 +31,12 @@ const functionSchema = {
                 type: 'string', 
                 description: 'Update ONLY if user specifically mentions text color or material color (hexadecimal e.g., #ff0000)' 
             },
+            height: {
+                type: 'number',
+                description: 'The depth/thickness of the 3D text (range: 0.1-5)',
+                minimum: 0.1,
+                maximum: 5
+            },
             metalness: { 
                 type: 'number', 
                 description: 'Update ONLY if user mentions metallic quality or shininess (range: 0-1)' 
