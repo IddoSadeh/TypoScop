@@ -2,6 +2,7 @@ import { textParams } from '../parameters/textParams.js';
 import { materialParams } from '../parameters/materialParams.js';
 import { sceneParams } from '../parameters/sceneParams.js';
 import { createText, updateMaterial, updateSceneBackground } from './three.setup.js';
+import { animationParams } from '../parameters/animationParams.js';
 
 export function setupChatInterface() {
     const sendButton = document.getElementById('send');
@@ -66,6 +67,16 @@ function handleAPIResponse(result) {
             backgroundColor: result.response.backgroundColor || sceneParams.backgroundColor
         });
 
+        Object.assign(animationParams, {
+            rotateX: result.response.rotateX ?? animationParams.rotateX,
+            rotateY: result.response.rotateY ?? animationParams.rotateY,
+            rotateZ: result.response.rotateZ ?? animationParams.rotateZ,
+            rotateXEnabled: result.response.rotateXEnabled ?? animationParams.rotateXEnabled,
+            rotateYEnabled: result.response.rotateYEnabled ?? animationParams.rotateYEnabled,
+            rotateZEnabled: result.response.rotateZEnabled ?? animationParams.rotateZEnabled
+        });
+
+
         // Update UI
         updateUIControls();
 
@@ -119,5 +130,27 @@ function updateUIControls() {
     if (heightSlider) {
         heightSlider.value = textParams.height;
         heightSlider.nextElementSibling.textContent = textParams.height;
+    }
+
+
+    updateAnimationControl('rotate-x', 'rotateX', 'rotate-x-toggle', 'rotateXEnabled');
+    updateAnimationControl('rotate-y', 'rotateY', 'rotate-y-toggle', 'rotateYEnabled');
+    updateAnimationControl('rotate-z', 'rotateZ', 'rotate-z-toggle', 'rotateZEnabled');
+}
+
+function updateAnimationControl(sliderId, speedParam, toggleId, enabledParam) {
+    const slider = document.getElementById(sliderId);
+    const toggle = document.getElementById(toggleId);
+    const valueDisplay = document.getElementById(`${sliderId}-value`);
+
+    if (slider) {
+        slider.value = animationParams[speedParam];
+        if (valueDisplay) {
+            valueDisplay.textContent = animationParams[speedParam].toFixed(3);
+        }
+    }
+
+    if (toggle) {
+        toggle.checked = animationParams[enabledParam];
     }
 }

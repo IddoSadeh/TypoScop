@@ -10,7 +10,15 @@ const defaultState = {
     roughness: 0.5,
     
     // Scene Properties
-    backgroundColor: '#000000'
+    backgroundColor: '#000000',
+
+    // Animation parameters
+    rotateX: 0,
+    rotateY: 0,
+    rotateZ: 0,
+    rotateXEnabled: false,
+    rotateYEnabled: false,
+    rotateZEnabled: false
 };
 
 const functionSchema = {
@@ -48,6 +56,37 @@ const functionSchema = {
             backgroundColor: { 
                 type: 'string', 
                 description: 'Update ONLY if user specifically mentions background or scene color (hexadecimal)' 
+            },
+            // Rotation parameters
+            rotateX: {
+                type: 'number',
+                description: 'X-axis rotation speed (-0.1 to 0.1)',
+                minimum: -0.1,
+                maximum: 0.1
+            },
+            rotateXEnabled: {
+                type: 'boolean',
+                description: 'Enable/disable X-axis rotation'
+            },
+            rotateY: {
+                type: 'number',
+                description: 'Y-axis rotation speed (-0.1 to 0.1)',
+                minimum: -0.1,
+                maximum: 0.1
+            },
+            rotateYEnabled: {
+                type: 'boolean',
+                description: 'Enable/disable Y-axis rotation'
+            },
+            rotateZ: {
+                type: 'number',
+                description: 'Z-axis rotation speed (-0.1 to 0.1)',
+                minimum: -0.1,
+                maximum: 0.1
+            },
+            rotateZEnabled: {
+                type: 'boolean',
+                description: 'Enable/disable Z-axis rotation'
             }
         },
         required: [],
@@ -71,7 +110,31 @@ Examples:
 - If user says "make it red", only update the 'color' parameter
 - If user says "make it metal", only update 'metalness' and 'roughness' parameters
 - If user says "change the text to Hello", only update the 'text' parameter
-- Do not change any parameters unless explicitly requested by the user`;
+- Do not change any parameters unless explicitly requested by the user
+
+Guidelines for Rotation Animation:
+- When user mentions rotation, set appropriate rotation speeds and enable the relevant axes
+- Use smaller values (0.01-0.03) for slower rotation, larger values (0.05-0.1) for faster rotation
+- For "spin" or "rotate" without direction, default to Y-axis rotation
+- When user mentions specific axes, enable only those axes
+- When user says "stop" or "stop spinning", disable all rotations (set enabled to false)
+- Keep all unmentioned parameters unchanged
+
+Examples:
+- "make it spin" → set rotateY: 0.03, rotateYEnabled: true
+- "rotate faster" → increase current rotation speeds by ~2x
+- "spin on all axes" → enable all axes with moderate speed (0.03)
+- "stop rotation" → set all rotation enabled flags to false
+- "rotate on x and z" → enable only X and Z rotation
+- "spin slowly" → set lower speed values (0.01)
+- "spin very fast" → set higher speed values (0.08-0.1)
+
+Remember to:
+- ONLY change parameters that the user specifically mentions
+- Keep all other parameters unchanged from their current values
+- Consider words like "spin", "rotate", and "turn" as rotation requests
+- Pay attention to speed modifiers (slowly, quickly, faster, etc.)
+`;
 
 module.exports = {
     defaultState,
