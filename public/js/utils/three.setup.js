@@ -6,6 +6,7 @@ import { OrbitControls } from 'https://unpkg.com/three@0.152.0/examples/jsm/cont
 import { textParams } from '../parameters/textParams.js';
 import { materialParams } from '../parameters/materialParams.js';
 import { sceneParams } from '../parameters/sceneParams.js';
+import { animationParams } from '../parameters/animationParams.js';
 
 let scene, camera, renderer, textMesh, controls;
 
@@ -210,8 +211,26 @@ export function updateSceneBackground() {
 }
 
 
+function updateAnimation() {
+    if (!textMesh) return;
+    
+    if (animationParams.rotateXEnabled) {
+        textMesh.rotation.x += animationParams.rotateX;
+    }
+    
+    if (animationParams.rotateYEnabled) {
+        textMesh.rotation.y += animationParams.rotateY;
+    }
+    
+    if (animationParams.rotateZEnabled) {
+        textMesh.rotation.z += animationParams.rotateZ;
+    }
+}
+
+
 function animate() {
     requestAnimationFrame(animate);
+    updateAnimation();  // Add this line
     controls.update();
     renderer.render(scene, camera);
 }

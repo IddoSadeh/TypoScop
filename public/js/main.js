@@ -3,6 +3,7 @@ import { setupTextControls } from './controls/setupTextControls.js';
 import { setupMaterialControls } from './controls/setupMaterialControls.js';
 import { setupSceneControls } from './controls/setupSceneControls.js';
 import { setupChatInterface } from './utils/chatInterface.js';
+import { setupAnimationControls } from './controls/setupAnimationControls.js';
 
 function setupTabs() {
     const tabButtons = document.querySelectorAll('.tab-button');
@@ -54,7 +55,9 @@ document.addEventListener('DOMContentLoaded', () => {
     setupTextControls();
     setupMaterialControls();
     setupSceneControls();
+    setupAnimationControls(); 
     setupChatInterface();
+
 
     // Setup UI components
     setupTabs();
