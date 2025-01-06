@@ -48,7 +48,11 @@ function updateChatHistory(role, content) {
 
 function handleAPIResponse(result) {
     if (result.response) {
-        updateChatHistory('ai', 'Updated text appearance!');
+        let message = result.changes?.length > 0 ? 
+        'Parameters being updated:\n' + result.changes.join('\n') :
+        'No parameters were changed.';
+        
+        updateChatHistory('ai', message);
         
         // Update parameters
         Object.assign(textParams, {

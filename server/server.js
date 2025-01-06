@@ -9,7 +9,6 @@ dotenv.config();
 const app = express();
 const port = 3000;
 
-
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
@@ -22,7 +21,6 @@ app.use('/fonts', express.static(path.join(__dirname, '../public/fonts'), {
     // Enable file names with spaces
     fallthrough: true
 }));
-
 
 // Initialize OpenAI client
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -70,10 +68,10 @@ app.post('/api/customize', async (req, res) => {
 
         const newState = JSON.parse(response.arguments);
         
-        // Log which parameters are being changed
-        console.log('\nParameters being updated:');
+        // Collect the parameter changes
+        const changes = [];
         Object.entries(newState).forEach(([key, value]) => {
-            console.log(`${key}: ${currentState[key]} -> ${value}`);
+            changes.push(`${key}: ${currentState[key]} -> ${value}`);
         });
 
         // Update current state
@@ -83,7 +81,11 @@ app.post('/api/customize', async (req, res) => {
         console.log('\nFinal State:', currentState);
         console.log('=== End Request ===\n');
 
-        res.json({ response: currentState });
+        // Send both the updated state and the changes
+        res.json({
+            response: currentState,
+            changes: changes
+        });
     } catch (error) {
         console.error('Error:', error);
         res.status(500).json({ error: error.message });
