@@ -25,7 +25,7 @@ const functionSchema = {
             },
             font: { 
                 type: 'string', 
-                description: 'Update ONLY if user specifically asks to change the font (options: helvetiker, optimer, gentilis)' 
+                description: 'Update ONLY if user specifically asks to change the font (options if text is in english: helvetiker, optimer, gentilis. options if text is in hebrew: haim.)' 
             },
             color: { 
                 type: 'string', 

@@ -38,7 +38,6 @@ export function initThreeJS(container) {
     window.addEventListener('resize', () => {
         const width = container.clientWidth;
         const height = container.clientHeight;
-        
         camera.aspect = width / height;
         camera.updateProjectionMatrix();
         renderer.setSize(width, height);
@@ -58,56 +57,144 @@ function setupLighting() {
     scene.add(fillLight);
 }
 
-export function createText() {
+// Font mapping object
+const FONTS = {
+    latin: {
+        helvetiker: 'https://unpkg.com/three@0.152.0/examples/fonts/helvetiker_regular.typeface.json',
+        optimer: 'https://unpkg.com/three@0.152.0/examples/fonts/optimer_regular.typeface.json',
+        gentilis: 'https://unpkg.com/three@0.152.0/examples/fonts/gentilis_regular.typeface.json'
+    },
+    hebrew: {
+        haim: '/fonts/Haim Classic v2 FM_Regular.json',
+        // Add more Hebrew fonts here:
+        // david: '/fonts/David_Regular.json',
+        // frank: '/fonts/Frank_Regular.json',
+    }
+};
+
+// Cache for loaded fonts
+const fontCache = new Map();
+
+function isRTL(text) {
+    return /[\u0590-\u05FF]/.test(text);
+}
+
+
+// Font loader promise wrapper
+function loadFont(fontName, isHebrew = false) {
+    // Check if font is already cached
+    if (fontCache.has(fontName)) {
+        return Promise.resolve(fontCache.get(fontName));
+    }
+
     const loader = new FontLoader();
-    const fontUrl = 'https://unpkg.com/three@0.152.0/examples/fonts/helvetiker_regular.typeface.json';
-    
-    loader.load(fontUrl, (font) => {
-        try {
-            const geometry = new TextGeometry(textParams.text, {
-                font: font,
-                size: textParams.size,
-                height: textParams.height,
-                curveSegments: textParams.curveSegments,
-                bevelEnabled: textParams.bevelEnabled,
-                bevelThickness: textParams.bevelThickness,
-                bevelSize: textParams.bevelSize,
-                bevelSegments: textParams.bevelSegments
-            });
+    let fontUrl;
 
-            const material = new THREE.MeshStandardMaterial({
-                color: new THREE.Color(materialParams.color),
-                metalness: materialParams.metalness,
-                roughness: materialParams.roughness
-            });
+    if (isHebrew) {
+        fontUrl = FONTS.hebrew[fontName] || FONTS.hebrew.haim; // Default Hebrew font
+    } else {
+        fontUrl = FONTS.latin[fontName] || FONTS.latin.helvetiker; // Default Latin font
+    }
 
-            if (textMesh) {
-                scene.remove(textMesh);
-                geometry.dispose();
-                textMesh.material.dispose();
-            }
-
-            textMesh = new THREE.Mesh(geometry, material);
-            
-            // Center the text
-            geometry.computeBoundingBox();
-            const centerOffset = -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x);
-            textMesh.position.x = centerOffset;
-
-            // Add debug logs
-            console.log('Text position:', textMesh.position);
-            console.log('Text bounding box:', geometry.boundingBox);
-            console.log('Center offset:', centerOffset);
-
-            scene.add(textMesh);
-
-            // Optional: Look at text mesh
-            camera.lookAt(textMesh.position);
-
-        } catch (error) {
-            console.error('Error creating text geometry:', error);
-        }
+    return new Promise((resolve, reject) => {
+        loader.load(
+            fontUrl,
+            (font) => {
+                fontCache.set(fontName, font);
+                resolve(font);
+            },
+            undefined,
+            (error) => reject(error)
+        );
     });
+}
+
+function getFontType(fontName) {
+    if (FONTS.hebrew[fontName]) return 'hebrew';
+    if (FONTS.latin[fontName]) return 'latin';
+    return null;
+}
+
+function updateFontDropdown(fontName) {
+    const fontSelect = document.getElementById('ai-font-name'); // Match the ID from chatInterface.js
+    if (fontSelect && fontSelect.value !== fontName) {
+        fontSelect.value = fontName;
+    }
+}
+
+
+export function createText() {
+    let text = textParams.text;
+    const containsHebrew = isRTL(text);
+    
+    const currentFontType = getFontType(textParams.font?.toLowerCase());
+    
+    // Determine which font to use
+    let selectedFont;
+    if (containsHebrew && currentFontType !== 'hebrew') {
+        // Only switch to haim if current font doesn't support Hebrew
+        selectedFont = 'haim';
+        textParams.font = 'haim';
+        updateFontDropdown('haim');
+    } else {
+        selectedFont = textParams.font?.toLowerCase() || 'helvetiker';
+    }
+    
+    // Reverse text if Hebrew
+    if (containsHebrew) {
+        text = text.split('').reverse().join('');
+    }
+    
+    loadFont(selectedFont, containsHebrew)
+        .then((font) => {
+            try {
+                const geometry = new TextGeometry(text, {
+                    font: font,
+                    size: textParams.size,
+                    height: textParams.height,
+                    curveSegments: textParams.curveSegments,
+                    bevelEnabled: textParams.bevelEnabled,
+                    bevelThickness: textParams.bevelThickness,
+                    bevelSize: textParams.bevelSize,
+                    bevelSegments: textParams.bevelSegments
+                });
+
+                const material = new THREE.MeshStandardMaterial({
+                    color: new THREE.Color(materialParams.color),
+                    metalness: materialParams.metalness,
+                    roughness: materialParams.roughness
+                });
+
+                if (textMesh) {
+                    scene.remove(textMesh);
+                    geometry.dispose();
+                    textMesh.material.dispose();
+                }
+
+                textMesh = new THREE.Mesh(geometry, material);
+                
+                // Center the text
+                geometry.computeBoundingBox();
+                const centerOffset = -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x);
+                textMesh.position.x = centerOffset;
+
+                console.log('Creating text with font:', selectedFont);
+                console.log('Text position:', textMesh.position);
+                console.log('Text bounding box:', geometry.boundingBox);
+                console.log('Center offset:', centerOffset);
+                console.log('Is Hebrew:', containsHebrew);
+                console.log('Rendered text:', text);
+
+                scene.add(textMesh);
+                camera.lookAt(textMesh.position);
+
+            } catch (error) {
+                console.error('Error creating text geometry:', error);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading font:', error);
+        });
 }
 
 export function updateMaterial() {
@@ -121,6 +208,7 @@ export function updateMaterial() {
 export function updateSceneBackground() {
     scene.background.set(sceneParams.backgroundColor);
 }
+
 
 function animate() {
     requestAnimationFrame(animate);

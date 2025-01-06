@@ -13,6 +13,17 @@ const port = 3000;
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
+app.use('/fonts', express.static(path.join(__dirname, '../public/fonts'), {
+    setHeaders: (res, path) => {
+        if (path.endsWith('.json')) {
+            res.setHeader('Content-Type', 'application/json');
+        }
+    },
+    // Enable file names with spaces
+    fallthrough: true
+}));
+
+
 // Initialize OpenAI client
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
