@@ -1,4 +1,5 @@
 import { animationParams } from '../parameters/animationParams.js';
+import { createText } from '../utils/three.setup.js';
 
 export function setupAnimationControls() {
     // Setup rotation controls for each axis
@@ -8,6 +9,9 @@ export function setupAnimationControls() {
     
     // Setup scale/pulse controls
     setupScaleControls();
+
+    // Setup scramble controls
+    setupScrambleControls();
 }
 
 function setupAxisControls(axis) {
@@ -82,6 +86,58 @@ function setupScaleControls() {
             if (valueDisplay) {
                 valueDisplay.textContent = animationParams.scaleMax.toFixed(2);
             }
+        });
+    }
+}
+
+function setupScrambleControls() {
+    const scrambleToggle = document.getElementById('scramble-toggle');
+    const scrambleSpeedSlider = document.getElementById('scramble-speed');
+    const scrambleIntensitySlider = document.getElementById('scramble-intensity');
+    const scrambleModeSelect = document.getElementById('scramble-mode');
+    
+    // Scramble toggle
+    if (scrambleToggle) {
+        scrambleToggle.addEventListener('change', (e) => {
+            animationParams.scrambleEnabled = e.target.checked;
+            if (e.target.checked) {
+                // Reinitialize text with individual letters when enabling
+                createText();
+            } else {
+                // Reset positions when disabled
+                createText();
+            }
+        });
+    }
+    
+    // Speed control
+    if (scrambleSpeedSlider) {
+        scrambleSpeedSlider.addEventListener('input', (e) => {
+            animationParams.scrambleSpeed = parseFloat(e.target.value);
+            const valueDisplay = document.getElementById('scramble-speed-value');
+            if (valueDisplay) {
+                valueDisplay.textContent = animationParams.scrambleSpeed.toFixed(2);
+            }
+        });
+    }
+    
+    // Intensity control
+    if (scrambleIntensitySlider) {
+        scrambleIntensitySlider.addEventListener('input', (e) => {
+            animationParams.scrambleIntensity = parseFloat(e.target.value);
+            const valueDisplay = document.getElementById('scramble-intensity-value');
+            if (valueDisplay) {
+                valueDisplay.textContent = animationParams.scrambleIntensity.toFixed(2);
+            }
+        });
+    }
+    
+    // Mode selection
+    if (scrambleModeSelect) {
+        scrambleModeSelect.addEventListener('change', (e) => {
+            animationParams.scrambleMode = e.target.value;
+            // Reset current animation when changing modes
+            animationParams.scrambleProgress = 1; // Force new positions calculation
         });
     }
 }

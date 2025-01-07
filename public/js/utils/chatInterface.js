@@ -89,6 +89,14 @@ function handleAPIResponse(result) {
             scaleMax: result.response.scaleMax ?? animationParams.scaleMax
         });
 
+        // Update scramble parameters
+        Object.assign(animationParams, {
+            scrambleEnabled: result.response.scrambleEnabled ?? animationParams.scrambleEnabled,
+            scrambleSpeed: result.response.scrambleSpeed ?? animationParams.scrambleSpeed,
+            scrambleIntensity: result.response.scrambleIntensity ?? animationParams.scrambleIntensity,
+            scrambleMode: result.response.scrambleMode || animationParams.scrambleMode
+        });
+
         // Update UI
         updateUIControls();
 
@@ -104,6 +112,7 @@ function updateUIControls() {
     updateStaticTypography();
     updateRotationControls();
     updateScaleControls();
+    updateScrambleControls();
 }
 
 function updateStaticTypography() {
@@ -195,5 +204,35 @@ function updateScaleControls() {
                 valueDisplay.textContent = animationParams[paramName].toFixed(decimals);
             }
         }
+    }
+}
+
+function updateScrambleControls() {
+    const controls = {
+        toggle: ['scramble-toggle', 'scrambleEnabled'],
+        speed: ['scramble-speed', 'scrambleSpeed', 2],
+        intensity: ['scramble-intensity', 'scrambleIntensity', 2]
+    };
+
+    // Update sliders and toggle
+    for (const [type, [elementId, paramName, decimals]] of Object.entries(controls)) {
+        const element = document.getElementById(elementId);
+        if (!element) continue;
+
+        if (type === 'toggle') {
+            element.checked = animationParams[paramName];
+        } else {
+            element.value = animationParams[paramName];
+            const valueDisplay = document.getElementById(`${elementId}-value`);
+            if (valueDisplay) {
+                valueDisplay.textContent = animationParams[paramName].toFixed(decimals);
+            }
+        }
+    }
+
+    // Update mode select
+    const modeSelect = document.getElementById('scramble-mode');
+    if (modeSelect) {
+        modeSelect.value = animationParams.scrambleMode;
     }
 }

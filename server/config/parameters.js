@@ -116,6 +116,28 @@ const functionSchema = {
                 description: 'Maximum scale factor (1 to 2)',
                 minimum: 1,
                 maximum: 2
+            },
+            // Scramble parameters
+            scrambleEnabled: {
+                type: 'boolean',
+                description: 'Enable/disable letter scramble animation'
+            },
+            scrambleSpeed: {
+                type: 'number',
+                description: 'Speed of scramble animation (0.1 to 2.0)',
+                minimum: 0.1,
+                maximum: 2.0
+            },
+            scrambleIntensity: {
+                type: 'number',
+                description: 'Intensity of scramble movement (0.1 to 3.0)',
+                minimum: 0.1,
+                maximum: 3.0
+            },
+            scrambleMode: {
+                type: 'string',
+                description: 'Type of scramble animation pattern',
+                enum: ['random', 'swap', 'circular']
             }
         },
         required: [],
@@ -144,12 +166,18 @@ Guidelines for Animations:
    - When user says "stop" or "stop spinning", disable all rotations
 
 2. Scale/Pulse Animation:
-   - Respond to words like "pulse", "breathe", "throb", "scale", "grow"
    - For gentle pulse: scaleSpeed: 0.02, scaleMin: 0.9, scaleMax: 1.1
    - For dramatic pulse: scaleSpeed: 0.05, scaleMin: 0.7, scaleMax: 1.3
    - "Fast pulse" increases scaleSpeed (0.05-0.1)
    - "Slow pulse" decreases scaleSpeed (0.01-0.02)
-   - "Stop pulsing" sets scaleEnabled to false
+
+3. Scramble Animation:
+   - Responds to words like "scramble", "scatter", "chaos", "randomize"
+   - Random mode: Letters move randomly (default)
+   - Swap mode: Letters swap positions in pairs
+   - Circular mode: Letters move in circular patterns
+   - Use intensity 0.5-1.0 for subtle movement, 1.5-3.0 for dramatic
+   - Speed 0.1-0.5 for slow movement, 1.0-2.0 for fast
 
 Examples:
 - "make it pulse slowly" → scaleEnabled: true, scaleSpeed: 0.01
@@ -158,6 +186,14 @@ Examples:
 - "spin and pulse" → enable both rotation and scale with moderate speeds
 - "pulse subtly" → gentle pulse settings
 - "make it breathe naturally" → moderate pulse settings
+- "scramble the letters" → scrambleEnabled: true, scrambleMode: 'random', scrambleIntensity: 1.0
+- "scatter letters chaotically" → scrambleMode: 'random', scrambleIntensity: 2.0
+- "make letters swap places" → scrambleMode: 'swap'
+- "make letters move in a circle" → scrambleMode: 'circular'
+- "scramble faster" → increase scrambleSpeed
+- "scatter letters more widely" → increase scrambleIntensity
+- "stop scrambling" → scrambleEnabled: false
+
 
 Remember to:
 - ONLY change parameters that the user specifically mentions

@@ -9,6 +9,7 @@ import { sceneParams } from '../parameters/sceneParams.js';
 import { animationParams } from '../parameters/animationParams.js';
 
 let scene, camera, renderer, textMesh, controls;
+let letterMeshes = []; 
 
 export function initThreeJS(container) {
     // Scene setup
@@ -124,6 +125,7 @@ function updateFontDropdown(fontName) {
 }
 
 
+
 export function createText() {
     let text = textParams.text;
     const containsHebrew = isRTL(text);
@@ -210,29 +212,131 @@ export function updateSceneBackground() {
     scene.background.set(sceneParams.backgroundColor);
 }
 
+function updateScrambleAnimation() {
+    if (!textMesh || !animationParams.scrambleEnabled) return;
+    
+    // Initialize letter meshes when scramble is first enabled
+    if (letterMeshes.length === 0 && textMesh) {
+        const textContent = textParams.text;
+        const material = textMesh.material.clone();
+        const letterSpacing = textParams.size * 0.6; // Adjust spacing between letters
+        
+        // Remove the single mesh
+        scene.remove(textMesh);
+
+        // Calculate total width for centering
+        const totalWidth = textContent.length * letterSpacing;
+        let startX = -totalWidth / 2;
+
+        // Create individual letter meshes
+        textContent.split('').forEach((letter, index) => {
+            const geometry = new TextGeometry(letter, {
+                font: fontCache.get(textParams.font),
+                size: textParams.size,
+                height: textParams.height,
+                curveSegments: textParams.curveSegments,
+                bevelEnabled: textParams.bevelEnabled,
+                bevelThickness: textParams.bevelThickness,
+                bevelSize: textParams.bevelSize,
+                bevelSegments: textParams.bevelSegments
+            });
+
+            const letterMesh = new THREE.Mesh(geometry, material);
+            
+            // Set initial position
+            letterMesh.position.set(
+                startX + (index * letterSpacing),
+                0,
+                0
+            );
+            
+            // Store original position
+            letterMesh.userData.originalX = letterMesh.position.x;
+            letterMesh.userData.originalY = letterMesh.position.y;
+            letterMesh.userData.originalZ = letterMesh.position.z;
+            
+            scene.add(letterMesh);
+            letterMeshes.push(letterMesh);
+        });
+    }
+
+    // Animate existing letter meshes
+    const intensity = animationParams.scrambleIntensity || 1;
+    const speed = animationParams.scrambleSpeed || 0.5;
+    
+    letterMeshes.forEach((mesh, index) => {
+        switch(animationParams.scrambleMode) {
+            case 'random':
+                // Random movement around original position
+                mesh.position.x = mesh.userData.originalX + (Math.sin(Date.now() * speed * 0.001 + index) * intensity * textParams.size);
+                mesh.position.y = mesh.userData.originalY + (Math.cos(Date.now() * speed * 0.001 + index) * intensity * textParams.size);
+                mesh.position.z = mesh.userData.originalZ + (Math.sin(Date.now() * speed * 0.001 + index * 2) * intensity * textParams.size * 0.5);
+                break;
+                
+            case 'swap':
+                // Swap positions between pairs
+                const swapPartner = index % 2 === 0 ? index + 1 : index - 1;
+                if (swapPartner < letterMeshes.length) {
+                    const t = (Math.sin(Date.now() * speed * 0.001) + 1) / 2;
+                    mesh.position.x = THREE.MathUtils.lerp(
+                        mesh.userData.originalX,
+                        letterMeshes[swapPartner].userData.originalX,
+                        t
+                    );
+                }
+                break;
+                
+            case 'circular':
+                // Circular motion around original position
+                const angle = Date.now() * speed * 0.001 + (index * (Math.PI * 2) / letterMeshes.length);
+                mesh.position.x = mesh.userData.originalX + Math.cos(angle) * intensity * textParams.size;
+                mesh.position.y = mesh.userData.originalY + Math.sin(angle) * intensity * textParams.size;
+                break;
+        }
+    });
+}
 
 function updateAnimation() {
-    if (!textMesh) return;
+    if (!textMesh && letterMeshes.length === 0) return;
     
-    // rotations
-    if (animationParams.rotateXEnabled) {
-        textMesh.rotation.x += animationParams.rotateX;
-    }
-    
-    if (animationParams.rotateYEnabled) {
-        textMesh.rotation.y += animationParams.rotateY;
-    }
-    
-    if (animationParams.rotateZEnabled) {
-        textMesh.rotation.z += animationParams.rotateZ;
+    // Handle scramble state changes
+    if (animationParams.scrambleEnabled && letterMeshes.length === 0) {
+        // Initialize letter meshes when scramble is first enabled
+        if (textMesh) {
+            updateScrambleAnimation();
+        }
+    } else if (!animationParams.scrambleEnabled && letterMeshes.length > 0) {
+        // Clean up letter meshes when scramble is disabled
+        letterMeshes.forEach(mesh => {
+            scene.remove(mesh);
+            mesh.geometry.dispose();
+            mesh.material.dispose();
+        });
+        letterMeshes = [];
+        createText(); // Recreate single mesh
+        return;
     }
 
-    // scale/pulse animation
+    // Apply animations to either individual letters or single mesh
+    const meshesToAnimate = letterMeshes.length > 0 ? letterMeshes : [textMesh];
+    
+    // Handle rotations
+    meshesToAnimate.forEach(mesh => {
+        if (animationParams.rotateXEnabled) {
+            mesh.rotation.x += animationParams.rotateX;
+        }
+        if (animationParams.rotateYEnabled) {
+            mesh.rotation.y += animationParams.rotateY;
+        }
+        if (animationParams.rotateZEnabled) {
+            mesh.rotation.z += animationParams.rotateZ;
+        }
+    });
+
+    // Handle scale/pulse animation
     if (animationParams.scaleEnabled) {
-        // Update scale value
         animationParams.currentScale += animationParams.scaleSpeed * animationParams.scaleDirection;
         
-        // Check bounds and reverse direction if needed
         if (animationParams.currentScale >= animationParams.scaleMax) {
             animationParams.scaleDirection = -1;
             animationParams.currentScale = animationParams.scaleMax;
@@ -241,15 +345,20 @@ function updateAnimation() {
             animationParams.currentScale = animationParams.scaleMin;
         }
         
-        // Apply scale uniformly to all axes
-        textMesh.scale.set(
-            animationParams.currentScale,
-            animationParams.currentScale,
-            animationParams.currentScale
-        );
+        meshesToAnimate.forEach(mesh => {
+            mesh.scale.set(
+                animationParams.currentScale,
+                animationParams.currentScale,
+                animationParams.currentScale
+            );
+        });
+    }
+
+    // Handle scramble animation if enabled
+    if (animationParams.scrambleEnabled) {
+        updateScrambleAnimation();
     }
 }
-
 
 function animate() {
     requestAnimationFrame(animate);
