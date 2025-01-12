@@ -202,6 +202,44 @@
       </select>
   </div>
 </div>
+
+<!-- Multiple text animation controls -->
+<div class="axis-control">
+  <div class="axis-header">
+      <label>Multiple Text Copies</label>
+      <input type="checkbox" id="multi-text-toggle" class="axis-toggle">
+  </div>
+  
+  <div class="slider-group">
+      <label for="copy-count">Number of Copies</label>
+      <input id="copy-count" 
+             type="range" 
+             min="1" 
+             max="10" 
+             step="1" 
+             value="3">
+      <span id="copy-count-value" class="value-display">3</span>
+  </div>
+  
+  <div class="slider-group">
+      <label for="copy-spread">Spread Distance</label>
+      <input id="copy-spread" 
+             type="range" 
+             min="10" 
+             max="100" 
+             step="5" 
+             value="50">
+      <span id="copy-spread-value" class="value-display">50</span>
+  </div>
+  
+  <div class="checkbox-group">
+      <label for="independent-rotation-toggle">Independent Rotation</label>
+      <input type="checkbox" 
+             id="independent-rotation-toggle" 
+             class="axis-toggle" 
+             checked>
+  </div>
+</div>
       </div>
     </div>
   </div>

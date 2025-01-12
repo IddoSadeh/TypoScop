@@ -1,5 +1,5 @@
 import { animationParams } from '../parameters/animationParams.js';
-import { createText } from '../utils/three.setup.js';
+import { createText,  updateMultiTextCopies, getTextMesh } from '../utils/three.setup.js';
 
 export function setupAnimationControls() {
     // Setup rotation controls for each axis
@@ -12,6 +12,8 @@ export function setupAnimationControls() {
 
     // Setup scramble controls
     setupScrambleControls();
+
+    setupMultiTextControls(); 
 }
 
 function setupAxisControls(axis) {
@@ -141,3 +143,64 @@ function setupScrambleControls() {
         });
     }
 }
+
+
+function setupMultiTextControls() {
+    const multiTextToggle = document.getElementById('multi-text-toggle');
+    const copyCountSlider = document.getElementById('copy-count');
+    const spreadSlider = document.getElementById('copy-spread');
+    const independentRotationToggle = document.getElementById('independent-rotation-toggle');
+    
+    if (multiTextToggle) {
+        multiTextToggle.addEventListener('change', (e) => {
+            animationParams.multiTextEnabled = e.target.checked;
+            if (e.target.checked) {
+                updateMultiTextCopies();
+            } else {
+                // Clean up copies from the scene
+                if (animationParams.copies) {
+                    animationParams.copies.forEach(copy => {
+                        if (copy && copy.mesh) {
+                            // Don't remove the original textMesh
+                            if (copy.mesh !== getTextMesh()) {
+                                scene.remove(copy.mesh);
+                                if (copy.mesh.geometry) copy.mesh.geometry.dispose();
+                                if (copy.mesh.material) copy.mesh.material.dispose();
+                            }
+                        }
+                    });
+                }
+                // Reset copies array
+                animationParams.copies = [];
+                createText(); // Recreate original text
+            }
+        });
+    }
+    
+    if (copyCountSlider) {
+        copyCountSlider.addEventListener('input', (e) => {
+            animationParams.copyCount = parseInt(e.target.value);
+            if (animationParams.multiTextEnabled) {
+                updateMultiTextCopies();
+            }
+            document.getElementById('copy-count-value').textContent = e.target.value;
+        });
+    }
+    
+    if (spreadSlider) {
+        spreadSlider.addEventListener('input', (e) => {
+            animationParams.spread = parseFloat(e.target.value);
+            if (animationParams.multiTextEnabled) {
+                updateMultiTextCopies();
+            }
+            document.getElementById('copy-spread-value').textContent = e.target.value;
+        });
+    }
+    
+    if (independentRotationToggle) {
+        independentRotationToggle.addEventListener('change', (e) => {
+            animationParams.rotateIndependently = e.target.checked;
+        });
+    }
+}
+

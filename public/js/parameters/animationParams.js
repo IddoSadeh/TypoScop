@@ -25,5 +25,12 @@ export const animationParams = {
     letterPositions: [],       // Array to store original letter positions
     targetPositions: [],       // Array to store target positions for interpolation
     scrambleProgress: 0,       // Progress of current scramble animation (0-1)
-    lastScrambleTime: 0        // Time tracker for scramble updates
+    lastScrambleTime: 0,        // Time tracker for scramble updates
+
+    // New multi-text parameters
+    multiTextEnabled: false,
+    copyCount: 3,
+    spread: 50,
+    copies: [], 
+    rotateIndependently: true 
 };
