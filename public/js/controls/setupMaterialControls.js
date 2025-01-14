@@ -1,5 +1,5 @@
 import { materialParams } from '../parameters/materialParams.js';
-import { updateMaterial } from '../utils/three.setup.js';
+import { createText, updateMaterial } from '../utils/three.setup.js';
 
 export function setupMaterialControls() {
     const colorPicker = document.getElementById('color-picker');
@@ -10,6 +10,7 @@ export function setupMaterialControls() {
     colorPicker?.addEventListener('input', (e) => {
         materialParams.color = e.target.value;
         updateMaterial();
+        createText()
     });
 
     // Material sliders
@@ -17,11 +18,13 @@ export function setupMaterialControls() {
         materialParams.metalness = parseFloat(e.target.value);
         e.target.nextElementSibling.textContent = materialParams.metalness;
         updateMaterial();
+        createText()
     });
 
     roughnessSlider?.addEventListener('input', (e) => {
         materialParams.roughness = parseFloat(e.target.value);
         e.target.nextElementSibling.textContent = materialParams.roughness;
         updateMaterial();
+        createText()
     });
 }
