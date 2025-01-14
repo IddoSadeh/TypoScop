@@ -31,6 +31,5 @@ export const animationParams = {
     multiTextEnabled: false,
     copyCount: 3,
     spread: 50,
-    copies: [], 
-    rotateIndependently: true 
+    copies: []
 };

@@ -1,5 +1,6 @@
+// setupAnimationControls.js
 import { animationParams } from '../parameters/animationParams.js';
-import { createText,  updateMultiTextCopies, getTextMesh } from '../utils/three.setup.js';
+import { createText, updateMultiTextCopies, getTextMesh } from '../utils/three.setup.js';
 
 export function setupAnimationControls() {
     // Setup rotation controls for each axis
@@ -13,6 +14,7 @@ export function setupAnimationControls() {
     // Setup scramble controls
     setupScrambleControls();
 
+    // Setup multi-text controls
     setupMultiTextControls(); 
 }
 
@@ -21,14 +23,12 @@ function setupAxisControls(axis) {
     const slider = document.getElementById(`rotate-${axis}`);
     const valueDisplay = document.getElementById(`rotate-${axis}-value`);
     
-    // Toggle handler
     if (toggle) {
         toggle.addEventListener('change', (e) => {
             animationParams[`rotate${axis.toUpperCase()}Enabled`] = e.target.checked;
         });
     }
     
-    // Slider handler
     if (slider) {
         slider.addEventListener('input', (e) => {
             const value = parseFloat(e.target.value);
@@ -46,19 +46,20 @@ function setupScaleControls() {
     const scaleMinSlider = document.getElementById('scale-min');
     const scaleMaxSlider = document.getElementById('scale-max');
     
-    // Scale animation toggle
     if (scaleToggle) {
         scaleToggle.addEventListener('change', (e) => {
             animationParams.scaleEnabled = e.target.checked;
-            // Reset scale when disabled
             if (!e.target.checked) {
                 animationParams.currentScale = 1;
                 animationParams.scaleDirection = 1;
+                const textMesh = getTextMesh();
+                if (textMesh) {
+                    textMesh.scale.set(1, 1, 1);
+                }
             }
         });
     }
     
-    // Scale speed control
     if (scaleSpeedSlider) {
         scaleSpeedSlider.addEventListener('input', (e) => {
             animationParams.scaleSpeed = parseFloat(e.target.value);
@@ -69,7 +70,6 @@ function setupScaleControls() {
         });
     }
     
-    // Min scale control
     if (scaleMinSlider) {
         scaleMinSlider.addEventListener('input', (e) => {
             animationParams.scaleMin = parseFloat(e.target.value);
@@ -80,7 +80,6 @@ function setupScaleControls() {
         });
     }
     
-    // Max scale control
     if (scaleMaxSlider) {
         scaleMaxSlider.addEventListener('input', (e) => {
             animationParams.scaleMax = parseFloat(e.target.value);
@@ -98,21 +97,13 @@ function setupScrambleControls() {
     const scrambleIntensitySlider = document.getElementById('scramble-intensity');
     const scrambleModeSelect = document.getElementById('scramble-mode');
     
-    // Scramble toggle
     if (scrambleToggle) {
         scrambleToggle.addEventListener('change', (e) => {
             animationParams.scrambleEnabled = e.target.checked;
-            if (e.target.checked) {
-                // Reinitialize text with individual letters when enabling
-                createText();
-            } else {
-                // Reset positions when disabled
-                createText();
-            }
+            createText(); 
         });
     }
     
-    // Speed control
     if (scrambleSpeedSlider) {
         scrambleSpeedSlider.addEventListener('input', (e) => {
             animationParams.scrambleSpeed = parseFloat(e.target.value);
@@ -123,7 +114,6 @@ function setupScrambleControls() {
         });
     }
     
-    // Intensity control
     if (scrambleIntensitySlider) {
         scrambleIntensitySlider.addEventListener('input', (e) => {
             animationParams.scrambleIntensity = parseFloat(e.target.value);
@@ -134,16 +124,13 @@ function setupScrambleControls() {
         });
     }
     
-    // Mode selection
     if (scrambleModeSelect) {
         scrambleModeSelect.addEventListener('change', (e) => {
             animationParams.scrambleMode = e.target.value;
-            // Reset current animation when changing modes
-            animationParams.scrambleProgress = 1; // Force new positions calculation
+            animationParams.scrambleProgress = 1;
         });
     }
 }
-
 
 function setupMultiTextControls() {
     const multiTextToggle = document.getElementById('multi-text-toggle');
@@ -154,26 +141,7 @@ function setupMultiTextControls() {
     if (multiTextToggle) {
         multiTextToggle.addEventListener('change', (e) => {
             animationParams.multiTextEnabled = e.target.checked;
-            if (e.target.checked) {
                 updateMultiTextCopies();
-            } else {
-                // Clean up copies from the scene
-                if (animationParams.copies) {
-                    animationParams.copies.forEach(copy => {
-                        if (copy && copy.mesh) {
-                            // Don't remove the original textMesh
-                            if (copy.mesh !== getTextMesh()) {
-                                scene.remove(copy.mesh);
-                                if (copy.mesh.geometry) copy.mesh.geometry.dispose();
-                                if (copy.mesh.material) copy.mesh.material.dispose();
-                            }
-                        }
-                    });
-                }
-                // Reset copies array
-                animationParams.copies = [];
-                createText(); // Recreate original text
-            }
         });
     }
     
@@ -183,7 +151,10 @@ function setupMultiTextControls() {
             if (animationParams.multiTextEnabled) {
                 updateMultiTextCopies();
             }
-            document.getElementById('copy-count-value').textContent = e.target.value;
+            const valueDisplay = document.getElementById('copy-count-value');
+            if (valueDisplay) {
+                valueDisplay.textContent = e.target.value;
+            }
         });
     }
     
@@ -193,14 +164,11 @@ function setupMultiTextControls() {
             if (animationParams.multiTextEnabled) {
                 updateMultiTextCopies();
             }
-            document.getElementById('copy-spread-value').textContent = e.target.value;
+            const valueDisplay = document.getElementById('copy-spread-value');
+            if (valueDisplay) {
+                valueDisplay.textContent = e.target.value;
+            }
         });
     }
     
-    if (independentRotationToggle) {
-        independentRotationToggle.addEventListener('change', (e) => {
-            animationParams.rotateIndependently = e.target.checked;
-        });
-    }
 }
-

@@ -135,6 +135,7 @@ export function createText() {
     // Determine which font to use
     let selectedFont;
     if (containsHebrew && currentFontType !== 'hebrew') {
+        // Only switch to haim if current font doesn't support Hebrew
         selectedFont = 'haim';
         textParams.font = 'haim';
         updateFontDropdown('haim');
@@ -147,18 +148,6 @@ export function createText() {
         text = text.split('').reverse().join('');
     }
     
-    // Clean up existing copies before loading new text
-    if (animationParams.multiTextEnabled) {
-        animationParams.copies.forEach(copy => {
-            if (copy.mesh && copy.mesh !== textMesh) {
-                scene.remove(copy.mesh);
-                if (copy.mesh.geometry) copy.mesh.geometry.dispose();
-                if (copy.mesh.material) copy.mesh.material.dispose();
-            }
-        });
-        animationParams.copies = [];
-    }
-
     loadFont(selectedFont, containsHebrew)
         .then((font) => {
             try {
@@ -192,11 +181,16 @@ export function createText() {
                 const centerOffset = -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x);
                 textMesh.position.x = centerOffset;
 
+                console.log('Creating text with font:', selectedFont);
+                console.log('Text position:', textMesh.position);
+                console.log('Text bounding box:', geometry.boundingBox);
+                console.log('Center offset:', centerOffset);
+                console.log('Is Hebrew:', containsHebrew);
+                console.log('Rendered text:', text);
+
                 scene.add(textMesh);
                 camera.lookAt(textMesh.position);
-
-                // After creating the main text mesh, create copies if enabled
-                if (animationParams.multiTextEnabled) {
+                 if (animationParams.multiTextEnabled) {
                     updateMultiTextCopies();
                 }
 
@@ -207,103 +201,6 @@ export function createText() {
         .catch(error => {
             console.error('Error loading font:', error);
         });
-}
-
-function createTextCopy(originalMesh) {
-    if (!originalMesh) return null;
-    
-    const newMesh = originalMesh.clone();
-    
-    // Generate random position within spread range
-    const position = {
-        x: (Math.random() - 0.5) * animationParams.spread,
-        y: (Math.random() - 0.5) * animationParams.spread,
-        z: (Math.random() - 0.5) * animationParams.spread * 0.5 // Less spread in Z
-    };
-    
-    newMesh.position.set(position.x, position.y, position.z);
-    
-    return {
-        mesh: newMesh,
-        rotation: { x: 0, y: 0, z: 0 },
-        position: position
-    };
-}
-
-export function updateMultiTextCopies() {
-    // Clean up existing copies
-    animationParams.copies.forEach(copy => {
-        if (copy.mesh && copy.mesh !== textMesh) { // Don't remove original
-            scene.remove(copy.mesh);
-            if (copy.mesh.geometry) copy.mesh.geometry.dispose();
-            if (copy.mesh.material) copy.mesh.material.dispose();
-        }
-    });
-    animationParams.copies = [];
-
-    if (!animationParams.multiTextEnabled || !textMesh) return;
-
-    // Keep original as first copy
-    animationParams.copies.push({
-        mesh: textMesh,
-        rotation: { x: 0, y: 0, z: 0 },
-        position: { x: textMesh.position.x, y: textMesh.position.y, z: textMesh.position.z }
-    });
-
-    // Create new copies
-    for (let i = 1; i < animationParams.copyCount; i++) {
-        const copy = createTextCopy(textMesh);
-        if (copy) {
-            scene.add(copy.mesh);
-            animationParams.copies.push(copy);
-        }
-    }
-}
-
-export function getTextMesh() {
-    return textMesh;
-}
-
-// Replace the existing updateMultiTextAnimation function with this version
-function updateMultiTextAnimation() {
-    if (!animationParams.multiTextEnabled) return;
-
-    animationParams.copies.forEach((copy, index) => {
-        if (!copy.mesh) return;
-
-        // Apply rotations based on settings
-        if (animationParams.rotateXEnabled) {
-            const speed = animationParams.rotateIndependently ? 
-                animationParams.rotateX * (1 + index * 0.5) : // Increased multiplier
-                animationParams.rotateX;
-            copy.rotation.x += speed;
-            copy.mesh.rotation.x = copy.rotation.x;
-        }
-
-        if (animationParams.rotateYEnabled) {
-            const speed = animationParams.rotateIndependently ? 
-                animationParams.rotateY * (1 + index * 0.5) : 
-                animationParams.rotateY;
-            copy.rotation.y += speed;
-            copy.mesh.rotation.y = copy.rotation.y;
-        }
-
-        if (animationParams.rotateZEnabled) {
-            const speed = animationParams.rotateIndependently ? 
-                animationParams.rotateZ * (1 + index * 0.5) : 
-                animationParams.rotateZ;
-            copy.rotation.z += speed;
-            copy.mesh.rotation.z = copy.rotation.z;
-        }
-
-        // Add unique movement patterns for independent rotation
-        if (animationParams.rotateIndependently) {
-            const time = Date.now() * 0.001;
-            copy.mesh.rotation.x += Math.sin(time + index * 0.5) * 0.02;
-            copy.mesh.rotation.y += Math.cos(time + index * 0.5) * 0.02;
-            copy.mesh.rotation.z += Math.sin(time * 2 + index * 0.5) * 0.02;
-        }
-    });
 }
 
 export function updateMaterial() {
@@ -318,52 +215,225 @@ export function updateSceneBackground() {
     scene.background.set(sceneParams.backgroundColor);
 }
 
-function updateScrambleAnimation() {
-    if (!textMesh || !animationParams.scrambleEnabled) return;
+export function getTextMesh() {
+    return textMesh;
+}
+
+function getRandomPosition(spread) {
+    return {
+        x: (Math.random() - 0.5) * spread,
+        y: (Math.random() - 0.5) * spread,
+        z: (Math.random() - 0.5) * (spread * 0.5) // Less spread in Z for better readability
+    };
+}
+
+
+export function updateMultiTextCopies() {
     
-    // Initialize letter meshes when scramble is first enabled
-    if (letterMeshes.length === 0 && textMesh) {
-        const textContent = textParams.text;
-        const material = textMesh.material.clone();
-        const letterSpacing = textParams.size * 0.6; // Adjust spacing between letters
-        
-        // Remove the single mesh
-        scene.remove(textMesh);
 
-        // Calculate total width for centering
-        const totalWidth = textContent.length * letterSpacing;
-        let startX = -totalWidth / 2;
-
-        // Create individual letter meshes
-        textContent.split('').forEach((letter, index) => {
-            const geometry = new TextGeometry(letter, {
-                font: fontCache.get(textParams.font),
-                size: textParams.size,
-                height: textParams.height,
-                curveSegments: textParams.curveSegments,
-                bevelEnabled: textParams.bevelEnabled,
-                bevelThickness: textParams.bevelThickness,
-                bevelSize: textParams.bevelSize,
-                bevelSegments: textParams.bevelSegments
+    
+    if (!animationParams.multiTextEnabled) {
+        if (animationParams.copies) {
+            animationParams.copies.forEach(copy => {
+                if (copy && copy.mesh && copy.mesh !== textMesh) {
+                    scene.remove(copy.mesh);
+                    if (copy.mesh.geometry) copy.mesh.geometry.dispose();
+                    if (copy.mesh.material) copy.mesh.material.dispose();
+                }
             });
 
-            const letterMesh = new THREE.Mesh(geometry, material);
+            letterMeshes = letterMeshes.filter(mesh => {
+                if (!mesh.userData.copyRef || mesh.userData.copyRef.mesh === textMesh) {
+                    return true; 
+                }
+                scene.remove(mesh);
+                mesh.geometry.dispose();
+                mesh.material.dispose();
+                return false;
+            });
             
-            // Set initial position
-            letterMesh.position.set(
-                startX + (index * letterSpacing),
-                0,
-                0
-            );
-            
-            // Store original position
-            letterMesh.userData.originalX = letterMesh.position.x;
-            letterMesh.userData.originalY = letterMesh.position.y;
-            letterMesh.userData.originalZ = letterMesh.position.z;
-            
-            scene.add(letterMesh);
-            letterMeshes.push(letterMesh);
+         
+        }
+        animationParams.copies = [];
+        return;
+    }
+
+
+
+    // Clean up existing copies
+    if (animationParams.copies) {
+        animationParams.copies.forEach(copy => {
+            if (copy && copy.mesh && copy.mesh !== textMesh) {
+                scene.remove(copy.mesh);
+                if (copy.mesh.geometry) copy.mesh.geometry.dispose();
+                if (copy.mesh.material) copy.mesh.material.dispose();
+            }
         });
+    }
+    
+    if (!textMesh) return;
+    
+    // Initialize copies array
+    animationParams.copies = [];
+    
+    // Store current animation state of original mesh if it exists
+    const originalRotation = textMesh ? textMesh.rotation.clone() : new THREE.Euler();
+    const originalScale = textMesh ? textMesh.scale.clone() : new THREE.Vector3(1, 1, 1);
+    
+    // Create copies
+    for (let i = 0; i < animationParams.copyCount; i++) {
+        const position = getRandomPosition(animationParams.spread);
+        
+        if (i === 0) {
+            // Use original mesh for first copy
+            textMesh.position.set(position.x, position.y, position.z);
+            
+            // Keep existing rotation and scale if they exist
+            if (animationParams.rotateXEnabled || animationParams.rotateYEnabled || animationParams.rotateZEnabled) {
+                textMesh.rotation.copy(originalRotation);
+            }
+            if (animationParams.scaleEnabled) {
+                textMesh.scale.copy(originalScale);
+            }
+            
+            animationParams.copies.push({
+                mesh: textMesh,
+                basePosition: new THREE.Vector3(position.x, position.y, position.z),
+                rotationOffset: new THREE.Vector3(
+                    Math.random() * Math.PI * 2,
+                    Math.random() * Math.PI * 2,
+                    Math.random() * Math.PI * 2
+                )
+            });
+            continue;
+        }
+        
+        // Create new mesh
+        const copyMaterial = textMesh.material.clone();
+        const copyMesh = new THREE.Mesh(textMesh.geometry, copyMaterial);
+        
+        copyMesh.position.set(position.x, position.y, position.z);
+        
+        if (animationParams.rotateXEnabled || animationParams.rotateYEnabled || animationParams.rotateZEnabled) {
+            copyMesh.rotation.copy(originalRotation);
+        }
+        if (animationParams.scaleEnabled) {
+            copyMesh.scale.copy(originalScale);
+        }
+
+        if (animationParams.scrambleEnabled) {
+            cleanupLetterMeshes();
+        }
+
+
+        scene.add(copyMesh);
+        
+        animationParams.copies.push({
+            mesh: copyMesh,
+            basePosition: new THREE.Vector3(position.x, position.y, position.z),
+            rotationOffset: new THREE.Vector3(
+                Math.random() * Math.PI * 2,
+                Math.random() * Math.PI * 2,
+                Math.random() * Math.PI * 2
+            )
+        });
+    }
+}
+
+
+function updateScrambleAnimation() {
+    if (!animationParams.scrambleEnabled) return;
+    
+    // Initialize letter meshes when scramble is first enabled
+    if (letterMeshes.length === 0) {
+        letterMeshes = []; // Clear array just in case
+        
+        if (animationParams.multiTextEnabled && animationParams.copies) {
+            // Handle multiple copies
+            animationParams.copies.forEach(copy => {
+                if (!copy.mesh) return;
+                
+                const textContent = textParams.text;
+                const material = copy.mesh.material.clone();
+                const letterSpacing = textParams.size * 0.6;
+                
+                // Hide the original mesh
+                copy.mesh.visible = false;
+                
+                // Calculate total width for centering
+                const totalWidth = textContent.length * letterSpacing;
+                let startX = -totalWidth / 2 + copy.basePosition.x;
+                
+                // Create individual letter meshes for this copy
+                textContent.split('').forEach((letter, index) => {
+                    const geometry = new TextGeometry(letter, {
+                        font: fontCache.get(textParams.font),
+                        size: textParams.size,
+                        height: textParams.height,
+                        curveSegments: textParams.curveSegments,
+                        bevelEnabled: textParams.bevelEnabled,
+                        bevelThickness: textParams.bevelThickness,
+                        bevelSize: textParams.bevelSize,
+                        bevelSegments: textParams.bevelSegments
+                    });
+
+                    const letterMesh = new THREE.Mesh(geometry, material);
+                    
+                    // Set initial position
+                    letterMesh.position.set(
+                        startX + (index * letterSpacing),
+                        copy.basePosition.y,
+                        copy.basePosition.z
+                    );
+                    
+                    // Store original position and copy reference
+                    letterMesh.userData.originalX = letterMesh.position.x;
+                    letterMesh.userData.originalY = letterMesh.position.y;
+                    letterMesh.userData.originalZ = letterMesh.position.z;
+                    letterMesh.userData.copyRef = copy; // Store reference to parent copy
+                    
+                    scene.add(letterMesh);
+                    letterMeshes.push(letterMesh);
+                });
+            });
+        } else if (textMesh) {
+            // Original single text scramble logic
+            const textContent = textParams.text;
+            const material = textMesh.material.clone();
+            const letterSpacing = textParams.size * 0.6;
+            
+            textMesh.visible = false;
+            
+            const totalWidth = textContent.length * letterSpacing;
+            let startX = -totalWidth / 2;
+            
+            textContent.split('').forEach((letter, index) => {
+                const geometry = new TextGeometry(letter, {
+                    font: fontCache.get(textParams.font),
+                    size: textParams.size,
+                    height: textParams.height,
+                    curveSegments: textParams.curveSegments,
+                    bevelEnabled: textParams.bevelEnabled,
+                    bevelThickness: textParams.bevelThickness,
+                    bevelSize: textParams.bevelSize,
+                    bevelSegments: textParams.bevelSegments
+                });
+
+                const letterMesh = new THREE.Mesh(geometry, material);
+                letterMesh.position.set(
+                    startX + (index * letterSpacing),
+                    0,
+                    0
+                );
+                
+                letterMesh.userData.originalX = letterMesh.position.x;
+                letterMesh.userData.originalY = letterMesh.position.y;
+                letterMesh.userData.originalZ = letterMesh.position.z;
+                
+                scene.add(letterMesh);
+                letterMeshes.push(letterMesh);
+            });
+        }
     }
 
     // Animate existing letter meshes
@@ -373,15 +443,20 @@ function updateScrambleAnimation() {
     letterMeshes.forEach((mesh, index) => {
         switch(animationParams.scrambleMode) {
             case 'random':
-                // Random movement around original position
                 mesh.position.x = mesh.userData.originalX + (Math.sin(Date.now() * speed * 0.001 + index) * intensity * textParams.size);
                 mesh.position.y = mesh.userData.originalY + (Math.cos(Date.now() * speed * 0.001 + index) * intensity * textParams.size);
                 mesh.position.z = mesh.userData.originalZ + (Math.sin(Date.now() * speed * 0.001 + index * 2) * intensity * textParams.size * 0.5);
                 break;
                 
             case 'swap':
-                // Swap positions between pairs
-                const swapPartner = index % 2 === 0 ? index + 1 : index - 1;
+                // Find swap partner from the same word
+                const wordLength = textParams.text.length;
+                const copyIndex = Math.floor(index / wordLength);
+                const letterIndex = index % wordLength;
+                const swapPartner = copyIndex * wordLength + (letterIndex % 2 === 0 ? 
+                    Math.min(letterIndex + 1, wordLength - 1) : 
+                    letterIndex - 1);
+                
                 if (swapPartner < letterMeshes.length) {
                     const t = (Math.sin(Date.now() * speed * 0.001) + 1) / 2;
                     mesh.position.x = THREE.MathUtils.lerp(
@@ -393,8 +468,7 @@ function updateScrambleAnimation() {
                 break;
                 
             case 'circular':
-                // Circular motion around original position
-                const angle = Date.now() * speed * 0.001 + (index * (Math.PI * 2) / letterMeshes.length);
+                const angle = Date.now() * speed * 0.001 + (index * (Math.PI * 2) / textParams.text.length);
                 mesh.position.x = mesh.userData.originalX + Math.cos(angle) * intensity * textParams.size;
                 mesh.position.y = mesh.userData.originalY + Math.sin(angle) * intensity * textParams.size;
                 break;
@@ -402,105 +476,112 @@ function updateScrambleAnimation() {
     });
 }
 
+
+function cleanupLetterMeshes() {
+    letterMeshes.forEach(mesh => {
+        scene.remove(mesh);
+        mesh.geometry.dispose();
+        mesh.material.dispose();
+    });
+    letterMeshes = [];
+
+    
+    if (animationParams.multiTextEnabled) {
+        animationParams.copies.forEach(copy => {
+            if (copy.mesh) copy.mesh.visible = true;
+        });
+    } else if (textMesh) {
+        textMesh.visible = true;
+    }
+}
+
 function updateAnimation() {
     if (!textMesh && letterMeshes.length === 0) return;
     
-    if (animationParams.multiTextEnabled) {
-        // Handle multi-text animations
-        updateMultiTextAnimation();
-        
-        // Apply scale animation to all copies
-        if (animationParams.scaleEnabled) {
-            animationParams.currentScale += animationParams.scaleSpeed * animationParams.scaleDirection;
+    // Handle scramble initialization/cleanup regardless of multi-text mode
+    if (letterMeshes.length > 0 && !animationParams.scrambleEnabled) {
+        cleanupLetterMeshes();
+    } else if (animationParams.scrambleEnabled) {
+        updateScrambleAnimation();
+    }
+
+    // If we have letter meshes (scramble is active), animate those
+    if (letterMeshes.length > 0) {
+        // Apply rotations and scale to letter meshes
+        letterMeshes.forEach(mesh => {
+            if (animationParams.rotateXEnabled) {
+                mesh.rotation.x += animationParams.rotateX;
+            }
+            if (animationParams.rotateYEnabled) {
+                mesh.rotation.y += animationParams.rotateY;
+            }
+            if (animationParams.rotateZEnabled) {
+                mesh.rotation.z += animationParams.rotateZ;
+            }
+
+            if (animationParams.scaleEnabled) {
+                mesh.scale.set(
+                    animationParams.currentScale,
+                    animationParams.currentScale,
+                    animationParams.currentScale
+                );
+            }
+        });
+    } 
+    // Otherwise animate the whole text meshes
+    else if (animationParams.multiTextEnabled) {
+        animationParams.copies.forEach((copy, index) => {
+            if (!copy.mesh) return;
             
-            if (animationParams.currentScale >= animationParams.scaleMax) {
-                animationParams.scaleDirection = -1;
-                animationParams.currentScale = animationParams.scaleMax;
-            } else if (animationParams.currentScale <= animationParams.scaleMin) {
-                animationParams.scaleDirection = 1;
-                animationParams.currentScale = animationParams.scaleMin;
+            if (animationParams.rotateXEnabled) {
+                const rotationAmount = animationParams.rotateX;
+                copy.mesh.rotation.x += animationParams.rotateIndependently ? 
+                    rotationAmount * (1 + copy.rotationOffset.x) : 
+                    rotationAmount;
             }
             
-            animationParams.copies.forEach(copy => {
-                if (copy.mesh) {
-                    copy.mesh.scale.set(
-                        animationParams.currentScale,
-                        animationParams.currentScale,
-                        animationParams.currentScale
-                    );
-                }
-            });
-        }
-
-        // Apply scramble animation if enabled
-        if (animationParams.scrambleEnabled) {
-            animationParams.copies.forEach((copy, index) => {
-                if (!copy.mesh) return;
-                
-                const intensity = animationParams.scrambleIntensity || 1;
-                const speed = animationParams.scrambleSpeed || 0.5;
-                const time = Date.now() * speed * 0.001;
-                
-                switch(animationParams.scrambleMode) {
-                    case 'random':
-                        copy.mesh.position.x = copy.position.x + Math.sin(time + index) * intensity * textParams.size;
-                        copy.mesh.position.y = copy.position.y + Math.cos(time + index) * intensity * textParams.size;
-                        copy.mesh.position.z = copy.position.z + Math.sin(time * 2 + index) * intensity * textParams.size * 0.5;
-                        break;
-                    case 'swap':
-                        const swapPartner = index % 2 === 0 ? index + 1 : index - 1;
-                        if (swapPartner < animationParams.copies.length) {
-                            const t = (Math.sin(time) + 1) / 2;
-                            copy.mesh.position.x = THREE.MathUtils.lerp(
-                                copy.position.x,
-                                animationParams.copies[swapPartner].position.x,
-                                t
-                            );
-                        }
-                        break;
-                    case 'circular':
-                        const angle = time + (index * (Math.PI * 2) / animationParams.copies.length);
-                        copy.mesh.position.x = copy.position.x + Math.cos(angle) * intensity * textParams.size;
-                        copy.mesh.position.y = copy.position.y + Math.sin(angle) * intensity * textParams.size;
-                        break;
-                }
-            });
-        }
-        return;
-    }
-    // Handle scramble state changes
-    if (animationParams.scrambleEnabled && letterMeshes.length === 0) {
-        if (textMesh) {
-            updateScrambleAnimation();
-        }
-    } else if (!animationParams.scrambleEnabled && letterMeshes.length > 0) {
-        letterMeshes.forEach(mesh => {
-            scene.remove(mesh);
-            mesh.geometry.dispose();
-            mesh.material.dispose();
+            if (animationParams.rotateYEnabled) {
+                const rotationAmount = animationParams.rotateY;
+                copy.mesh.rotation.y += animationParams.rotateIndependently ? 
+                    rotationAmount * (1 + copy.rotationOffset.y) : 
+                    rotationAmount;
+            }
+            
+            if (animationParams.rotateZEnabled) {
+                const rotationAmount = animationParams.rotateZ;
+                copy.mesh.rotation.z += animationParams.rotateIndependently ? 
+                    rotationAmount * (1 + copy.rotationOffset.z) : 
+                    rotationAmount;
+            }
+            
+            if (animationParams.scaleEnabled) {
+                const scaleOffset = Math.sin(Date.now() * 0.003 + index * 0.5) * 0.2;
+                const scale = animationParams.currentScale + (animationParams.rotateIndependently ? scaleOffset : 0);
+                copy.mesh.scale.set(scale, scale, scale);
+            }
         });
-        letterMeshes = [];
-        createText();
-        return;
-    }
-
-    // Apply animations to either individual letters or single mesh
-    const meshesToAnimate = letterMeshes.length > 0 ? letterMeshes : [textMesh];
-    
-    // Handle rotations
-    meshesToAnimate.forEach(mesh => {
+    } else {
+        // Single text mesh animations
         if (animationParams.rotateXEnabled) {
-            mesh.rotation.x += animationParams.rotateX;
+            textMesh.rotation.x += animationParams.rotateX;
         }
         if (animationParams.rotateYEnabled) {
-            mesh.rotation.y += animationParams.rotateY;
+            textMesh.rotation.y += animationParams.rotateY;
         }
         if (animationParams.rotateZEnabled) {
-            mesh.rotation.z += animationParams.rotateZ;
+            textMesh.rotation.z += animationParams.rotateZ;
         }
-    });
 
-    // Handle scale/pulse animation
+        if (animationParams.scaleEnabled) {
+            textMesh.scale.set(
+                animationParams.currentScale,
+                animationParams.currentScale,
+                animationParams.currentScale
+            );
+        }
+    }
+
+    // Update scale values
     if (animationParams.scaleEnabled) {
         animationParams.currentScale += animationParams.scaleSpeed * animationParams.scaleDirection;
         
@@ -511,19 +592,6 @@ function updateAnimation() {
             animationParams.scaleDirection = 1;
             animationParams.currentScale = animationParams.scaleMin;
         }
-        
-        meshesToAnimate.forEach(mesh => {
-            mesh.scale.set(
-                animationParams.currentScale,
-                animationParams.currentScale,
-                animationParams.currentScale
-            );
-        });
-    }
-
-    // Handle scramble animation if enabled
-    if (animationParams.scrambleEnabled) {
-        updateScrambleAnimation();
     }
 }
 
