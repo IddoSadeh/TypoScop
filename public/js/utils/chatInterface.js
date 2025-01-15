@@ -1,7 +1,7 @@
 import { textParams } from '../parameters/textParams.js';
 import { materialParams } from '../parameters/materialParams.js';
 import { sceneParams } from '../parameters/sceneParams.js';
-import { createText, updateMaterial, updateSceneBackground } from './three.setup.js';
+import { createText, updateMaterial, updateSceneBackground, updateMultiTextCopies } from './three.setup.js';
 import { animationParams } from '../parameters/animationParams.js';
 
 export function setupChatInterface() {
@@ -56,8 +56,6 @@ function handleAPIResponse(result) {
         
         // Update static typography parameters
         Object.assign(textParams, {
-            text: result.response.text || textParams.text,
-            font: result.response.font || textParams.font,
             height: result.response.height ?? textParams.height
         });
 
@@ -117,11 +115,12 @@ function handleAPIResponse(result) {
 }
 
 function updateUIControls() {
+    updateMultiTextControls();
     updateStaticTypography();
     updateRotationControls();
     updateScaleControls();
     updateScrambleControls();
-    updateMultiTextControls();
+
 }
 
 function updateStaticTypography() {
@@ -270,4 +269,5 @@ function updateMultiTextControls() {
             valueDisplay.textContent = animationParams.spread;
         }
     }
+    updateMultiTextCopies()
 }
