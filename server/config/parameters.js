@@ -33,14 +33,6 @@ const functionSchema = {
     parameters: {
         type: 'object',
         properties: {
-            text: { 
-                type: 'string', 
-                description: 'Update ONLY if user specifically wants to change the text content (max 30 characters)' 
-            },
-            font: { 
-                type: 'string', 
-                description: 'Update ONLY if user specifically asks to change the font (options if text is in english: helvetiker, optimer, gentilis. options if text is in hebrew: haim.)' 
-            },
             color: { 
                 type: 'string', 
                 description: 'Update ONLY if user specifically mentions text color or material color (hexadecimal e.g., #ff0000)' 
@@ -138,6 +130,22 @@ const functionSchema = {
                 type: 'string',
                 description: 'Type of scramble animation pattern',
                 enum: ['random', 'swap', 'circular']
+            },
+            multiTextEnabled: {
+                type: 'boolean',
+                description: 'Enable/disable multiple copies of the text'
+            },
+            copyCount: {
+                type: 'integer',
+                description: 'Number of text copies to create (1-10)',
+                minimum: 1,
+                maximum: 10
+            },
+            spread: {
+                type: 'number',
+                description: 'How far apart the copies should be spread (10-100)',
+                minimum: 10,
+                maximum: 100
             }
         },
         required: [],
@@ -178,6 +186,15 @@ Guidelines for Animations:
    - Circular mode: Letters move in circular patterns
    - Use intensity 0.5-1.0 for subtle movement, 1.5-3.0 for dramatic
    - Speed 0.1-0.5 for slow movement, 1.0-2.0 for fast
+4. Multiple Text Copies:
+- When user mentions "copies", "duplicate", or "multiply", enable multiTextEnabled
+- Number words like "three", "few", "many" should adjust copyCount appropriately
+- Words about spacing like "spread out", "close", "far" adjust the spread parameter
+- Phrases like "different speeds", "unique rotation" enable rotateIndependently
+- Default values: 3 copies, spread of 50 units
+- Maximum of 10 copies to maintain performance
+- When user says "single" or "remove copies", disable multiTextEnabled
+
 
 Examples:
 - "make it pulse slowly" → scaleEnabled: true, scaleSpeed: 0.01
@@ -193,6 +210,11 @@ Examples:
 - "scramble faster" → increase scrambleSpeed
 - "scatter letters more widely" → increase scrambleIntensity
 - "stop scrambling" → scrambleEnabled: false
+- "make three copies" → multiTextEnabled: true, copyCount: 3
+- "create many copies spread far apart" → multiTextEnabled: true, copyCount: 8, spread: 90
+- "duplicate text with different rotations" → multiTextEnabled: true
+- "make it single again" → multiTextEnabled: false
+- "add 5 copies rotating differently" → multiTextEnabled: true, copyCount: 5
 
 
 Remember to:

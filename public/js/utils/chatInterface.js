@@ -97,6 +97,14 @@ function handleAPIResponse(result) {
             scrambleMode: result.response.scrambleMode || animationParams.scrambleMode
         });
 
+        // Update multi-text parameters
+        Object.assign(animationParams, {
+            multiTextEnabled: result.response.multiTextEnabled ?? animationParams.multiTextEnabled,
+            copyCount: result.response.copyCount ?? animationParams.copyCount,
+            spread: result.response.spread ?? animationParams.spread,
+            rotateIndependently: result.response.rotateIndependently ?? animationParams.rotateIndependently
+        });
+
         // Update UI
         updateUIControls();
 
@@ -113,6 +121,7 @@ function updateUIControls() {
     updateRotationControls();
     updateScaleControls();
     updateScrambleControls();
+    updateMultiTextControls();
 }
 
 function updateStaticTypography() {
@@ -234,5 +243,31 @@ function updateScrambleControls() {
     const modeSelect = document.getElementById('scramble-mode');
     if (modeSelect) {
         modeSelect.value = animationParams.scrambleMode;
+    }
+}
+
+function updateMultiTextControls() {
+    const multiTextToggle = document.getElementById('multi-text-toggle');
+    const copyCountSlider = document.getElementById('copy-count');
+    const spreadSlider = document.getElementById('copy-spread');
+    
+    if (multiTextToggle) {
+        multiTextToggle.checked = animationParams.multiTextEnabled;
+    }
+    
+    if (copyCountSlider) {
+        copyCountSlider.value = animationParams.copyCount;
+        const valueDisplay = document.getElementById('copy-count-value');
+        if (valueDisplay) {
+            valueDisplay.textContent = animationParams.copyCount;
+        }
+    }
+    
+    if (spreadSlider) {
+        spreadSlider.value = animationParams.spread;
+        const valueDisplay = document.getElementById('copy-spread-value');
+        if (valueDisplay) {
+            valueDisplay.textContent = animationParams.spread;
+        }
     }
 }
