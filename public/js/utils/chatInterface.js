@@ -53,6 +53,19 @@ function handleAPIResponse(result) {
         'No parameters were changed.';
         
         updateChatHistory('ai', message);
+
+         // Update tessellation parameters
+         Object.assign(materialParams, {
+            tessellationEnabled: result.response.tessellationEnabled ?? materialParams.tessellationEnabled,
+            tessellationSegments: result.response.tessellationSegments ?? materialParams.tessellationSegments,
+            tessellationHueStart: result.response.tessellationHueStart ?? materialParams.tessellationHueStart,
+            tessellationHueRange: result.response.tessellationHueRange ?? materialParams.tessellationHueRange,
+            tessellationSatStart: result.response.tessellationSatStart ?? materialParams.tessellationSatStart,
+            tessellationSatRange: result.response.tessellationSatRange ?? materialParams.tessellationSatRange,
+            tessellationLightStart: result.response.tessellationLightStart ?? materialParams.tessellationLightStart,
+            tessellationLightRange: result.response.tessellationLightRange ?? materialParams.tessellationLightRange,
+            tessellationPattern: result.response.tessellationPattern || materialParams.tessellationPattern
+        });
         
         // Update static typography parameters
         Object.assign(textParams, {
@@ -103,6 +116,7 @@ function handleAPIResponse(result) {
             rotateIndependently: result.response.rotateIndependently ?? animationParams.rotateIndependently
         });
 
+        updateTessellationControls();
         // Update UI
         updateUIControls();
 
@@ -270,4 +284,49 @@ function updateMultiTextControls() {
         }
     }
     updateMultiTextCopies()
+}
+
+function updateTessellationControls() {
+    // Update tessellation toggle
+    const tessellationToggle = document.getElementById('tessellation-toggle');
+    if (tessellationToggle) {
+        tessellationToggle.checked = materialParams.tessellationEnabled;
+    }
+
+    // Update tessellation segments
+    const tessellationDetail = document.getElementById('tessellation-detail');
+    if (tessellationDetail) {
+        tessellationDetail.value = materialParams.tessellationSegments;
+        const valueDisplay = tessellationDetail.nextElementSibling;
+        if (valueDisplay) {
+            valueDisplay.textContent = materialParams.tessellationSegments;
+        }
+    }
+
+    // Update color controls
+    const controls = {
+        'tess-hue-start': 'tessellationHueStart',
+        'tess-hue-range': 'tessellationHueRange',
+        'tess-sat-start': 'tessellationSatStart',
+        'tess-sat-range': 'tessellationSatRange',
+        'tess-light-start': 'tessellationLightStart',
+        'tess-light-range': 'tessellationLightRange'
+    };
+
+    for (const [elementId, paramName] of Object.entries(controls)) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.value = materialParams[paramName];
+            const valueDisplay = element.nextElementSibling;
+            if (valueDisplay) {
+                valueDisplay.textContent = materialParams[paramName].toFixed(2);
+            }
+        }
+    }
+
+    // Update pattern select
+    const tessPattern = document.getElementById('tess-pattern');
+    if (tessPattern) {
+        tessPattern.value = materialParams.tessellationPattern;
+    }
 }

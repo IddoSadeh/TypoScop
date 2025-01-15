@@ -24,7 +24,17 @@ const defaultState = {
     scaleEnabled: false,
     scaleSpeed: 0.02,
     scaleMin: 0.8,
-    scaleMax: 1.2
+    scaleMax: 1.2,
+
+    tessellationEnabled: false,
+    tessellationSegments: 8,
+    tessellationHueStart: 0,
+    tessellationHueRange: 0.2,
+    tessellationSatStart: 0.5,
+    tessellationSatRange: 0.5,
+    tessellationLightStart: 0.5,
+    tessellationLightRange: 0.3,
+    tessellationPattern: 'random'
 };
 
 const functionSchema = {
@@ -143,6 +153,58 @@ const functionSchema = {
                 description: 'How far apart the copies should be spread (10-100)',
                 minimum: 10,
                 maximum: 100
+            },
+              // Tessellation properties
+              tessellationEnabled: {
+                type: 'boolean',
+                description: 'Enable/disable tessellation effect'
+            },
+            tessellationSegments: {
+                type: 'integer',
+                description: 'Number of segments for tessellation (1-20)',
+                minimum: 1,
+                maximum: 20
+            },
+            tessellationHueStart: {
+                type: 'number',
+                description: 'Base hue for tessellation colors (0-1)',
+                minimum: 0,
+                maximum: 1
+            },
+            tessellationHueRange: {
+                type: 'number',
+                description: 'Range of hue variation (0-1)',
+                minimum: 0,
+                maximum: 1
+            },
+            tessellationSatStart: {
+                type: 'number',
+                description: 'Base saturation for tessellation colors (0-1)',
+                minimum: 0,
+                maximum: 1
+            },
+            tessellationSatRange: {
+                type: 'number',
+                description: 'Range of saturation variation (0-1)',
+                minimum: 0,
+                maximum: 1
+            },
+            tessellationLightStart: {
+                type: 'number',
+                description: 'Base lightness for tessellation colors (0-1)',
+                minimum: 0,
+                maximum: 1
+            },
+            tessellationLightRange: {
+                type: 'number',
+                description: 'Range of lightness variation (0-1)',
+                minimum: 0,
+                maximum: 1
+            },
+            tessellationPattern: {
+                type: 'string',
+                description: 'Pattern type for tessellation colors',
+                enum: ['random', 'gradient', 'waves']
             }
         },
         required: [],

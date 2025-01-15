@@ -2,6 +2,7 @@ import * as THREE from 'https://unpkg.com/three@0.152.0/build/three.module.js';
 import { FontLoader } from 'https://unpkg.com/three@0.152.0/examples/jsm/loaders/FontLoader.js';
 import { TextGeometry } from 'https://unpkg.com/three@0.152.0/examples/jsm/geometries/TextGeometry.js';
 import { OrbitControls } from 'https://unpkg.com/three@0.152.0/examples/jsm/controls/OrbitControls.js';
+import { TessellateModifier } from 'https://unpkg.com/three@0.152.0/examples/jsm/modifiers/TessellateModifier.js';
 
 import { textParams } from '../parameters/textParams.js';
 import { materialParams } from '../parameters/materialParams.js';
@@ -124,7 +125,96 @@ function updateFontDropdown(fontName) {
     }
 }
 
+function createMaterial(geometry) {
+    if (materialParams.tessellationEnabled) {
+        // Clone the geometry first
+        const tessellatedGeometry = geometry.clone();
+        
+        // Apply tessellation
+        const tessellateModifier = new TessellateModifier(materialParams.tessellationSegments, 6);
+        tessellateModifier.modify(tessellatedGeometry);
 
+        // Calculate number of faces
+        const numFaces = tessellatedGeometry.attributes.position.count / 3;
+        const colors = new Float32Array(numFaces * 3 * 3);
+        const color = new THREE.Color();
+        const baseColor = new THREE.Color(materialParams.color);
+
+        // Assign colors to each face based on pattern
+        for (let f = 0; f < numFaces; f++) {
+            const index = 9 * f;
+            let h, s, l;
+            
+            // Convert base color to HSL
+            const baseHSL = {};
+            baseColor.getHSL(baseHSL);
+
+            switch (materialParams.tessellationPattern) {
+                case 'gradient':
+                    const gradientProgress = f / numFaces;
+                    h = baseHSL.h + (materialParams.tessellationHueRange * gradientProgress);
+                    s = baseHSL.s + (materialParams.tessellationSatRange * gradientProgress);
+                    l = baseHSL.l + (materialParams.tessellationLightRange * gradientProgress);
+                    break;
+
+                case 'waves':
+                    const wave = Math.sin(f * 0.1);
+                    h = baseHSL.h + (materialParams.tessellationHueRange * wave * 0.5);
+                    s = baseHSL.s + (materialParams.tessellationSatRange * wave * 0.5);
+                    l = baseHSL.l + (materialParams.tessellationLightRange * wave * 0.5);
+                    break;
+
+                case 'random':
+                default:
+                    h = baseHSL.h + (Math.random() - 0.5) * materialParams.tessellationHueRange;
+                    s = baseHSL.s + (Math.random() - 0.5) * materialParams.tessellationSatRange;
+                    l = baseHSL.l + (Math.random() - 0.5) * materialParams.tessellationLightRange;
+                    break;
+            }
+
+            // Ensure values stay within 0-1 range
+            h = ((h % 1) + 1) % 1; // Handle negative values
+            s = Math.max(0, Math.min(1, s));
+            l = Math.max(0, Math.min(1, l));
+
+            color.setHSL(h, s, l);
+
+            // Apply to each vertex of the face
+            for (let i = 0; i < 3; i++) {
+                colors[index + (3 * i)] = color.r;
+                colors[index + (3 * i) + 1] = color.g;
+                colors[index + (3 * i) + 2] = color.b;
+            }
+        }
+
+        // Add color attribute to geometry
+        tessellatedGeometry.setAttribute('color', 
+            new THREE.BufferAttribute(colors, 3));
+
+        // Create material with vertex colors AND standard material properties
+        const material = new THREE.MeshStandardMaterial({
+            vertexColors: true,
+            metalness: materialParams.metalness,
+            roughness: materialParams.roughness,
+            flatShading: true
+        });
+
+        return {
+            geometry: tessellatedGeometry,
+            material: material
+        };
+    } else {
+        // Standard material
+        return {
+            geometry: geometry,
+            material: new THREE.MeshStandardMaterial({
+                color: new THREE.Color(materialParams.color),
+                metalness: materialParams.metalness,
+                roughness: materialParams.roughness
+            })
+        };
+    }
+}
 
 export function createText() {
     let text = textParams.text;
@@ -162,20 +252,22 @@ export function createText() {
                     bevelSegments: textParams.bevelSegments
                 });
 
-                const material = new THREE.MeshStandardMaterial({
-                    color: new THREE.Color(materialParams.color),
-                    metalness: materialParams.metalness,
-                    roughness: materialParams.roughness
-                });
-
+                // Create material using our new function
+                const materialObject = createMaterial(geometry);
+                            
+                // Clean up old mesh
                 if (textMesh) {
                     scene.remove(textMesh);
-                    geometry.dispose();
+                    textMesh.geometry.dispose();
                     textMesh.material.dispose();
                 }
-
-                textMesh = new THREE.Mesh(geometry, material);
                 
+                // Create new mesh with tessellated or standard material
+                textMesh = new THREE.Mesh(
+                    materialObject.geometry, 
+                    materialObject.material
+                );
+  
                 // Center the text
                 geometry.computeBoundingBox();
                 const centerOffset = -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x);
@@ -354,7 +446,6 @@ function updateScrambleAnimation() {
                 if (!copy.mesh) return;
                 
                 const textContent = textParams.text;
-                const material = copy.mesh.material.clone();
                 const letterSpacing = textParams.size * 0.6;
                 
                 // Hide the original mesh
@@ -377,7 +468,12 @@ function updateScrambleAnimation() {
                         bevelSegments: textParams.bevelSegments
                     });
 
-                    const letterMesh = new THREE.Mesh(geometry, material);
+                    // Use createMaterial function instead of basic material
+                    const materialObject = createMaterial(geometry);
+                    const letterMesh = new THREE.Mesh(
+                        materialObject.geometry,
+                        materialObject.material
+                    );
                     
                     // Set initial position
                     letterMesh.position.set(
@@ -390,7 +486,7 @@ function updateScrambleAnimation() {
                     letterMesh.userData.originalX = letterMesh.position.x;
                     letterMesh.userData.originalY = letterMesh.position.y;
                     letterMesh.userData.originalZ = letterMesh.position.z;
-                    letterMesh.userData.copyRef = copy; // Store reference to parent copy
+                    letterMesh.userData.copyRef = copy;
                     
                     scene.add(letterMesh);
                     letterMeshes.push(letterMesh);
@@ -399,7 +495,6 @@ function updateScrambleAnimation() {
         } else if (textMesh) {
             // Original single text scramble logic
             const textContent = textParams.text;
-            const material = textMesh.material.clone();
             const letterSpacing = textParams.size * 0.6;
             
             textMesh.visible = false;
@@ -419,7 +514,13 @@ function updateScrambleAnimation() {
                     bevelSegments: textParams.bevelSegments
                 });
 
-                const letterMesh = new THREE.Mesh(geometry, material);
+                // Use createMaterial function instead of basic material
+                const materialObject = createMaterial(geometry);
+                const letterMesh = new THREE.Mesh(
+                    materialObject.geometry,
+                    materialObject.material
+                );
+                
                 letterMesh.position.set(
                     startX + (index * letterSpacing),
                     0,
@@ -436,7 +537,7 @@ function updateScrambleAnimation() {
         }
     }
 
-    // Animate existing letter meshes
+    // Rest of the animation code remains the same...
     const intensity = animationParams.scrambleIntensity || 1;
     const speed = animationParams.scrambleSpeed || 0.5;
     
@@ -449,7 +550,6 @@ function updateScrambleAnimation() {
                 break;
                 
             case 'swap':
-                // Find swap partner from the same word
                 const wordLength = textParams.text.length;
                 const copyIndex = Math.floor(index / wordLength);
                 const letterIndex = index % wordLength;
@@ -480,12 +580,23 @@ function updateScrambleAnimation() {
 function cleanupLetterMeshes() {
     letterMeshes.forEach(mesh => {
         scene.remove(mesh);
-        mesh.geometry.dispose();
-        mesh.material.dispose();
+        if (mesh.geometry) {
+            mesh.geometry.dispose();
+        }
+        if (mesh.material) {
+            if (mesh.material.vertexColors) {
+                // Clean up vertex color attributes
+                const colorAttribute = mesh.geometry.getAttribute('color');
+                if (colorAttribute) {
+                    colorAttribute.array = null;
+                    mesh.geometry.deleteAttribute('color');
+                }
+            }
+            mesh.material.dispose();
+        }
     });
     letterMeshes = [];
 
-    
     if (animationParams.multiTextEnabled) {
         animationParams.copies.forEach(copy => {
             if (copy.mesh) copy.mesh.visible = true;
@@ -579,6 +690,7 @@ function updateAnimation() {
                 animationParams.currentScale
             );
         }
+        
     }
 
     // Update scale values
