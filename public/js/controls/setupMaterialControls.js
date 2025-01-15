@@ -1,6 +1,70 @@
 import { materialParams } from '../parameters/materialParams.js';
 import { createText, updateMaterial } from '../utils/three.setup.js';
 
+function setupTessellationAnimationControls() {
+    const animationToggle = document.getElementById('tessellation-animation-toggle');
+    const speedSlider = document.getElementById('tessellation-animation-speed');
+    const intensitySlider = document.getElementById('tessellation-animation-intensity');
+    const animationControls = document.getElementById('tessellation-animation-controls');
+    const animationInputs = animationControls?.querySelectorAll('input');
+
+    // Initialize animation controls state
+    const updateAnimationControlsState = (enabled) => {
+        if (animationControls) {
+            if (enabled) {
+                animationControls.classList.add('enabled');
+                animationInputs?.forEach(input => input.disabled = false);
+            } else {
+                animationControls.classList.remove('enabled');
+                animationInputs?.forEach(input => input.disabled = true);
+            }
+        }
+    };
+
+    // Set initial state
+    updateAnimationControlsState(materialParams.tessellationEnabled);
+
+    animationToggle?.addEventListener('change', (e) => {
+        materialParams.tessellationAnimationEnabled = e.target.checked;
+        // Reset animation values if being disabled
+        if (!e.target.checked && textMesh && textMesh.material.uniforms) {
+            textMesh.material.uniforms.amplitude.value = 0;
+        }
+    });
+
+    speedSlider?.addEventListener('input', (e) => {
+        materialParams.tessellationAnimationSpeed = parseFloat(e.target.value);
+        const valueDisplay = e.target.nextElementSibling;
+        if (valueDisplay) {
+            valueDisplay.textContent = materialParams.tessellationAnimationSpeed.toFixed(1);
+        }
+    });
+
+    intensitySlider?.addEventListener('input', (e) => {
+        materialParams.tessellationAnimationIntensity = parseFloat(e.target.value);
+        const valueDisplay = e.target.nextElementSibling;
+        if (valueDisplay) {
+            valueDisplay.textContent = materialParams.tessellationAnimationIntensity.toFixed(1);
+        }
+    });
+
+    // Update tessellation toggle to handle animation controls
+    const tessellationToggle = document.getElementById('tessellation-toggle');
+    tessellationToggle?.addEventListener('change', (e) => {
+        materialParams.tessellationEnabled = e.target.checked;
+        updateAnimationControlsState(e.target.checked);
+        
+        // Reset animation if tessellation is disabled
+        if (!e.target.checked) {
+            if (animationToggle) {
+                animationToggle.checked = false;
+                materialParams.tessellationAnimationEnabled = false;
+            }
+        }
+        createText();
+    });
+}
+
 export function setupMaterialControls() {
     const colorPicker = document.getElementById('color-picker');
     const metalnessSlider = document.getElementById('metalness-slider');
@@ -67,5 +131,5 @@ tessPattern?.addEventListener('change', (e) => {
         createText();
     }
 });
-
+setupTessellationAnimationControls();
 }

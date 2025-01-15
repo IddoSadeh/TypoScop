@@ -12,4 +12,7 @@ export const materialParams = {
     tessellationLightStart: 0.5,// 0-1 range
     tessellationLightRange: 0.3,// 0-1 range
     tessellationPattern: 'random', // 'random', 'gradient', 'waves'
+    tessellationAnimationEnabled: false,
+    tessellationAnimationSpeed: 0.5,
+    tessellationAnimationIntensity: 1.0
 };

@@ -125,86 +125,129 @@ function updateFontDropdown(fontName) {
     }
 }
 
-function createMaterial(geometry) {
-    if (materialParams.tessellationEnabled) {
-        // Clone the geometry first
-        const tessellatedGeometry = geometry.clone();
+
+// First, let's create shader constants at the top of the file
+const vertexShader = `
+    uniform float amplitude;
+    attribute vec3 customColor;
+    attribute vec3 displacement;
+    varying vec3 vNormal;
+    varying vec3 vColor;
+
+    void main() {
+        vNormal = normal;
+        vColor = customColor;
+        vec3 newPosition = position + normal * amplitude * displacement;
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
+    }
+`;
+
+const fragmentShader = `
+    uniform float metalness;
+    uniform float roughness;
+    varying vec3 vNormal;
+    varying vec3 vColor;
+
+    void main() {
+        const float ambient = 0.4;
+        vec3 light = vec3(1.0);
+        light = normalize(light);
+
+        float directional = max(dot(vNormal, light), 0.0);
+        float metallicFactor = 1.0 - roughness;
+        float specular = pow(directional, 10.0 * metallicFactor) * metalness;
         
-        // Apply tessellation
-        const tessellateModifier = new TessellateModifier(materialParams.tessellationSegments, 6);
-        tessellateModifier.modify(tessellatedGeometry);
+        vec3 finalColor = (directional + ambient + specular) * vColor;
+        gl_FragColor = vec4(finalColor, 1.0);
+    }
+`;
 
-        // Calculate number of faces
-        const numFaces = tessellatedGeometry.attributes.position.count / 3;
-        const colors = new Float32Array(numFaces * 3 * 3);
-        const color = new THREE.Color();
-        const baseColor = new THREE.Color(materialParams.color);
+function createTessellatedGeometry(geometry) {
+    const tessellatedGeometry = geometry.clone();
+    const tessellateModifier = new TessellateModifier(materialParams.tessellationSegments, 6);
+    tessellateModifier.modify(tessellatedGeometry);
 
-        // Assign colors to each face based on pattern
-        for (let f = 0; f < numFaces; f++) {
-            const index = 9 * f;
-            let h, s, l;
-            
-            // Convert base color to HSL
-            const baseHSL = {};
-            baseColor.getHSL(baseHSL);
+    // Calculate number of faces
+    const numFaces = tessellatedGeometry.attributes.position.count / 3;
+    const colors = new Float32Array(numFaces * 3 * 3);
+    const displacement = new Float32Array(numFaces * 3 * 3);
+    const color = new THREE.Color();
+    const baseColor = new THREE.Color(materialParams.color);
 
-            switch (materialParams.tessellationPattern) {
-                case 'gradient':
-                    const gradientProgress = f / numFaces;
-                    h = baseHSL.h + (materialParams.tessellationHueRange * gradientProgress);
-                    s = baseHSL.s + (materialParams.tessellationSatRange * gradientProgress);
-                    l = baseHSL.l + (materialParams.tessellationLightRange * gradientProgress);
-                    break;
+    // Assign colors and displacement to each face
+    for (let f = 0; f < numFaces; f++) {
+        const index = 9 * f;
+        let h, s, l;
+        
+        const baseHSL = {};
+        baseColor.getHSL(baseHSL);
 
-                case 'waves':
-                    const wave = Math.sin(f * 0.1);
-                    h = baseHSL.h + (materialParams.tessellationHueRange * wave * 0.5);
-                    s = baseHSL.s + (materialParams.tessellationSatRange * wave * 0.5);
-                    l = baseHSL.l + (materialParams.tessellationLightRange * wave * 0.5);
-                    break;
-
-                case 'random':
-                default:
-                    h = baseHSL.h + (Math.random() - 0.5) * materialParams.tessellationHueRange;
-                    s = baseHSL.s + (Math.random() - 0.5) * materialParams.tessellationSatRange;
-                    l = baseHSL.l + (Math.random() - 0.5) * materialParams.tessellationLightRange;
-                    break;
-            }
-
-            // Ensure values stay within 0-1 range
-            h = ((h % 1) + 1) % 1; // Handle negative values
-            s = Math.max(0, Math.min(1, s));
-            l = Math.max(0, Math.min(1, l));
-
-            color.setHSL(h, s, l);
-
-            // Apply to each vertex of the face
-            for (let i = 0; i < 3; i++) {
-                colors[index + (3 * i)] = color.r;
-                colors[index + (3 * i) + 1] = color.g;
-                colors[index + (3 * i) + 2] = color.b;
-            }
+        // Calculate color based on pattern
+        switch (materialParams.tessellationPattern) {
+            case 'gradient':
+                const gradientProgress = f / numFaces;
+                h = baseHSL.h + (materialParams.tessellationHueRange * gradientProgress);
+                s = baseHSL.s + (materialParams.tessellationSatRange * gradientProgress);
+                l = baseHSL.l + (materialParams.tessellationLightRange * gradientProgress);
+                break;
+            case 'waves':
+                const wave = Math.sin(f * 0.1);
+                h = baseHSL.h + (materialParams.tessellationHueRange * wave * 0.5);
+                s = baseHSL.s + (materialParams.tessellationSatRange * wave * 0.5);
+                l = baseHSL.l + (materialParams.tessellationLightRange * wave * 0.5);
+                break;
+            default: // random
+                h = baseHSL.h + (Math.random() - 0.5) * materialParams.tessellationHueRange;
+                s = baseHSL.s + (Math.random() - 0.5) * materialParams.tessellationSatRange;
+                l = baseHSL.l + (Math.random() - 0.5) * materialParams.tessellationLightRange;
+                break;
         }
 
-        // Add color attribute to geometry
-        tessellatedGeometry.setAttribute('color', 
-            new THREE.BufferAttribute(colors, 3));
+        h = ((h % 1) + 1) % 1;
+        s = Math.max(0, Math.min(1, s));
+        l = Math.max(0, Math.min(1, l));
 
-        // Create material with vertex colors AND standard material properties
-        const material = new THREE.MeshStandardMaterial({
-            vertexColors: true,
-            metalness: materialParams.metalness,
-            roughness: materialParams.roughness,
-            flatShading: true
-        });
+        color.setHSL(h, s, l);
+        const d = 10 * (0.5 - Math.random());
 
+        for (let i = 0; i < 3; i++) {
+            colors[index + (3 * i)] = color.r;
+            colors[index + (3 * i) + 1] = color.g;
+            colors[index + (3 * i) + 2] = color.b;
+
+            displacement[index + (3 * i)] = d;
+            displacement[index + (3 * i) + 1] = d;
+            displacement[index + (3 * i) + 2] = d;
+        }
+    }
+
+    tessellatedGeometry.setAttribute('customColor', new THREE.BufferAttribute(colors, 3));
+    tessellatedGeometry.setAttribute('displacement', new THREE.BufferAttribute(displacement, 3));
+
+    return tessellatedGeometry;
+}
+
+function createShaderMaterial() {
+    return new THREE.ShaderMaterial({
+        uniforms: {
+            amplitude: { value: 0.0 },
+            metalness: { value: materialParams.metalness },
+            roughness: { value: materialParams.roughness }
+        },
+        vertexShader,
+        fragmentShader,
+        wireframe: false
+    });
+}
+
+function createMaterial(geometry) {
+    if (materialParams.tessellationEnabled) {
+        const tessellatedGeometry = createTessellatedGeometry(geometry);
         return {
             geometry: tessellatedGeometry,
-            material: material
+            material: createShaderMaterial()
         };
     } else {
-        // Standard material
         return {
             geometry: geometry,
             material: new THREE.MeshStandardMaterial({
@@ -296,10 +339,50 @@ export function createText() {
 }
 
 export function updateMaterial() {
-    if (textMesh && textMesh.material) {
-        textMesh.material.color.set(materialParams.color);
-        textMesh.material.metalness = materialParams.metalness;
-        textMesh.material.roughness = materialParams.roughness;
+    if (textMesh) {
+        if (materialParams.tessellationEnabled) {
+            // For tessellated material, we need to recreate the geometry with new colors
+            const materialObject = createMaterial(textMesh.geometry.clone());
+            
+            // Clean up old geometry
+            if (textMesh.geometry) {
+                textMesh.geometry.dispose();
+            }
+            
+            // Update mesh with new geometry and material
+            textMesh.geometry = materialObject.geometry;
+            textMesh.material.dispose();
+            textMesh.material = materialObject.material;
+            
+            // If we have copies, update them too
+            if (animationParams.multiTextEnabled && animationParams.copies) {
+                animationParams.copies.forEach(copy => {
+                    if (copy.mesh && copy.mesh !== textMesh) {
+                        const copyMaterialObject = createMaterial(textMesh.geometry.clone());
+                        copy.mesh.geometry.dispose();
+                        copy.mesh.material.dispose();
+                        copy.mesh.geometry = copyMaterialObject.geometry;
+                        copy.mesh.material = copyMaterialObject.material;
+                    }
+                });
+            }
+            
+            // If we have letter meshes, update them too
+            if (letterMeshes.length > 0) {
+                letterMeshes.forEach(mesh => {
+                    const letterMaterialObject = createMaterial(mesh.geometry.clone());
+                    mesh.geometry.dispose();
+                    mesh.material.dispose();
+                    mesh.geometry = letterMaterialObject.geometry;
+                    mesh.material = letterMaterialObject.material;
+                });
+            }
+        } else {
+            // Standard material update
+            textMesh.material.color.set(materialParams.color);
+            textMesh.material.metalness = materialParams.metalness;
+            textMesh.material.roughness = materialParams.roughness;
+        }
     }
 }
 
@@ -709,7 +792,40 @@ function updateAnimation() {
 
 function animate() {
     requestAnimationFrame(animate);
-    updateAnimation();  // Add this line
+
+    // Update all tessellated meshes
+    const updateMeshAmplitude = (mesh) => {
+        if (mesh && mesh.material.type === 'ShaderMaterial' && mesh.material.uniforms) {
+            if (materialParams.tessellationAnimationEnabled) {
+                const time = Date.now() * 0.001 * materialParams.tessellationAnimationSpeed;
+                mesh.material.uniforms.amplitude.value = 
+                    materialParams.tessellationAnimationIntensity * Math.sin(time);
+            } else {
+                mesh.material.uniforms.amplitude.value = 0;
+            }
+            
+            // Always update material properties
+            mesh.material.uniforms.metalness.value = materialParams.metalness;
+            mesh.material.uniforms.roughness.value = materialParams.roughness;
+        }
+    };
+
+    // Update main mesh
+    if (materialParams.tessellationEnabled) {
+        updateMeshAmplitude(textMesh);
+    }
+
+    // Update copies if they exist
+    if (animationParams.multiTextEnabled && animationParams.copies) {
+        animationParams.copies.forEach(copy => updateMeshAmplitude(copy.mesh));
+    }
+
+    // Update letter meshes if they exist
+    if (letterMeshes.length > 0) {
+        letterMeshes.forEach(mesh => updateMeshAmplitude(mesh));
+    }
+
+    updateAnimation();
     controls.update();
     renderer.render(scene, camera);
 }

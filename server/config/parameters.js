@@ -163,7 +163,7 @@ const functionSchema = {
                 type: 'integer',
                 description: 'Number of segments for tessellation (1-20)',
                 minimum: 1,
-                maximum: 20
+                maximum: 50
             },
             tessellationHueStart: {
                 type: 'number',
@@ -205,6 +205,22 @@ const functionSchema = {
                 type: 'string',
                 description: 'Pattern type for tessellation colors',
                 enum: ['random', 'gradient', 'waves']
+            },
+            tessellationAnimationEnabled: {
+                type: 'boolean',
+                description: 'Enable/disable tessellation animation'
+            },
+            tessellationAnimationSpeed: {
+                type: 'number',
+                description: 'Speed of tessellation animation (0.1-2.0)',
+                minimum: 0.1,
+                maximum: 2.0
+            },
+            tessellationAnimationIntensity: {
+                type: 'number',
+                description: 'Intensity of tessellation animation (0.1-3.0)',
+                minimum: 0.1,
+                maximum: 3.0
             }
         },
         required: [],

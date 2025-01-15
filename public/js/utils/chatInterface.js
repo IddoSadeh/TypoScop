@@ -64,7 +64,11 @@ function handleAPIResponse(result) {
             tessellationSatRange: result.response.tessellationSatRange ?? materialParams.tessellationSatRange,
             tessellationLightStart: result.response.tessellationLightStart ?? materialParams.tessellationLightStart,
             tessellationLightRange: result.response.tessellationLightRange ?? materialParams.tessellationLightRange,
-            tessellationPattern: result.response.tessellationPattern || materialParams.tessellationPattern
+            tessellationPattern: result.response.tessellationPattern || materialParams.tessellationPattern,
+            tessellationAnimationEnabled: result.response.tessellationAnimationEnabled ?? materialParams.tessellationAnimationEnabled,
+            tessellationAnimationSpeed: result.response.tessellationAnimationSpeed ?? materialParams.tessellationAnimationSpeed,
+            tessellationAnimationIntensity: result.response.tessellationAnimationIntensity ?? materialParams.tessellationAnimationIntensity
+        
         });
         
         // Update static typography parameters
@@ -289,8 +293,28 @@ function updateMultiTextControls() {
 function updateTessellationControls() {
     // Update tessellation toggle
     const tessellationToggle = document.getElementById('tessellation-toggle');
+    const animationControls = document.getElementById('tessellation-animation-controls');
+    const animationInputs = animationControls?.querySelectorAll('input');
+
     if (tessellationToggle) {
         tessellationToggle.checked = materialParams.tessellationEnabled;
+        
+        // Update animation controls state
+        if (animationControls) {
+            if (materialParams.tessellationEnabled) {
+                animationControls.classList.add('enabled');
+                animationInputs?.forEach(input => input.disabled = false);
+            } else {
+                animationControls.classList.remove('enabled');
+                animationInputs?.forEach(input => input.disabled = true);
+            }
+        }
+    }
+
+    // Update tessellation animation toggle
+    const tessellationAnimationToggle = document.getElementById('tessellation-animation-toggle');
+    if (tessellationAnimationToggle) {
+        tessellationAnimationToggle.checked = materialParams.tessellationAnimationEnabled;
     }
 
     // Update tessellation segments
@@ -303,14 +327,16 @@ function updateTessellationControls() {
         }
     }
 
-    // Update color controls
+    // Update all tessellation controls
     const controls = {
         'tess-hue-start': 'tessellationHueStart',
         'tess-hue-range': 'tessellationHueRange',
         'tess-sat-start': 'tessellationSatStart',
         'tess-sat-range': 'tessellationSatRange',
         'tess-light-start': 'tessellationLightStart',
-        'tess-light-range': 'tessellationLightRange'
+        'tess-light-range': 'tessellationLightRange',
+        'tessellation-animation-speed': 'tessellationAnimationSpeed',
+        'tessellation-animation-intensity': 'tessellationAnimationIntensity'
     };
 
     for (const [elementId, paramName] of Object.entries(controls)) {
