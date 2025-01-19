@@ -116,13 +116,13 @@
 
 .collapsible-content {
   max-height: 0;
-  overflow: hidden;
+  overflow: auto;
   transition: max-height 0.3s ease-out;
   padding: 0 1rem;
 }
 
 .collapsible-content.show {
-  max-height: none;
+  max-height: fit-content;
   padding: 1rem;
 }
 
@@ -204,3 +204,4 @@ select {
     height: 300px;
   }
 }
+

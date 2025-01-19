@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,18 +14,18 @@
         }
     }
     </script>
-    
-<style>
-  .disabled-controls {
+
+  <style>
+    .disabled-controls {
       opacity: 0.5;
       pointer-events: none;
       transition: opacity 0.3s ease;
-  }
-  
-  .disabled-controls.enabled {
+    }
+
+    .disabled-controls.enabled {
       opacity: 1;
       pointer-events: auto;
-  }
+    }
   </style>
 </head>
 
@@ -54,7 +55,7 @@
               <input type="text" id="ai-text-input" placeholder="Enter Text" value="Hello World">
               <button class="send-text-btn">
                 <svg viewBox="0 0 24 24" width="24" height="24">
-                  <path fill="currentColor" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                  <path fill="currentColor" d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
                 </svg>
               </button>
             </div>
@@ -71,15 +72,13 @@
 
         <!-- Chat Interface Section -->
         <h3>AI Chat Assistant</h3>
-         
-            <div id="chat-box" class="chat-box"></div>
-            <div class="chat-input">
-              <input id="promptInput" 
-                    type="text" 
-                    placeholder="Describe how to customize the scene..." 
-                    aria-label="Chat input">
-              <button id="send" aria-label="Send message">Send</button>
-            </div>
+
+        <div id="chat-box" class="chat-box"></div>
+        <div class="chat-input">
+          <input id="promptInput" type="text" placeholder="Describe how to customize the scene..."
+            aria-label="Chat input">
+          <button id="send" aria-label="Send message">Send</button>
+        </div>
 
       </section>
 
@@ -87,121 +86,26 @@
       <section class="tab-content" id="manual-tab">
 
         <!-- Basic Material Controls -->
-      <div class="control-section">
-        <button class="collapsible active">Material</button>
-        <div class="collapsible-content show">
+        <div class="control-section">
+          <button class="collapsible active">Material</button>
+          <div class="collapsible-content show">
             <!-- Standard Material Controls -->
             <div class="color-group">
-                <label for="color-picker">Color</label>
-                <input type="color" id="color-picker" value="#ffffff">
+              <label for="color-picker">Color</label>
+              <input type="color" id="color-picker" value="#ffffff">
             </div>
             <div class="slider-group">
-                <label for="metalness-slider">Metalness</label>
-                <input id="metalness-slider" type="range" min="0" max="1" step="0.1" value="0">
-                <span class="value-display">0</span>
+              <label for="metalness-slider">Metalness</label>
+              <input id="metalness-slider" type="range" min="0" max="1" step="0.1" value="0">
+              <span class="value-display">0</span>
             </div>
             <div class="slider-group">
-                <label for="roughness-slider">Roughness</label>
-                <input id="roughness-slider" type="range" min="0" max="1" step="0.1" value="0.5">
-                <span class="value-display">0.5</span>
+              <label for="roughness-slider">Roughness</label>
+              <input id="roughness-slider" type="range" min="0" max="1" step="0.1" value="0.5">
+              <span class="value-display">0.5</span>
             </div>
+          </div>
         </div>
-      </div>
-      <!-- Tessellation Controls -->
-<div class="control-section">
-  <button class="collapsible">Tessellation</button>
-  <div class="collapsible-content">
-      <div class="toggle-group">
-          <label for="tessellation-toggle">Enable Tessellation</label>
-          <input type="checkbox" id="tessellation-toggle">
-      </div>
-      
-      <div class="slider-group">
-          <label for="tessellation-detail">Segments</label>
-          <input type="range" id="tessellation-detail" 
-                 min="1" max="50" step="1" value="8">
-          <span class="value-display">8</span>
-      </div>
-
-      <!-- Color Controls -->
-      <div class="slider-group">
-          <label for="tess-hue-start">Base Hue</label>
-          <input type="range" id="tess-hue-start" 
-                 min="0" max="1" step="0.01" value="0">
-          <span class="value-display">0</span>
-      </div>
-
-      <div class="slider-group">
-          <label for="tess-hue-range">Hue Variation</label>
-          <input type="range" id="tess-hue-range" 
-                 min="0" max="1" step="0.01" value="0.2">
-          <span class="value-display">0.2</span>
-      </div>
-
-      <div class="slider-group">
-          <label for="tess-sat-start">Base Saturation</label>
-          <input type="range" id="tess-sat-start" 
-                 min="0" max="1" step="0.01" value="0.5">
-          <span class="value-display">0.5</span>
-      </div>
-
-      <div class="slider-group">
-          <label for="tess-sat-range">Saturation Variation</label>
-          <input type="range" id="tess-sat-range" 
-                 min="0" max="1" step="0.01" value="0.5">
-          <span class="value-display">0.5</span>
-      </div>
-
-      <div class="slider-group">
-          <label for="tess-light-start">Base Lightness</label>
-          <input type="range" id="tess-light-start" 
-                 min="0" max="1" step="0.01" value="0.5">
-          <span class="value-display">0.5</span>
-      </div>
-
-      <div class="slider-group">
-          <label for="tess-light-range">Lightness Variation</label>
-          <input type="range" id="tess-light-range" 
-                 min="0" max="1" step="0.01" value="0.3">
-          <span class="value-display">0.3</span>
-      </div>
-
-      <div class="select-group">
-          <label for="tess-pattern">Color Pattern</label>
-          <select id="tess-pattern">
-              <option value="random">Random</option>
-              <option value="gradient">Gradient</option>
-              <option value="waves">Waves</option>
-          </select>
-      </div>
-  </div>
-</div>
-
-<div id="tessellation-animation-controls" class="disabled-controls">
-<div class="control-section">
-  <button class="collapsible">Tessellation Animation</button>
-  <div class="collapsible-content">
-      <div class="toggle-group">
-          <label for="tessellation-animation-toggle">Enable Animation</label>
-          <input type="checkbox" id="tessellation-animation-toggle">
-      </div>
-      
-      <div class="slider-group">
-          <label for="tessellation-animation-speed">Animation Speed</label>
-          <input type="range" id="tessellation-animation-speed" 
-                 min="0.1" max="2.0" step="0.1" value="0.5">
-          <span class="value-display">0.5</span>
-      </div>
-
-      <div class="slider-group">
-          <label for="tessellation-animation-intensity">Animation Intensity</label>
-          <input type="range" id="tessellation-animation-intensity" 
-                 min="0.1" max="3.0" step="0.1" value="1.0">
-          <span class="value-display">1.0</span>
-      </div>
-  </div>
-</div>
-</div>
 
         <!-- Background -->
         <div class="control-section">
@@ -214,131 +118,219 @@
           </div>
         </div>
 
-
-<!-- Animation controls section for manual-tab -->
-
 <div class="control-section">
-  <button class="collapsible">Animation</button>
+  <button class="collapsible">Manipulation</button>
   <div class="collapsible-content">
-      <div class="rotation-control-group">
-          <div class="axis-control">
-              <div class="axis-header">
-                  <label>X Rotation</label>
-                  <input type="checkbox" id="rotate-x-toggle" class="axis-toggle">
-              </div>
-              <div class="slider-group">
-                  <input id="rotate-x" type="range" min="-0.1" max="0.1" step="0.001" value="0">
-                  <span id="rotate-x-value" class="value-display">0</span>
-              </div>
-          </div>
-
-          <div class="axis-control">
-              <div class="axis-header">
-                  <label>Y Rotation</label>
-                  <input type="checkbox" id="rotate-y-toggle" class="axis-toggle">
-              </div>
-              <div class="slider-group">
-                  <input id="rotate-y" type="range" min="-0.1" max="0.1" step="0.001" value="0">
-                  <span id="rotate-y-value" class="value-display">0</span>
-              </div>
-          </div>
-
-          <div class="axis-control">
-              <div class="axis-header">
-                  <label>Z Rotation</label>
-                  <input type="checkbox" id="rotate-z-toggle" class="axis-toggle">
-              </div>
-              <div class="slider-group">
-                  <input id="rotate-z" type="range" min="-0.1" max="0.1" step="0.001" value="0">
-                  <span id="rotate-z-value" class="value-display">0</span>
-              </div>
-          </div>
+    <!-- Manipulation Type Toggles -->
+    <div class="toggle-group">
+      <div class="checkbox-group">
+        <input type="checkbox" id="wireframe-toggle">
+        <label for="wireframe-toggle">Wireframe</label>
       </div>
-            <!-- Scale/Pulse Animation Controls -->
-            <div class="axis-control">
-              <div class="axis-header">
-                  <label>Scale/Pulse</label>
-                  <input type="checkbox" id="scale-toggle" class="axis-toggle">
-              </div>
-              <div class="slider-group">
-                  <label for="scale-speed">Speed</label>
-                  <input id="scale-speed" type="range" min="0.01" max="0.1" step="0.01" value="0.02">
-                  <span id="scale-speed-value" class="value-display">0.02</span>
-              </div>
-              <div class="slider-group">
-                  <label for="scale-min">Min Scale</label>
-                  <input id="scale-min" type="range" min="0.5" max="1" step="0.1" value="0.8">
-                  <span id="scale-min-value" class="value-display">0.8</span>
-              </div>
-              <div class="slider-group">
-                  <label for="scale-max">Max Scale</label>
-                  <input id="scale-max" type="range" min="1" max="2" step="0.1" value="1.2">
-                  <span id="scale-max-value" class="value-display">1.2</span>
-              </div>
-          </div>
+      <div class="checkbox-group">
+        <input type="checkbox" id="tessellation-toggle">
+        <label for="tessellation-toggle">Tessellation</label>
+      </div>
+      
+    </div>
 
-          <!-- Scramble Animation Controls -->
-<div class="axis-control">
-  <div class="axis-header">
-      <label>Letter Scramble</label>
-      <input type="checkbox" id="scramble-toggle" class="axis-toggle">
-  </div>
-  <div class="slider-group">
-      <label for="scramble-speed">Speed</label>
-      <input id="scramble-speed" type="range" min="0.1" max="2" step="0.1" value="0.5">
-      <span id="scramble-speed-value" class="value-display">0.5</span>
-  </div>
-  <div class="slider-group">
-      <label for="scramble-intensity">Intensity</label>
-      <input id="scramble-intensity" type="range" min="0.1" max="3" step="0.1" value="1.0">
-      <span id="scramble-intensity-value" class="value-display">1.0</span>
-  </div>
-  <div class="select-group">
-      <label for="scramble-mode">Mode</label>
-      <select id="scramble-mode">
-          <option value="random">Random</option>
-          <option value="swap">Swap Pairs</option>
-          <option value="circular">Circular</option>
-      </select>
-  </div>
-</div>
+    <!-- Tessellation Segments (only visible when tessellation is active) -->
+    <div id="tessellation-segments" class="slider-group" style="display: none;">
+      <label for="tessellation-detail">Segments</label>
+      <input type="range" id="tessellation-detail" min="1" max="50" step="1" value="8">
+      <span class="value-display">8</span>
+    </div>
 
-<!-- Multiple text animation controls -->
-<div class="axis-control">
-  <div class="axis-header">
-      <label>Multiple Text Copies</label>
-      <input type="checkbox" id="multi-text-toggle" class="axis-toggle">
-  </div>
-  
-  <div class="slider-group">
-      <label for="copy-count">Number of Copies</label>
-      <input id="copy-count" 
-             type="range" 
-             min="1" 
-             max="10" 
-             step="1" 
-             value="3">
-      <span id="copy-count-value" class="value-display">3</span>
-  </div>
-  
-  <div class="slider-group">
-      <label for="copy-spread">Spread Distance</label>
-      <input id="copy-spread" 
-             type="range" 
-             min="10" 
-             max="100" 
-             step="5" 
-             value="50">
-      <span id="copy-spread-value" class="value-display">50</span>
-  </div>
-  
+    <!-- Animation Controls -->
+    <div id="manipulation-animation-controls" class="disabled-controls">
+      <div class="toggle-group">
+        <label for="manipulation-animation-toggle">Enable Animation</label>
+        <input type="checkbox" id="manipulation-animation-toggle">
+      </div>
 
-</div>
+      <div class="slider-group">
+        <label for="manipulation-animation-speed">Animation Speed</label>
+        <input type="range" id="manipulation-animation-speed" min="0.1" max="2.0" step="0.1" value="0.5">
+        <span class="value-display">0.5</span>
+      </div>
+
+      <div class="slider-group">
+        <label for="manipulation-animation-intensity">Animation Intensity</label>
+        <input type="range" id="manipulation-animation-intensity" min="0.1" max="3.0" step="0.1" value="1.0">
+        <span class="value-display">1.0</span>
       </div>
     </div>
   </div>
-  
 </div>
+
+        <!-- Color Pattern Controls (dependent on manipulation) -->
+        <div id="color-pattern-section" class="control-section disabled-controls">
+          <button class="collapsible">Manipulation Color Pattern</button>
+          <div class="collapsible-content">
+            <div class="slider-group">
+              <label for="color-hue-start">Base Hue</label>
+              <input type="range" id="color-hue-start" min="0" max="1" step="0.01" value="0">
+              <span class="value-display">0</span>
+            </div>
+
+            <div class="slider-group">
+              <label for="color-hue-range">Hue Variation</label>
+              <input type="range" id="color-hue-range" min="0" max="1" step="0.01" value="0.2">
+              <span class="value-display">0.2</span>
+            </div>
+
+            <div class="slider-group">
+              <label for="color-sat-start">Base Saturation</label>
+              <input type="range" id="color-sat-start" min="0" max="1" step="0.01" value="0.5">
+              <span class="value-display">0.5</span>
+            </div>
+
+            <div class="slider-group">
+              <label for="color-sat-range">Saturation Variation</label>
+              <input type="range" id="color-sat-range" min="0" max="1" step="0.01" value="0.5">
+              <span class="value-display">0.5</span>
+            </div>
+
+            <div class="slider-group">
+              <label for="color-light-start">Base Lightness</label>
+              <input type="range" id="color-light-start" min="0" max="1" step="0.01" value="0.5">
+              <span class="value-display">0.5</span>
+            </div>
+
+            <div class="slider-group">
+              <label for="color-light-range">Lightness Variation</label>
+              <input type="range" id="color-light-range" min="0" max="1" step="0.01" value="0.3">
+              <span class="value-display">0.3</span>
+            </div>
+
+            <div class="select-group">
+              <label for="color-pattern">Pattern Type</label>
+              <select id="color-pattern">
+                <option value="random">Random</option>
+                <option value="gradient">Gradient</option>
+                <option value="waves">Waves</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+
+
+
+        <!-- Animation controls section for manual-tab -->
+
+        <div class="control-section">
+          <button class="collapsible">Animation</button>
+          <div class="collapsible-content">
+            <div class="rotation-control-group">
+              <div class="axis-control">
+                <div class="axis-header">
+                  <label>X Rotation</label>
+                  <input type="checkbox" id="rotate-x-toggle" class="axis-toggle">
+                </div>
+                <div class="slider-group">
+                  <input id="rotate-x" type="range" min="-0.1" max="0.1" step="0.001" value="0">
+                  <span id="rotate-x-value" class="value-display">0</span>
+                </div>
+              </div>
+
+              <div class="axis-control">
+                <div class="axis-header">
+                  <label>Y Rotation</label>
+                  <input type="checkbox" id="rotate-y-toggle" class="axis-toggle">
+                </div>
+                <div class="slider-group">
+                  <input id="rotate-y" type="range" min="-0.1" max="0.1" step="0.001" value="0">
+                  <span id="rotate-y-value" class="value-display">0</span>
+                </div>
+              </div>
+
+              <div class="axis-control">
+                <div class="axis-header">
+                  <label>Z Rotation</label>
+                  <input type="checkbox" id="rotate-z-toggle" class="axis-toggle">
+                </div>
+                <div class="slider-group">
+                  <input id="rotate-z" type="range" min="-0.1" max="0.1" step="0.001" value="0">
+                  <span id="rotate-z-value" class="value-display">0</span>
+                </div>
+              </div>
+            </div>
+            <!-- Scale/Pulse Animation Controls -->
+            <div class="axis-control">
+              <div class="axis-header">
+                <label>Scale/Pulse</label>
+                <input type="checkbox" id="scale-toggle" class="axis-toggle">
+              </div>
+              <div class="slider-group">
+                <label for="scale-speed">Speed</label>
+                <input id="scale-speed" type="range" min="0.01" max="0.1" step="0.01" value="0.02">
+                <span id="scale-speed-value" class="value-display">0.02</span>
+              </div>
+              <div class="slider-group">
+                <label for="scale-min">Min Scale</label>
+                <input id="scale-min" type="range" min="0.5" max="1" step="0.1" value="0.8">
+                <span id="scale-min-value" class="value-display">0.8</span>
+              </div>
+              <div class="slider-group">
+                <label for="scale-max">Max Scale</label>
+                <input id="scale-max" type="range" min="1" max="2" step="0.1" value="1.2">
+                <span id="scale-max-value" class="value-display">1.2</span>
+              </div>
+            </div>
+
+            <!-- Scramble Animation Controls -->
+            <div class="axis-control">
+              <div class="axis-header">
+                <label>Letter Scramble</label>
+                <input type="checkbox" id="scramble-toggle" class="axis-toggle">
+              </div>
+              <div class="slider-group">
+                <label for="scramble-speed">Speed</label>
+                <input id="scramble-speed" type="range" min="0.1" max="2" step="0.1" value="0.5">
+                <span id="scramble-speed-value" class="value-display">0.5</span>
+              </div>
+              <div class="slider-group">
+                <label for="scramble-intensity">Intensity</label>
+                <input id="scramble-intensity" type="range" min="0.1" max="3" step="0.1" value="1.0">
+                <span id="scramble-intensity-value" class="value-display">1.0</span>
+              </div>
+              <div class="select-group">
+                <label for="scramble-mode">Mode</label>
+                <select id="scramble-mode">
+                  <option value="random">Random</option>
+                  <option value="swap">Swap Pairs</option>
+                  <option value="circular">Circular</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Multiple text animation controls -->
+            <div class="axis-control">
+              <div class="axis-header">
+                <label>Multiple Text Copies</label>
+                <input type="checkbox" id="multi-text-toggle" class="axis-toggle">
+              </div>
+
+              <div class="slider-group">
+                <label for="copy-count">Number of Copies</label>
+                <input id="copy-count" type="range" min="1" max="10" step="1" value="3">
+                <span id="copy-count-value" class="value-display">3</span>
+              </div>
+
+              <div class="slider-group">
+                <label for="copy-spread">Spread Distance</label>
+                <input id="copy-spread" type="range" min="10" max="100" step="5" value="50">
+                <span id="copy-spread-value" class="value-display">50</span>
+              </div>
+
+
+            </div>
+          </div>
+        </div>
+        </div>
+
+        </div>
 
       </section>
     </aside>
@@ -350,4 +342,5 @@
 
   <script type="module" src="/js/main.js"></script>
 </body>
+
 </html>

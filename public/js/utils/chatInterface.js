@@ -54,23 +54,32 @@ function handleAPIResponse(result) {
         
         updateChatHistory('ai', message);
 
-         // Update tessellation parameters
-         Object.assign(materialParams, {
-            tessellationEnabled: result.response.tessellationEnabled ?? materialParams.tessellationEnabled,
-            tessellationSegments: result.response.tessellationSegments ?? materialParams.tessellationSegments,
-            tessellationHueStart: result.response.tessellationHueStart ?? materialParams.tessellationHueStart,
-            tessellationHueRange: result.response.tessellationHueRange ?? materialParams.tessellationHueRange,
-            tessellationSatStart: result.response.tessellationSatStart ?? materialParams.tessellationSatStart,
-            tessellationSatRange: result.response.tessellationSatRange ?? materialParams.tessellationSatRange,
-            tessellationLightStart: result.response.tessellationLightStart ?? materialParams.tessellationLightStart,
-            tessellationLightRange: result.response.tessellationLightRange ?? materialParams.tessellationLightRange,
-            tessellationPattern: result.response.tessellationPattern || materialParams.tessellationPattern,
-            tessellationAnimationEnabled: result.response.tessellationAnimationEnabled ?? materialParams.tessellationAnimationEnabled,
-            tessellationAnimationSpeed: result.response.tessellationAnimationSpeed ?? materialParams.tessellationAnimationSpeed,
-            tessellationAnimationIntensity: result.response.tessellationAnimationIntensity ?? materialParams.tessellationAnimationIntensity
-        
-        });
-        
+// Update this section in handleAPIResponse() function in chatInterface.js
+
+    // Update manipulation parameters
+    Object.assign(materialParams, {
+        // Tessellation parameters
+        tessellationEnabled: result.response.tessellationEnabled ?? materialParams.tessellationEnabled,
+        tessellationSegments: result.response.tessellationSegments ?? materialParams.tessellationSegments,
+
+        // Wireframe parameters
+        wireframeEnabled: result.response.wireframeEnabled ?? materialParams.wireframeEnabled,
+        wireframeOpacity: result.response.wireframeOpacity ?? materialParams.wireframeOpacity,
+
+        // Shared color pattern properties
+        colorHueStart: result.response.colorHueStart ?? materialParams.colorHueStart,
+        colorHueRange: result.response.colorHueRange ?? materialParams.colorHueRange,
+        colorSatStart: result.response.colorSatStart ?? materialParams.colorSatStart,
+        colorSatRange: result.response.colorSatRange ?? materialParams.colorSatRange,
+        colorLightStart: result.response.colorLightStart ?? materialParams.colorLightStart,
+        colorLightRange: result.response.colorLightRange ?? materialParams.colorLightRange,
+        colorPattern: result.response.colorPattern || materialParams.colorPattern,
+
+        // Unified manipulation animation parameters
+        manipulationAnimationEnabled: result.response.manipulationAnimationEnabled ?? materialParams.manipulationAnimationEnabled,
+        manipulationAnimationSpeed: result.response.manipulationAnimationSpeed ?? materialParams.manipulationAnimationSpeed,
+        manipulationAnimationIntensity: result.response.manipulationAnimationIntensity ?? materialParams.manipulationAnimationIntensity
+    });
         // Update static typography parameters
         Object.assign(textParams, {
             height: result.response.height ?? textParams.height
@@ -120,7 +129,6 @@ function handleAPIResponse(result) {
             rotateIndependently: result.response.rotateIndependently ?? animationParams.rotateIndependently
         });
 
-        updateTessellationControls();
         // Update UI
         updateUIControls();
 
@@ -133,6 +141,7 @@ function handleAPIResponse(result) {
 }
 
 function updateUIControls() {
+    updateManipulationControls();
     updateMultiTextControls();
     updateStaticTypography();
     updateRotationControls();
@@ -290,69 +299,91 @@ function updateMultiTextControls() {
     updateMultiTextCopies()
 }
 
-function updateTessellationControls() {
-    // Update tessellation toggle
+function updateManipulationControls() {
+    // Update manipulation toggles
     const tessellationToggle = document.getElementById('tessellation-toggle');
-    const animationControls = document.getElementById('tessellation-animation-controls');
-    const animationInputs = animationControls?.querySelectorAll('input');
-
+    const wireframeToggle = document.getElementById('wireframe-toggle');
+    const tessellationSegments = document.getElementById('tessellation-segments');
+    
     if (tessellationToggle) {
         tessellationToggle.checked = materialParams.tessellationEnabled;
-        
-        // Update animation controls state
-        if (animationControls) {
-            if (materialParams.tessellationEnabled) {
-                animationControls.classList.add('enabled');
-                animationInputs?.forEach(input => input.disabled = false);
-            } else {
-                animationControls.classList.remove('enabled');
-                animationInputs?.forEach(input => input.disabled = true);
+    }
+    
+    if (wireframeToggle) {
+        wireframeToggle.checked = materialParams.wireframeEnabled;
+    }
+
+    // Show/hide tessellation segments based on state
+    if (tessellationSegments) {
+        tessellationSegments.style.display = materialParams.tessellationEnabled ? 'block' : 'none';
+    }
+
+    // Update manipulation animation controls
+    const animationToggle = document.getElementById('manipulation-animation-toggle');
+    const speedSlider = document.getElementById('manipulation-animation-speed');
+    const intensitySlider = document.getElementById('manipulation-animation-intensity');
+    const animationControls = document.getElementById('manipulation-animation-controls');
+
+    if (animationControls) {
+        if (materialParams.tessellationEnabled || materialParams.wireframeEnabled) {
+            animationControls.classList.add('enabled');
+
+            if (animationToggle) {
+                animationToggle.checked = materialParams.manipulationAnimationEnabled;
             }
-        }
-    }
 
-    // Update tessellation animation toggle
-    const tessellationAnimationToggle = document.getElementById('tessellation-animation-toggle');
-    if (tessellationAnimationToggle) {
-        tessellationAnimationToggle.checked = materialParams.tessellationAnimationEnabled;
-    }
-
-    // Update tessellation segments
-    const tessellationDetail = document.getElementById('tessellation-detail');
-    if (tessellationDetail) {
-        tessellationDetail.value = materialParams.tessellationSegments;
-        const valueDisplay = tessellationDetail.nextElementSibling;
-        if (valueDisplay) {
-            valueDisplay.textContent = materialParams.tessellationSegments;
-        }
-    }
-
-    // Update all tessellation controls
-    const controls = {
-        'tess-hue-start': 'tessellationHueStart',
-        'tess-hue-range': 'tessellationHueRange',
-        'tess-sat-start': 'tessellationSatStart',
-        'tess-sat-range': 'tessellationSatRange',
-        'tess-light-start': 'tessellationLightStart',
-        'tess-light-range': 'tessellationLightRange',
-        'tessellation-animation-speed': 'tessellationAnimationSpeed',
-        'tessellation-animation-intensity': 'tessellationAnimationIntensity'
-    };
-
-    for (const [elementId, paramName] of Object.entries(controls)) {
-        const element = document.getElementById(elementId);
-        if (element) {
-            element.value = materialParams[paramName];
-            const valueDisplay = element.nextElementSibling;
-            if (valueDisplay) {
-                valueDisplay.textContent = materialParams[paramName].toFixed(2);
+            if (speedSlider) {
+                speedSlider.value = materialParams.manipulationAnimationSpeed;
+                const speedDisplay = document.getElementById('manipulation-animation-speed-value');
+                if (speedDisplay) {
+                    speedDisplay.textContent = materialParams.manipulationAnimationSpeed.toFixed(1);
+                }
             }
+
+            if (intensitySlider) {
+                intensitySlider.value = materialParams.manipulationAnimationIntensity;
+                const intensityDisplay = document.getElementById('manipulation-animation-intensity-value');
+                if (intensityDisplay) {
+                    intensityDisplay.textContent = materialParams.manipulationAnimationIntensity.toFixed(1);
+                }
+            }
+        } else {
+            animationControls.classList.remove('enabled');
         }
     }
 
-    // Update pattern select
-    const tessPattern = document.getElementById('tess-pattern');
-    if (tessPattern) {
-        tessPattern.value = materialParams.tessellationPattern;
+    // Update color pattern controls
+    const colorPatternSection = document.getElementById('color-pattern-section');
+    if (colorPatternSection) {
+        if (materialParams.tessellationEnabled || materialParams.wireframeEnabled) {
+            colorPatternSection.classList.add('enabled');
+            // Update all color pattern controls
+            const controls = {
+                'color-hue-start': materialParams.colorHueStart,
+                'color-hue-range': materialParams.colorHueRange,
+                'color-sat-start': materialParams.colorSatStart,
+                'color-sat-range': materialParams.colorSatRange,
+                'color-light-start': materialParams.colorLightStart,
+                'color-light-range': materialParams.colorLightRange
+            };
+
+            for (const [elementId, value] of Object.entries(controls)) {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    element.value = value;
+                    const valueDisplay = element.nextElementSibling;
+                    if (valueDisplay) {
+                        valueDisplay.textContent = value.toFixed(2);
+                    }
+                }
+            }
+
+            const patternSelect = document.getElementById('color-pattern');
+            if (patternSelect) {
+                patternSelect.value = materialParams.colorPattern;
+            }
+        } else {
+            colorPatternSection.classList.remove('enabled');
+        }
     }
 }

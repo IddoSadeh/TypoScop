@@ -126,39 +126,112 @@ function updateFontDropdown(fontName) {
 }
 
 
-// First, let's create shader constants at the top of the file
+// Add this function to handle color calculations for both material types
+function calculateColorForVertex(progress, baseHSL) {
+    let h, s, l;
+    
+    switch (materialParams.colorPattern) {
+        case 'gradient':
+            h = baseHSL.h + (materialParams.colorHueRange * progress);
+            s = baseHSL.s + (materialParams.colorSatRange * progress);
+            l = baseHSL.l + (materialParams.colorLightRange * progress);
+            break;
+            
+        case 'waves':
+            const wave = Math.sin(progress * Math.PI * 2);
+            h = baseHSL.h + (materialParams.colorHueRange * wave * 0.5);
+            s = baseHSL.s + (materialParams.colorSatRange * wave * 0.5);
+            l = baseHSL.l + (materialParams.colorLightRange * wave * 0.5);
+            break;
+            
+        default: // random
+            h = baseHSL.h + (Math.random() - 0.5) * materialParams.colorHueRange;
+            s = baseHSL.s + (Math.random() - 0.5) * materialParams.colorSatRange;
+            l = baseHSL.l + (Math.random() - 0.5) * materialParams.colorLightRange;
+            break;
+    }
+
+    // Ensure values are in valid range
+    h = ((h % 1) + 1) % 1;
+    s = Math.max(0, Math.min(1, s));
+    l = Math.max(0, Math.min(1, l));
+
+    return { h, s, l };
+}
+
+// Shared vertex shader for both materials
 const vertexShader = `
     uniform float amplitude;
     attribute vec3 customColor;
     attribute vec3 displacement;
-    varying vec3 vNormal;
     varying vec3 vColor;
+    varying vec3 vNormal;
+    varying vec3 vPosition;
 
     void main() {
-        vNormal = normal;
         vColor = customColor;
+        vNormal = normal;
         vec3 newPosition = position + normal * amplitude * displacement;
+        vPosition = newPosition;
         gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
     }
 `;
 
-const fragmentShader = `
+// Fragment shader for tessellation (with physical material properties)
+const tessellationFragmentShader = `
     uniform float metalness;
     uniform float roughness;
-    varying vec3 vNormal;
     varying vec3 vColor;
+    varying vec3 vNormal;
+    varying vec3 vPosition;
 
     void main() {
-        const float ambient = 0.4;
-        vec3 light = vec3(1.0);
-        light = normalize(light);
-
-        float directional = max(dot(vNormal, light), 0.0);
-        float metallicFactor = 1.0 - roughness;
-        float specular = pow(directional, 10.0 * metallicFactor) * metalness;
+        vec3 light = normalize(vec3(5.0, 5.0, 10.0));
+        vec3 viewDir = normalize(-vPosition);
         
-        vec3 finalColor = (directional + ambient + specular) * vColor;
+        // Ambient
+        float ambientStrength = 0.3;
+        vec3 ambient = ambientStrength * vColor;
+        
+        // Diffuse
+        float diff = max(dot(vNormal, light), 0.0);
+        vec3 diffuse = diff * vColor;
+        
+        // Specular
+        vec3 reflectDir = reflect(-light, vNormal);
+        float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+        float specularStrength = metalness * (1.0 - roughness);
+        vec3 specular = specularStrength * spec * vec3(1.0);
+        
+        vec3 finalColor = ambient + diffuse + specular;
         gl_FragColor = vec4(finalColor, 1.0);
+    }
+`;
+
+// Fragment shader for wireframe (with transparency and additive blending)
+const wireframeFragmentShader = `
+    uniform float opacity;
+    uniform vec3 baseColor;
+    varying vec3 vColor;
+    varying vec3 vNormal;
+    varying vec3 vPosition;
+
+    void main() {
+        vec3 light = normalize(vec3(5.0, 5.0, 10.0));
+        
+        // Basic lighting
+        float diffuse = max(dot(vNormal, light), 0.0);
+        float ambient = 0.3;
+        float brightness = ambient + diffuse;
+        
+        // Mix base color with vertex color
+        vec3 finalColor = mix(vColor, baseColor, 0.5) * brightness;
+        
+        // Apply glow effect for wireframe
+        float glowFactor = pow(1.0 - abs(dot(vNormal, normalize(-vPosition))), 2.0);
+        finalColor += glowFactor * 0.5;
+        
+        gl_FragColor = vec4(finalColor, opacity);
     }
 `;
 
@@ -173,43 +246,21 @@ function createTessellatedGeometry(geometry) {
     const displacement = new Float32Array(numFaces * 3 * 3);
     const color = new THREE.Color();
     const baseColor = new THREE.Color(materialParams.color);
+    const baseHSL = {};
+    baseColor.getHSL(baseHSL);
 
     // Assign colors and displacement to each face
     for (let f = 0; f < numFaces; f++) {
         const index = 9 * f;
-        let h, s, l;
+        const progress = f / numFaces;
         
-        const baseHSL = {};
-        baseColor.getHSL(baseHSL);
-
-        // Calculate color based on pattern
-        switch (materialParams.tessellationPattern) {
-            case 'gradient':
-                const gradientProgress = f / numFaces;
-                h = baseHSL.h + (materialParams.tessellationHueRange * gradientProgress);
-                s = baseHSL.s + (materialParams.tessellationSatRange * gradientProgress);
-                l = baseHSL.l + (materialParams.tessellationLightRange * gradientProgress);
-                break;
-            case 'waves':
-                const wave = Math.sin(f * 0.1);
-                h = baseHSL.h + (materialParams.tessellationHueRange * wave * 0.5);
-                s = baseHSL.s + (materialParams.tessellationSatRange * wave * 0.5);
-                l = baseHSL.l + (materialParams.tessellationLightRange * wave * 0.5);
-                break;
-            default: // random
-                h = baseHSL.h + (Math.random() - 0.5) * materialParams.tessellationHueRange;
-                s = baseHSL.s + (Math.random() - 0.5) * materialParams.tessellationSatRange;
-                l = baseHSL.l + (Math.random() - 0.5) * materialParams.tessellationLightRange;
-                break;
-        }
-
-        h = ((h % 1) + 1) % 1;
-        s = Math.max(0, Math.min(1, s));
-        l = Math.max(0, Math.min(1, l));
-
+        // Get color using shared calculation function
+        const { h, s, l } = calculateColorForVertex(progress, baseHSL);
         color.setHSL(h, s, l);
+        
         const d = 10 * (0.5 - Math.random());
 
+        // Apply color and displacement to all vertices of the face
         for (let i = 0; i < 3; i++) {
             colors[index + (3 * i)] = color.r;
             colors[index + (3 * i) + 1] = color.g;
@@ -227,6 +278,52 @@ function createTessellatedGeometry(geometry) {
     return tessellatedGeometry;
 }
 
+function createWireframeMaterial(geometry) {
+    const positions = geometry.attributes.position;
+    const count = positions.count;
+    
+    const displacement = new Float32Array(count * 3);
+    const colors = new Float32Array(count * 3);
+    const color = new THREE.Color();
+    const baseColor = new THREE.Color(materialParams.color);
+    const baseHSL = {};
+    baseColor.getHSL(baseHSL);
+
+    for (let i = 0; i < count; i++) {
+        // Random displacement
+        displacement[i * 3] = (Math.random() - 0.5) * 3;
+        displacement[i * 3 + 1] = (Math.random() - 0.5) * 3;
+        displacement[i * 3 + 2] = (Math.random() - 0.5) * 3;
+
+        // Get color using shared calculation function
+        const progress = i / count;
+        const { h, s, l } = calculateColorForVertex(progress, baseHSL);
+        color.setHSL(h, s, l);
+        color.toArray(colors, i * 3);
+    }
+
+    geometry.setAttribute('displacement', new THREE.BufferAttribute(displacement, 3));
+    geometry.setAttribute('customColor', new THREE.BufferAttribute(colors, 3));
+    const material = new THREE.ShaderMaterial({
+        uniforms: {
+            amplitude: { value: 0.0 },
+            opacity: { value: materialParams.wireframeOpacity },
+            baseColor: { value: new THREE.Color(materialParams.color) }
+        },
+        vertexShader: vertexShader,  // Using shared vertex shader
+        fragmentShader: wireframeFragmentShader,
+        blending: THREE.AdditiveBlending,
+        depthTest: false,
+        transparent: true,
+        wireframe: true
+    });
+
+    return {
+        geometry: geometry,
+        material: material
+    };
+}
+
 function createShaderMaterial() {
     return new THREE.ShaderMaterial({
         uniforms: {
@@ -234,14 +331,16 @@ function createShaderMaterial() {
             metalness: { value: materialParams.metalness },
             roughness: { value: materialParams.roughness }
         },
-        vertexShader,
-        fragmentShader,
+        vertexShader: vertexShader,
+        fragmentShader: tessellationFragmentShader,
         wireframe: false
     });
 }
 
 function createMaterial(geometry) {
-    if (materialParams.tessellationEnabled) {
+    if (materialParams.wireframeEnabled) {
+        return createWireframeMaterial(geometry);
+    } else if (materialParams.tessellationEnabled) {
         const tessellatedGeometry = createTessellatedGeometry(geometry);
         return {
             geometry: tessellatedGeometry,
@@ -339,49 +438,72 @@ export function createText() {
 }
 
 export function updateMaterial() {
-    if (textMesh) {
-        if (materialParams.tessellationEnabled) {
-            // For tessellated material, we need to recreate the geometry with new colors
-            const materialObject = createMaterial(textMesh.geometry.clone());
-            
-            // Clean up old geometry
-            if (textMesh.geometry) {
-                textMesh.geometry.dispose();
-            }
-            
-            // Update mesh with new geometry and material
-            textMesh.geometry = materialObject.geometry;
-            textMesh.material.dispose();
-            textMesh.material = materialObject.material;
-            
-            // If we have copies, update them too
-            if (animationParams.multiTextEnabled && animationParams.copies) {
-                animationParams.copies.forEach(copy => {
-                    if (copy.mesh && copy.mesh !== textMesh) {
-                        const copyMaterialObject = createMaterial(textMesh.geometry.clone());
-                        copy.mesh.geometry.dispose();
-                        copy.mesh.material.dispose();
-                        copy.mesh.geometry = copyMaterialObject.geometry;
-                        copy.mesh.material = copyMaterialObject.material;
-                    }
-                });
-            }
-            
-            // If we have letter meshes, update them too
-            if (letterMeshes.length > 0) {
-                letterMeshes.forEach(mesh => {
-                    const letterMaterialObject = createMaterial(mesh.geometry.clone());
-                    mesh.geometry.dispose();
-                    mesh.material.dispose();
-                    mesh.geometry = letterMaterialObject.geometry;
-                    mesh.material = letterMaterialObject.material;
-                });
-            }
-        } else {
-            // Standard material update
-            textMesh.material.color.set(materialParams.color);
-            textMesh.material.metalness = materialParams.metalness;
-            textMesh.material.roughness = materialParams.roughness;
+    if (!textMesh) return;
+
+    if (materialParams.wireframeEnabled || materialParams.tessellationEnabled) {
+        // For both wireframe and tessellated materials, we need to recreate with new properties
+        const materialObject = createMaterial(textMesh.geometry.clone());
+        
+        // Clean up old geometry
+        if (textMesh.geometry) {
+            textMesh.geometry.dispose();
+        }
+        
+        // Update mesh with new geometry and material
+        textMesh.geometry = materialObject.geometry;
+        textMesh.material.dispose();
+        textMesh.material = materialObject.material;
+        
+        // If we have copies, update them too
+        if (animationParams.multiTextEnabled && animationParams.copies) {
+            animationParams.copies.forEach(copy => {
+                if (copy.mesh && copy.mesh !== textMesh) {
+                    const copyMaterialObject = createMaterial(textMesh.geometry.clone());
+                    copy.mesh.geometry.dispose();
+                    copy.mesh.material.dispose();
+                    copy.mesh.geometry = copyMaterialObject.geometry;
+                    copy.mesh.material = copyMaterialObject.material;
+                }
+            });
+        }
+        
+        // If we have letter meshes, update them too
+        if (letterMeshes.length > 0) {
+            letterMeshes.forEach(mesh => {
+                const letterMaterialObject = createMaterial(mesh.geometry.clone());
+                mesh.geometry.dispose();
+                mesh.material.dispose();
+                mesh.geometry = letterMaterialObject.geometry;
+                mesh.material = letterMaterialObject.material;
+            });
+        }
+    } else {
+        // For standard material, calculate base color from color pattern
+        const baseColor = new THREE.Color(materialParams.color);
+
+        // Update standard material
+        textMesh.material.color = baseColor;
+        textMesh.material.metalness = materialParams.metalness;
+        textMesh.material.roughness = materialParams.roughness;
+
+        // Update copies if they exist
+        if (animationParams.multiTextEnabled && animationParams.copies) {
+            animationParams.copies.forEach(copy => {
+                if (copy.mesh && copy.mesh !== textMesh) {
+                    copy.mesh.material.color = baseColor;
+                    copy.mesh.material.metalness = materialParams.metalness;
+                    copy.mesh.material.roughness = materialParams.roughness;
+                }
+            });
+        }
+        
+        // Update letter meshes if they exist
+        if (letterMeshes.length > 0) {
+            letterMeshes.forEach(mesh => {
+                mesh.material.color = baseColor;
+                mesh.material.metalness = materialParams.metalness;
+                mesh.material.roughness = materialParams.roughness;
+            });
         }
     }
 }
@@ -793,36 +915,55 @@ function updateAnimation() {
 function animate() {
     requestAnimationFrame(animate);
 
-    // Update all tessellated meshes
+    // Update all shader materials
     const updateMeshAmplitude = (mesh) => {
-        if (mesh && mesh.material.type === 'ShaderMaterial' && mesh.material.uniforms) {
-            if (materialParams.tessellationAnimationEnabled) {
-                const time = Date.now() * 0.001 * materialParams.tessellationAnimationSpeed;
-                mesh.material.uniforms.amplitude.value = 
-                    materialParams.tessellationAnimationIntensity * Math.sin(time);
-            } else {
-                mesh.material.uniforms.amplitude.value = 0;
+        if (!mesh || !mesh.material || !mesh.material.uniforms) return;
+
+        if (materialParams.tessellationEnabled && materialParams.tessellationAnimationEnabled) {
+            const time = Date.now() * 0.001 * materialParams.tessellationAnimationSpeed;
+            mesh.material.uniforms.amplitude.value = 
+                materialParams.tessellationAnimationIntensity * Math.sin(time);
+        } else if (materialParams.wireframeEnabled && materialParams.wireframeAnimationEnabled) {
+            const time = Date.now() * 0.001 * materialParams.wireframeAnimationSpeed;
+            mesh.material.uniforms.amplitude.value = 
+                materialParams.wireframeAnimationAmplitude * Math.sin(time);
+        } else {
+            mesh.material.uniforms.amplitude.value = 0;
+        }
+        
+        // Update shader uniforms based on material type
+        if (materialParams.wireframeEnabled) {
+            if (mesh.material.uniforms.opacity) {
+                mesh.material.uniforms.opacity.value = materialParams.wireframeOpacity;
             }
-            
-            // Always update material properties
-            mesh.material.uniforms.metalness.value = materialParams.metalness;
-            mesh.material.uniforms.roughness.value = materialParams.roughness;
+            if (mesh.material.uniforms.baseColor) {
+                mesh.material.uniforms.baseColor.value.set(materialParams.color);
+            }
         }
     };
 
-    // Update main mesh
-    if (materialParams.tessellationEnabled) {
-        updateMeshAmplitude(textMesh);
-    }
+    // Update all meshes that might have shader materials
+    if (materialParams.tessellationEnabled || materialParams.wireframeEnabled) {
+        // Update main mesh
+        if (textMesh) {
+            updateMeshAmplitude(textMesh);
+        }
 
-    // Update copies if they exist
-    if (animationParams.multiTextEnabled && animationParams.copies) {
-        animationParams.copies.forEach(copy => updateMeshAmplitude(copy.mesh));
-    }
+        // Update copies if they exist
+        if (animationParams.multiTextEnabled && animationParams.copies) {
+            animationParams.copies.forEach(copy => {
+                if (copy && copy.mesh) {
+                    updateMeshAmplitude(copy.mesh);
+                }
+            });
+        }
 
-    // Update letter meshes if they exist
-    if (letterMeshes.length > 0) {
-        letterMeshes.forEach(mesh => updateMeshAmplitude(mesh));
+        // Update letter meshes if they exist
+        if (letterMeshes.length > 0) {
+            letterMeshes.forEach(mesh => {
+                updateMeshAmplitude(mesh);
+            });
+        }
     }
 
     updateAnimation();

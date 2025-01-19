@@ -1,89 +1,22 @@
 import { materialParams } from '../parameters/materialParams.js';
 import { createText, updateMaterial } from '../utils/three.setup.js';
 
-function setupTessellationAnimationControls() {
-    const animationToggle = document.getElementById('tessellation-animation-toggle');
-    const speedSlider = document.getElementById('tessellation-animation-speed');
-    const intensitySlider = document.getElementById('tessellation-animation-intensity');
-    const animationControls = document.getElementById('tessellation-animation-controls');
-    const animationInputs = animationControls?.querySelectorAll('input');
-
-    // Initialize animation controls state
-    const updateAnimationControlsState = (enabled) => {
-        if (animationControls) {
-            if (enabled) {
-                animationControls.classList.add('enabled');
-                animationInputs?.forEach(input => input.disabled = false);
-            } else {
-                animationControls.classList.remove('enabled');
-                animationInputs?.forEach(input => input.disabled = true);
-            }
-        }
-    };
-
-    // Set initial state
-    updateAnimationControlsState(materialParams.tessellationEnabled);
-
-    animationToggle?.addEventListener('change', (e) => {
-        materialParams.tessellationAnimationEnabled = e.target.checked;
-        // Reset animation values if being disabled
-        if (!e.target.checked && textMesh && textMesh.material.uniforms) {
-            textMesh.material.uniforms.amplitude.value = 0;
-        }
-    });
-
-    speedSlider?.addEventListener('input', (e) => {
-        materialParams.tessellationAnimationSpeed = parseFloat(e.target.value);
-        const valueDisplay = e.target.nextElementSibling;
-        if (valueDisplay) {
-            valueDisplay.textContent = materialParams.tessellationAnimationSpeed.toFixed(1);
-        }
-    });
-
-    intensitySlider?.addEventListener('input', (e) => {
-        materialParams.tessellationAnimationIntensity = parseFloat(e.target.value);
-        const valueDisplay = e.target.nextElementSibling;
-        if (valueDisplay) {
-            valueDisplay.textContent = materialParams.tessellationAnimationIntensity.toFixed(1);
-        }
-    });
-
-    // Update tessellation toggle to handle animation controls
-    const tessellationToggle = document.getElementById('tessellation-toggle');
-    tessellationToggle?.addEventListener('change', (e) => {
-        materialParams.tessellationEnabled = e.target.checked;
-        updateAnimationControlsState(e.target.checked);
-        
-        // Reset animation if tessellation is disabled
-        if (!e.target.checked) {
-            if (animationToggle) {
-                animationToggle.checked = false;
-                materialParams.tessellationAnimationEnabled = false;
-            }
-        }
-        createText();
-    });
+export function setupMaterialControls() {
+    setupBasicMaterialControls();
+    setupManipulationControls();
+    setupColorPatternControls();
 }
 
-export function setupMaterialControls() {
+function setupBasicMaterialControls() {
     const colorPicker = document.getElementById('color-picker');
     const metalnessSlider = document.getElementById('metalness-slider');
     const roughnessSlider = document.getElementById('roughness-slider');
-    const tessellationToggle = document.getElementById('tessellation-toggle');
-    const tessellationDetail = document.getElementById('tessellation-detail');
-    const tessHueStart = document.getElementById('tess-hue-start');
-    const tessHueRange = document.getElementById('tess-hue-range');
-    const tessSatStart = document.getElementById('tess-sat-start');
-    const tessSatRange = document.getElementById('tess-sat-range');
-    const tessLightStart = document.getElementById('tess-light-start');
-    const tessLightRange = document.getElementById('tess-light-range');
-    const tessPattern = document.getElementById('tess-pattern');
 
     // Color picker
     colorPicker?.addEventListener('input', (e) => {
         materialParams.color = e.target.value;
+        materialParams.basicMaterialColor = e.target.value;
         updateMaterial();
-        createText()
     });
 
     // Material sliders
@@ -91,45 +24,161 @@ export function setupMaterialControls() {
         materialParams.metalness = parseFloat(e.target.value);
         e.target.nextElementSibling.textContent = materialParams.metalness;
         updateMaterial();
-        createText()
     });
 
     roughnessSlider?.addEventListener('input', (e) => {
         materialParams.roughness = parseFloat(e.target.value);
         e.target.nextElementSibling.textContent = materialParams.roughness;
         updateMaterial();
-        createText()
+    });
+}
+
+export function setupManipulationControls() {
+    // Get all necessary DOM elements
+    const tessellationToggle = document.getElementById('tessellation-toggle');
+    const wireframeToggle = document.getElementById('wireframe-toggle');
+    const tessellationSegments = document.getElementById('tessellation-segments');
+    const tessellationDetail = document.getElementById('tessellation-detail');
+    const manipulationAnimationControls = document.getElementById('manipulation-animation-controls');
+    const colorPatternSection = document.getElementById('color-pattern-section');
+    
+    const animationToggle = document.getElementById('manipulation-animation-toggle');
+    const speedSlider = document.getElementById('manipulation-animation-speed');
+    const intensitySlider = document.getElementById('manipulation-animation-intensity');
+
+    // Helper function to update control states
+    function updateControlStates(isManipulationActive) {
+        // Enable/disable animation controls
+        if (manipulationAnimationControls) {
+            if (isManipulationActive) {
+                manipulationAnimationControls.classList.add('enabled');
+            } else {
+                manipulationAnimationControls.classList.remove('enabled');
+                if (animationToggle) animationToggle.checked = false;
+            }
+        }
+
+        // Enable/disable color pattern controls
+        if (colorPatternSection) {
+            if (isManipulationActive) {
+                colorPatternSection.classList.add('enabled');
+            } else {
+                colorPatternSection.classList.remove('enabled');
+            }
+        }
+
+        // Show/hide tessellation segments control
+        if (tessellationSegments) {
+            tessellationSegments.style.display = 
+                (tessellationToggle && tessellationToggle.checked) ? 'block' : 'none';
+        }
+    }
+
+    // Setup tessellation toggle
+    tessellationToggle?.addEventListener('change', (e) => {
+        if (e.target.checked) {
+            materialParams.tessellationEnabled = true;
+            materialParams.wireframeEnabled = false;
+            if (wireframeToggle) wireframeToggle.checked = false;
+        } else {
+            materialParams.tessellationEnabled = false;
+        }
+        
+        updateControlStates(e.target.checked);
+        createText();
     });
 
-   // Tessellation controls
-   function setupRangeControl(element, paramName) {
-    element?.addEventListener('input', (e) => {
-        materialParams[paramName] = parseFloat(e.target.value);
-        e.target.nextElementSibling.textContent = materialParams[paramName].toFixed(2);
+    // Setup wireframe toggle
+    wireframeToggle?.addEventListener('change', (e) => {
+        if (e.target.checked) {
+            materialParams.wireframeEnabled = true;
+            materialParams.tessellationEnabled = false;
+            if (tessellationToggle) tessellationToggle.checked = false;
+        } else {
+            materialParams.wireframeEnabled = false;
+        }
+        
+        updateControlStates(e.target.checked);
+        createText();
+    });
+
+    // Setup tessellation detail slider
+    tessellationDetail?.addEventListener('input', (e) => {
+        materialParams.tessellationSegments = parseInt(e.target.value);
+        e.target.nextElementSibling.textContent = materialParams.tessellationSegments;
         if (materialParams.tessellationEnabled) {
             createText();
         }
     });
+
+    // Setup animation controls
+    animationToggle?.addEventListener('change', (e) => {
+        const isAnimationEnabled = e.target.checked;
+        if (materialParams.tessellationEnabled) {
+            materialParams.tessellationAnimationEnabled = isAnimationEnabled;
+        } else if (materialParams.wireframeEnabled) {
+            materialParams.wireframeAnimationEnabled = isAnimationEnabled;
+        }
+
+        if (!isAnimationEnabled) {
+            // Reset animation values
+            if (materialParams.tessellationEnabled || materialParams.wireframeEnabled) {
+                updateMaterial();
+            }
+        }
+    });
+
+    speedSlider?.addEventListener('input', (e) => {
+        const speed = parseFloat(e.target.value);
+        if (materialParams.tessellationEnabled) {
+            materialParams.tessellationAnimationSpeed = speed;
+        } else if (materialParams.wireframeEnabled) {
+            materialParams.wireframeAnimationSpeed = speed;
+        }
+        e.target.nextElementSibling.textContent = speed.toFixed(1);
+    });
+
+    intensitySlider?.addEventListener('input', (e) => {
+        const intensity = parseFloat(e.target.value);
+        if (materialParams.tessellationEnabled) {
+            materialParams.tessellationAnimationIntensity = intensity;
+        } else if (materialParams.wireframeEnabled) {
+            materialParams.wireframeAnimationAmplitude = intensity;
+        }
+        e.target.nextElementSibling.textContent = intensity.toFixed(1);
+    });
+
+    // Setup color pattern controls
+    setupColorPatternControls();
 }
 
-tessellationToggle?.addEventListener('change', (e) => {
-    materialParams.tessellationEnabled = e.target.checked;
-    createText();
-});
-
-setupRangeControl(tessellationDetail, 'tessellationSegments');
-setupRangeControl(tessHueStart, 'tessellationHueStart');
-setupRangeControl(tessHueRange, 'tessellationHueRange');
-setupRangeControl(tessSatStart, 'tessellationSatStart');
-setupRangeControl(tessSatRange, 'tessellationSatRange');
-setupRangeControl(tessLightStart, 'tessellationLightStart');
-setupRangeControl(tessLightRange, 'tessellationLightRange');
-
-tessPattern?.addEventListener('change', (e) => {
-    materialParams.tessellationPattern = e.target.value;
-    if (materialParams.tessellationEnabled) {
-        createText();
+function setupColorPatternControls() {
+    // Helper function to setup range controls
+    function setupRangeControl(elementId, paramName) {
+        const element = document.getElementById(elementId);
+        element?.addEventListener('input', (e) => {
+            materialParams[paramName] = parseFloat(e.target.value);
+            e.target.nextElementSibling.textContent = materialParams[paramName].toFixed(2);
+            if (materialParams.tessellationEnabled || materialParams.wireframeEnabled) {
+                updateMaterial();
+            }
+        });
     }
-});
-setupTessellationAnimationControls();
+
+    // Setup all range controls
+    setupRangeControl('color-hue-start', 'colorHueStart');
+    setupRangeControl('color-hue-range', 'colorHueRange');
+    setupRangeControl('color-sat-start', 'colorSatStart');
+    setupRangeControl('color-sat-range', 'colorSatRange');
+    setupRangeControl('color-light-start', 'colorLightStart');
+    setupRangeControl('color-light-range', 'colorLightRange');
+
+    // Setup pattern selector
+    const patternSelect = document.getElementById('color-pattern');
+    patternSelect?.addEventListener('change', (e) => {
+        materialParams.colorPattern = e.target.value;
+        if (materialParams.tessellationEnabled || materialParams.wireframeEnabled) {
+            updateMaterial();
+        }
+    });
 }

@@ -1,4 +1,3 @@
-// server/config/parameters.js
 const defaultState = {
     // Text Content
     text: 'Hello World',
@@ -26,15 +25,25 @@ const defaultState = {
     scaleMin: 0.8,
     scaleMax: 1.2,
 
+    // Manipulation parameters
     tessellationEnabled: false,
     tessellationSegments: 8,
-    tessellationHueStart: 0,
-    tessellationHueRange: 0.2,
-    tessellationSatStart: 0.5,
-    tessellationSatRange: 0.5,
-    tessellationLightStart: 0.5,
-    tessellationLightRange: 0.3,
-    tessellationPattern: 'random'
+    wireframeEnabled: false,
+    wireframeOpacity: 0.3,
+
+    // Unified color pattern parameters
+    colorHueStart: 0,
+    colorHueRange: 0.2,
+    colorSatStart: 0.5,
+    colorSatRange: 0.5,
+    colorLightStart: 0.5,
+    colorLightRange: 0.3,
+    colorPattern: 'random',
+
+    // Unified manipulation animation parameters
+    manipulationAnimationEnabled: false,
+    manipulationAnimationSpeed: 0.5,
+    manipulationAnimationIntensity: 1.0
 };
 
 const functionSchema = {
@@ -43,9 +52,9 @@ const functionSchema = {
     parameters: {
         type: 'object',
         properties: {
-            color: { 
-                type: 'string', 
-                description: 'Update ONLY if user specifically mentions text color or material color (hexadecimal e.g., #ff0000)' 
+            color: {
+                type: 'string',
+                description: 'Update ONLY if user specifically mentions text color or material color (hexadecimal e.g., #ff0000)'
             },
             height: {
                 type: 'number',
@@ -53,17 +62,17 @@ const functionSchema = {
                 minimum: 0.1,
                 maximum: 5
             },
-            metalness: { 
-                type: 'number', 
-                description: 'Update ONLY if user mentions metallic quality or shininess (range: 0-1)' 
+            metalness: {
+                type: 'number',
+                description: 'Update ONLY if user mentions metallic quality or shininess (range: 0-1)'
             },
-            roughness: { 
-                type: 'number', 
-                description: 'Update ONLY if user mentions texture roughness or smoothness (range: 0-1)' 
+            roughness: {
+                type: 'number',
+                description: 'Update ONLY if user mentions texture roughness or smoothness (range: 0-1)'
             },
-            backgroundColor: { 
-                type: 'string', 
-                description: 'Update ONLY if user specifically mentions background or scene color (hexadecimal)' 
+            backgroundColor: {
+                type: 'string',
+                description: 'Update ONLY if user specifically mentions background or scene color (hexadecimal)'
             },
             rotateX: {
                 type: 'number',
@@ -154,8 +163,8 @@ const functionSchema = {
                 minimum: 10,
                 maximum: 100
             },
-              // Tessellation properties
-              tessellationEnabled: {
+            // Tessellation properties
+            tessellationEnabled: {
                 type: 'boolean',
                 description: 'Enable/disable tessellation effect'
             },
@@ -165,60 +174,75 @@ const functionSchema = {
                 minimum: 1,
                 maximum: 50
             },
-            tessellationHueStart: {
+            // Wireframe properties
+            wireframeEnabled: {
+                type: 'boolean',
+                description: 'Enable/disable wireframe effect'
+            },
+            wireframeOpacity: {
                 type: 'number',
-                description: 'Base hue for tessellation colors (0-1)',
+                description: 'Opacity of wireframe effect (0.1-1.0)',
+                minimum: 0.1,
+                maximum: 1.0
+            },
+
+            // Color pattern properties
+            colorHueStart: {
+                type: 'number',
+                description: 'Base hue for color patterns (0-1)',
                 minimum: 0,
                 maximum: 1
             },
-            tessellationHueRange: {
+            colorHueRange: {
                 type: 'number',
                 description: 'Range of hue variation (0-1)',
                 minimum: 0,
                 maximum: 1
             },
-            tessellationSatStart: {
+            colorSatStart: {
                 type: 'number',
-                description: 'Base saturation for tessellation colors (0-1)',
+                description: 'Base saturation for color patterns (0-1)',
                 minimum: 0,
                 maximum: 1
             },
-            tessellationSatRange: {
+            colorSatRange: {
                 type: 'number',
                 description: 'Range of saturation variation (0-1)',
                 minimum: 0,
                 maximum: 1
             },
-            tessellationLightStart: {
+            colorLightStart: {
                 type: 'number',
-                description: 'Base lightness for tessellation colors (0-1)',
+                description: 'Base lightness for color patterns (0-1)',
                 minimum: 0,
                 maximum: 1
             },
-            tessellationLightRange: {
+            colorLightRange: {
                 type: 'number',
                 description: 'Range of lightness variation (0-1)',
                 minimum: 0,
                 maximum: 1
             },
-            tessellationPattern: {
+            colorPattern: {
                 type: 'string',
-                description: 'Pattern type for tessellation colors',
+                description: 'Pattern type for color variations',
                 enum: ['random', 'gradient', 'waves']
             },
-            tessellationAnimationEnabled: {
+
+            // Unified manipulation animation parameters
+            manipulationAnimationEnabled: {
                 type: 'boolean',
-                description: 'Enable/disable tessellation animation'
+                description: 'Enable/disable animation for active manipulation effect'
             },
-            tessellationAnimationSpeed: {
+            manipulationAnimationSpeed: {
                 type: 'number',
-                description: 'Speed of tessellation animation (0.1-2.0)',
+                description: 'Speed of manipulation animation (0.1-2.0)',
                 minimum: 0.1,
                 maximum: 2.0
             },
-            tessellationAnimationIntensity: {
+            manipulationAnimationIntensity: {
                 type: 'number',
-                description: 'Intensity of tessellation animation (0.1-3.0)',
+                description: 'Intensity of manipulation animation (0.1-3.0)',
                 minimum: 0.1,
                 maximum: 3.0
             }
@@ -228,7 +252,7 @@ const functionSchema = {
     }
 };
 
-const systemPrompt = `You are a typography expert helping users customize 3D text. You can change any number of parameters to accuratley capture the users prompt. `;
+const systemPrompt = `You are a typography expert helping users customize 3D text. You can change any number of parameters to capture the users prompt. Be tasteful in your choice of arguments. More is not always better. Try to make a symbiotic choice between parameters `;
 
 // You should ONLY modify parameters that the user explicitly mentions or requests to change.
 
