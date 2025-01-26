@@ -1,6 +1,7 @@
 // setupAnimationControls.js
 import { animationParams } from '../parameters/animationParams.js';
-import { createText, updateMultiTextCopies, getTextMesh } from '../utils/three.setup.js';
+import { createText } from '../utils/three.setup.js';
+import { updateMultiTextCopies } from '../utils/animationManager.js';
 
 export function setupAnimationControls() {
     // Setup rotation controls for each axis
@@ -52,10 +53,6 @@ function setupScaleControls() {
             if (!e.target.checked) {
                 animationParams.currentScale = 1;
                 animationParams.scaleDirection = 1;
-                const textMesh = getTextMesh();
-                if (textMesh) {
-                    textMesh.scale.set(1, 1, 1);
-                }
             }
         });
     }
@@ -136,12 +133,11 @@ function setupMultiTextControls() {
     const multiTextToggle = document.getElementById('multi-text-toggle');
     const copyCountSlider = document.getElementById('copy-count');
     const spreadSlider = document.getElementById('copy-spread');
-    const independentRotationToggle = document.getElementById('independent-rotation-toggle');
     
     if (multiTextToggle) {
         multiTextToggle.addEventListener('change', (e) => {
             animationParams.multiTextEnabled = e.target.checked;
-                updateMultiTextCopies();
+            updateMultiTextCopies();
         });
     }
     
@@ -170,5 +166,4 @@ function setupMultiTextControls() {
             }
         });
     }
-    
 }

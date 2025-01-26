@@ -1,8 +1,11 @@
+// chatInterface.js
 import { textParams } from '../parameters/textParams.js';
 import { materialParams } from '../parameters/materialParams.js';
 import { sceneParams } from '../parameters/sceneParams.js';
-import { createText, updateMaterial, updateSceneBackground, updateMultiTextCopies } from './three.setup.js';
 import { animationParams } from '../parameters/animationParams.js';
+import { createText, updateSceneBackground } from './three.setup.js';
+import { updateMultiTextCopies } from './animationManager.js';
+import fontManager from './fontManager.js';
 
 export function setupChatInterface() {
     const sendButton = document.getElementById('send');
@@ -54,75 +57,75 @@ function handleAPIResponse(result) {
         
         updateChatHistory('ai', message);
 
-// Update this section in handleAPIResponse() function in chatInterface.js
+        // Update manipulation parameters
+        Object.assign(materialParams, {
+            // Tessellation parameters
+            tessellationEnabled: result.response.tessellationEnabled ?? materialParams.tessellationEnabled,
+            tessellationSegments: result.response.tessellationSegments ?? materialParams.tessellationSegments,
 
-    // Update manipulation parameters
-    Object.assign(materialParams, {
-        // Tessellation parameters
-        tessellationEnabled: result.response.tessellationEnabled ?? materialParams.tessellationEnabled,
-        tessellationSegments: result.response.tessellationSegments ?? materialParams.tessellationSegments,
+            // Wireframe parameters
+            wireframeEnabled: result.response.wireframeEnabled ?? materialParams.wireframeEnabled,
+            wireframeOpacity: result.response.wireframeOpacity ?? materialParams.wireframeOpacity,
 
-        // Wireframe parameters
-        wireframeEnabled: result.response.wireframeEnabled ?? materialParams.wireframeEnabled,
-        wireframeOpacity: result.response.wireframeOpacity ?? materialParams.wireframeOpacity,
+            // Shared color pattern properties
+            colorHueStart: result.response.colorHueStart ?? materialParams.colorHueStart,
+            colorHueRange: result.response.colorHueRange ?? materialParams.colorHueRange,
+            colorSatStart: result.response.colorSatStart ?? materialParams.colorSatStart,
+            colorSatRange: result.response.colorSatRange ?? materialParams.colorSatRange,
+            colorLightStart: result.response.colorLightStart ?? materialParams.colorLightStart,
+            colorLightRange: result.response.colorLightRange ?? materialParams.colorLightRange,
+            colorPattern: result.response.colorPattern || materialParams.colorPattern,
 
-        // Shared color pattern properties
-        colorHueStart: result.response.colorHueStart ?? materialParams.colorHueStart,
-        colorHueRange: result.response.colorHueRange ?? materialParams.colorHueRange,
-        colorSatStart: result.response.colorSatStart ?? materialParams.colorSatStart,
-        colorSatRange: result.response.colorSatRange ?? materialParams.colorSatRange,
-        colorLightStart: result.response.colorLightStart ?? materialParams.colorLightStart,
-        colorLightRange: result.response.colorLightRange ?? materialParams.colorLightRange,
-        colorPattern: result.response.colorPattern || materialParams.colorPattern,
+            // Basic material properties
+            color: result.response.color || materialParams.color,
+            metalness: result.response.metalness ?? materialParams.metalness,
+            roughness: result.response.roughness ?? materialParams.roughness,
 
-        // Unified manipulation animation parameters
-        manipulationAnimationEnabled: result.response.manipulationAnimationEnabled ?? materialParams.manipulationAnimationEnabled,
-        manipulationAnimationSpeed: result.response.manipulationAnimationSpeed ?? materialParams.manipulationAnimationSpeed,
-        manipulationAnimationIntensity: result.response.manipulationAnimationIntensity ?? materialParams.manipulationAnimationIntensity
-    });
-        // Update static typography parameters
+            // Unified manipulation animation parameters
+            manipulationAnimationEnabled: result.response.manipulationAnimationEnabled ?? materialParams.manipulationAnimationEnabled,
+            manipulationAnimationSpeed: result.response.manipulationAnimationSpeed ?? materialParams.manipulationAnimationSpeed,
+            manipulationAnimationIntensity: result.response.manipulationAnimationIntensity ?? materialParams.manipulationAnimationIntensity
+        });
+
+        // Update text parameters
         Object.assign(textParams, {
             height: result.response.height ?? textParams.height
         });
 
-        Object.assign(materialParams, {
-            color: result.response.color || materialParams.color,
-            metalness: result.response.metalness ?? materialParams.metalness,
-            roughness: result.response.roughness ?? materialParams.roughness
-        });
+        // If there's a font change, let the font manager handle it
+        if (result.response.font) {
+            const { font } = fontManager.processText(textParams.text, result.response.font);
+            textParams.font = font;
+        }
 
+        // Update scene parameters
         Object.assign(sceneParams, {
             backgroundColor: result.response.backgroundColor || sceneParams.backgroundColor
         });
 
-        // Update rotation parameters
+        // Update animation parameters
         Object.assign(animationParams, {
+            // Rotation parameters
             rotateX: result.response.rotateX ?? animationParams.rotateX,
             rotateY: result.response.rotateY ?? animationParams.rotateY,
             rotateZ: result.response.rotateZ ?? animationParams.rotateZ,
             rotateXEnabled: result.response.rotateXEnabled ?? animationParams.rotateXEnabled,
             rotateYEnabled: result.response.rotateYEnabled ?? animationParams.rotateYEnabled,
-            rotateZEnabled: result.response.rotateZEnabled ?? animationParams.rotateZEnabled
-        });
+            rotateZEnabled: result.response.rotateZEnabled ?? animationParams.rotateZEnabled,
 
-        // Update scale parameters
-        Object.assign(animationParams, {
+            // Scale parameters
             scaleEnabled: result.response.scaleEnabled ?? animationParams.scaleEnabled,
             scaleSpeed: result.response.scaleSpeed ?? animationParams.scaleSpeed,
             scaleMin: result.response.scaleMin ?? animationParams.scaleMin,
-            scaleMax: result.response.scaleMax ?? animationParams.scaleMax
-        });
+            scaleMax: result.response.scaleMax ?? animationParams.scaleMax,
 
-        // Update scramble parameters
-        Object.assign(animationParams, {
+            // Scramble parameters
             scrambleEnabled: result.response.scrambleEnabled ?? animationParams.scrambleEnabled,
             scrambleSpeed: result.response.scrambleSpeed ?? animationParams.scrambleSpeed,
             scrambleIntensity: result.response.scrambleIntensity ?? animationParams.scrambleIntensity,
-            scrambleMode: result.response.scrambleMode || animationParams.scrambleMode
-        });
+            scrambleMode: result.response.scrambleMode || animationParams.scrambleMode,
 
-        // Update multi-text parameters
-        Object.assign(animationParams, {
+            // Multi-text parameters
             multiTextEnabled: result.response.multiTextEnabled ?? animationParams.multiTextEnabled,
             copyCount: result.response.copyCount ?? animationParams.copyCount,
             spread: result.response.spread ?? animationParams.spread,
@@ -134,11 +137,13 @@ function handleAPIResponse(result) {
 
         // Update 3D scene
         updateSceneBackground();
-        createText();
+        createText(); // This will now use the font manager internally
     } else {
         updateChatHistory('ai', 'Error processing the request.');
     }
 }
+
+// ... rest of the UI update functions remain the same ...
 
 function updateUIControls() {
     updateManipulationControls();
