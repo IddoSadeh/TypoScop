@@ -5,25 +5,33 @@ export const materialParams = {
     metalness: 0,
     roughness: 0.5,
 
-    // Shared color pattern properties
-    colorHueStart: 0,      // 0-1 range
-    colorHueRange: 0.2,    // 0-1 range
-    colorSatStart: 0.5,    // 0-1 range
-    colorSatRange: 0.5,    // 0-1 range
-    colorLightStart: 0.5,  // 0-1 range
-    colorLightRange: 0.3,  // 0-1 range
-    colorPattern: 'random', // 'random', 'gradient', 'waves'
-
-    // Material-specific properties
+    // Material type toggles
     tessellationEnabled: false,
-    tessellationSegments: 8,
-    tessellationAnimationEnabled: false,
-    tessellationAnimationSpeed: 0.5,
-    tessellationAnimationIntensity: 1.0,
-
     wireframeEnabled: false,
-    wireframeOpacity: 0.3,
-    wireframeAnimationEnabled: false,
-    wireframeAnimationSpeed: 0.5,
-    wireframeAnimationAmplitude: 5.0
+    particlesEnabled: false,
+
+    // Tessellation parameters
+    tessellationSegments: 8,
+    tessellationHueStart: 0,
+    tessellationHueRange: 0.2,
+    tessellationSatStart: 0.5,
+    tessellationSatRange: 0.5,
+    tessellationLightStart: 0.5,
+    tessellationLightRange: 0.3,
+    tessellationPattern: 'random',
+
+    // Wireframe parameters
+    wireframeOpacity: 0.8,
+
+    // Particle parameters
+    particleSize: 0.05,
+    particleDensity: 1.0,    // Controls how many particles to generate
+    particleRandomness: 0.1, // Random offset from original position
+    particleShape: 'sphere', // 'sphere', 'cube', 'torus'
+    particleScale: 1.0,
+    
+    // Animation parameters
+    manipulationAnimationEnabled: false,
+    manipulationAnimationSpeed: 0.5,
+    manipulationAnimationIntensity: 1.0
 };

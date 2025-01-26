@@ -7,7 +7,7 @@ import { textParams } from '../parameters/textParams.js';
 import { materialParams } from '../parameters/materialParams.js';
 import { sceneParams } from '../parameters/sceneParams.js';
 import { animationParams } from '../parameters/animationParams.js';
-import { createMaterial, updateMaterialUniforms } from './materialManager.js';
+import { createMaterial, updateMaterialUniforms, updateParticleAnimation } from './materialManager.js';
 import { initAnimationManager, updateAnimation, updateMultiTextCopies, getLetterMeshes } from './animationManager.js';
 import fontManager from './fontManager.js';
 
@@ -91,21 +91,33 @@ export function createText() {
                 });
 
                 const materialObject = createMaterial(geometry);
-                            
+                
+                // Store old position and rotation if they exist
+                const oldPosition = textMesh ? textMesh.position.clone() : new THREE.Vector3();
+                const oldRotation = textMesh ? textMesh.rotation.clone() : new THREE.Euler();
+
+                // Clean up old mesh
                 if (textMesh) {
                     scene.remove(textMesh);
                     textMesh.geometry.dispose();
                     textMesh.material.dispose();
                 }
                 
-                textMesh = new THREE.Mesh(
-                    materialObject.geometry, 
-                    materialObject.material
-                );
+                // Handle particle mesh separately since it comes as instancedMesh
+                if (materialObject.mesh) {
+                    textMesh = materialObject.mesh;
+                } else {
+                    textMesh = new THREE.Mesh(
+                        materialObject.geometry, 
+                        materialObject.material
+                    );
+                }
   
                 geometry.computeBoundingBox();
                 const centerOffset = -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x);
+                textMesh.position.copy(oldPosition);
                 textMesh.position.x = centerOffset;
+                textMesh.rotation.copy(oldRotation);
 
                 scene.add(textMesh);
                 camera.lookAt(textMesh.position);
@@ -131,13 +143,33 @@ export function updateMaterial() {
 
     const materialObject = createMaterial(textMesh.geometry.clone());
     
-    // Clean up old geometry and material
+    // Store current transform
+    const oldPosition = textMesh.position.clone();
+    const oldRotation = textMesh.rotation.clone();
+    const oldScale = textMesh.scale.clone();
+    
+    // Clean up old mesh
+    scene.remove(textMesh);
     textMesh.geometry.dispose();
     textMesh.material.dispose();
     
     // Update with new geometry and material
-    textMesh.geometry = materialObject.geometry;
-    textMesh.material = materialObject.material;
+    if (materialObject.mesh) {
+        textMesh = materialObject.mesh;
+    } else {
+        textMesh = new THREE.Mesh(
+            materialObject.geometry, 
+            materialObject.material
+        );
+    }
+    
+    // Restore transform
+    textMesh.position.copy(oldPosition);
+    textMesh.rotation.copy(oldRotation);
+    textMesh.scale.copy(oldScale);
+    
+    // Add back to scene
+    scene.add(textMesh);
     
     // Update the material for all copies and letter meshes
     if (animationParams.multiTextEnabled) {
@@ -156,7 +188,7 @@ export function getTextMesh() {
 function animate() {
     requestAnimationFrame(animate);
 
-    // Update all meshes that have shader materials
+    // Update shader materials (tessellation/wireframe)
     if (materialParams.tessellationEnabled || materialParams.wireframeEnabled) {
         // Update main text mesh
         if (textMesh) {
@@ -180,8 +212,23 @@ function animate() {
             });
         }
     }
+    
+    // Update particle animations
+    if (materialParams.particlesEnabled && materialParams.manipulationAnimationEnabled) {
+        const currentTime = Date.now() * 0.001;
+        if (textMesh && textMesh.isInstancedMesh) {
+            updateParticleAnimation(textMesh, currentTime);
+        }
+        if (animationParams.multiTextEnabled && animationParams.copies) {
+            animationParams.copies.forEach(copy => {
+                if (copy && copy.mesh && copy.mesh.isInstancedMesh) {
+                    updateParticleAnimation(copy.mesh, currentTime);
+                }
+            });
+        }
+    }
 
-    // Update animations
+    // Update other animations
     updateAnimation();
     
     // Update controls and render
