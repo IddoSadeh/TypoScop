@@ -70,125 +70,184 @@ const wireframeFragmentShader = `
 `;
 
 function createTessellatedGeometry(geometry) {
-    const tessellatedGeometry = geometry.clone();
-    const tessellateModifier = new TessellateModifier(materialParams.tessellationSegments, 6);
-    tessellateModifier.modify(tessellatedGeometry);
+    try {
+        // Clone the geometry and ensure it's valid
+        const tessellatedGeometry = geometry.clone();
+        if (!tessellatedGeometry.attributes.position) {
+            throw new Error('No position attribute in geometry');
+        }
 
-    const numFaces = tessellatedGeometry.attributes.position.count / 3;
-    const colors = new Float32Array(numFaces * 3 * 3);
-    const displacement = new Float32Array(numFaces * 3 * 3);
-    const color = new THREE.Color();
-    const baseColor = new THREE.Color(materialParams.color);
-    const baseHSL = {};
-    baseColor.getHSL(baseHSL);
+        // Apply tessellation with safe default values
+        const tessellateModifier = new TessellateModifier(
+            Math.max(1, materialParams.tessellationSegments || 8),
+            6
+        );
+        tessellateModifier.modify(tessellatedGeometry);
 
-    for (let f = 0; f < numFaces; f++) {
-        const index = 9 * f;
-        let h, s, l;
+        // Calculate faces and create arrays
+        const numFaces = tessellatedGeometry.attributes.position.count / 3;
+        const colors = new Float32Array(numFaces * 3 * 3);
+        const displacement = new Float32Array(numFaces * 3 * 3);
         
-        switch (materialParams.colorPattern) {
-            case 'gradient':
-                const progress = f / numFaces;
-                h = baseHSL.h + (materialParams.colorHueRange * progress);
-                s = baseHSL.s + (materialParams.colorSatRange * progress);
-                l = baseHSL.l + (materialParams.colorLightRange * progress);
-                break;
-            case 'waves':
-                const wave = Math.sin(f * 0.1);
-                h = baseHSL.h + (materialParams.colorHueRange * wave * 0.5);
-                s = baseHSL.s + (materialParams.colorSatRange * wave * 0.5);
-                l = baseHSL.l + (materialParams.colorLightRange * wave * 0.5);
-                break;
-            default: // random
-                h = baseHSL.h + (Math.random() - 0.5) * materialParams.colorHueRange;
-                s = baseHSL.s + (Math.random() - 0.5) * materialParams.colorSatRange;
-                l = baseHSL.l + (Math.random() - 0.5) * materialParams.colorLightRange;
-                break;
+        // Initialize color
+        const color = new THREE.Color();
+        const baseColor = new THREE.Color(materialParams.color || '#ffffff');
+        const baseHSL = {};
+        baseColor.getHSL(baseHSL);
+
+        // Initialize arrays with safe values
+        for (let f = 0; f < numFaces; f++) {
+            const index = 9 * f;
+            let h, s, l;
+            
+            // Calculate color based on pattern with safe defaults
+            switch (materialParams.colorPattern || 'random') {
+                case 'gradient':
+                    const progress = f / numFaces;
+                    h = baseHSL.h + (materialParams.colorHueRange || 0.2) * progress;
+                    s = baseHSL.s + (materialParams.colorSatRange || 0.5) * progress;
+                    l = baseHSL.l + (materialParams.colorLightRange || 0.3) * progress;
+                    break;
+                case 'waves':
+                    const wave = Math.sin(f * 0.1);
+                    h = baseHSL.h + (materialParams.colorHueRange || 0.2) * wave * 0.5;
+                    s = baseHSL.s + (materialParams.colorSatRange || 0.5) * wave * 0.5;
+                    l = baseHSL.l + (materialParams.colorLightRange || 0.3) * wave * 0.5;
+                    break;
+                default: // random
+                    h = baseHSL.h + (Math.random() - 0.5) * (materialParams.colorHueRange || 0.2);
+                    s = baseHSL.s + (Math.random() - 0.5) * (materialParams.colorSatRange || 0.5);
+                    l = baseHSL.l + (Math.random() - 0.5) * (materialParams.colorLightRange || 0.3);
+                    break;
+            }
+
+            // Ensure color values are in valid range
+            h = ((h % 1) + 1) % 1;
+            s = Math.max(0, Math.min(1, s));
+            l = Math.max(0, Math.min(1, l));
+
+            color.setHSL(h, s, l);
+            const d = 10 * (0.5 - Math.random());
+
+            // Set colors and displacement for each vertex of the face
+            for (let i = 0; i < 3; i++) {
+                colors[index + (3 * i)] = color.r;
+                colors[index + (3 * i) + 1] = color.g;
+                colors[index + (3 * i) + 2] = color.b;
+
+                displacement[index + (3 * i)] = d;
+                displacement[index + (3 * i) + 1] = d;
+                displacement[index + (3 * i) + 2] = d;
+            }
         }
 
-        h = ((h % 1) + 1) % 1;
-        s = Math.max(0, Math.min(1, s));
-        l = Math.max(0, Math.min(1, l));
+        // Add attributes to geometry
+        tessellatedGeometry.setAttribute('customColor', new THREE.BufferAttribute(colors, 3));
+        tessellatedGeometry.setAttribute('displacement', new THREE.BufferAttribute(displacement, 3));
 
-        color.setHSL(h, s, l);
-        const d = 10 * (0.5 - Math.random());
+        // Ensure geometry is properly set up for rendering
+        tessellatedGeometry.computeVertexNormals();
+        tessellatedGeometry.computeBoundingSphere();
 
-        for (let i = 0; i < 3; i++) {
-            colors[index + (3 * i)] = color.r;
-            colors[index + (3 * i) + 1] = color.g;
-            colors[index + (3 * i) + 2] = color.b;
-
-            displacement[index + (3 * i)] = d;
-            displacement[index + (3 * i) + 1] = d;
-            displacement[index + (3 * i) + 2] = d;
-        }
+        return tessellatedGeometry;
+    } catch (error) {
+        console.error('Error creating tessellated geometry:', error);
+        // Return original geometry as fallback
+        return geometry.clone();
     }
-
-    tessellatedGeometry.setAttribute('customColor', new THREE.BufferAttribute(colors, 3));
-    tessellatedGeometry.setAttribute('displacement', new THREE.BufferAttribute(displacement, 3));
-
-    return tessellatedGeometry;
 }
 
+
 function createWireframeMaterial(geometry) {
-    const positions = geometry.attributes.position;
-    const count = positions.count;
-    const displacement = new Float32Array(count * 3);
-    const colors = new Float32Array(count * 3);
-    const color = new THREE.Color();
-    const baseColor = new THREE.Color(materialParams.color);
-    const baseHSL = {};
-    baseColor.getHSL(baseHSL);
+    try {
+        const positions = geometry.attributes.position;
+        if (!positions) throw new Error('No position attribute in geometry');
 
-    for (let i = 0; i < count; i++) {
-        displacement[i * 3] = (Math.random() - 0.5) * 3;
-        displacement[i * 3 + 1] = (Math.random() - 0.5) * 3;
-        displacement[i * 3 + 2] = (Math.random() - 0.5) * 3;
+        const count = positions.count;
+        const displacement = new Float32Array(count * 3);
+        const colors = new Float32Array(count * 3);
+        const color = new THREE.Color();
+        const baseColor = new THREE.Color(materialParams.color || '#ffffff');
+        const baseHSL = {};
+        baseColor.getHSL(baseHSL);
 
-        const progress = i / count;
-        const h = baseHSL.h + (Math.random() - 0.5) * materialParams.colorHueRange;
-        const s = baseHSL.s + (Math.random() - 0.5) * materialParams.colorSatRange;
-        const l = baseHSL.l + (Math.random() - 0.5) * materialParams.colorLightRange;
-        color.setHSL(h, s, l);
-        color.toArray(colors, i * 3);
+        // Initialize arrays
+        for (let i = 0; i < count; i++) {
+            displacement[i * 3] = (Math.random() - 0.5) * 3;
+            displacement[i * 3 + 1] = (Math.random() - 0.5) * 3;
+            displacement[i * 3 + 2] = (Math.random() - 0.5) * 3;
+
+            const progress = i / count;
+            const h = baseHSL.h + (Math.random() - 0.5) * (materialParams.colorHueRange || 0.2);
+            const s = baseHSL.s + (Math.random() - 0.5) * (materialParams.colorSatRange || 0.5);
+            const l = baseHSL.l + (Math.random() - 0.5) * (materialParams.colorLightRange || 0.3);
+            color.setHSL(h, s, l);
+            color.toArray(colors, i * 3);
+        }
+
+        geometry.setAttribute('displacement', new THREE.BufferAttribute(displacement, 3));
+        geometry.setAttribute('customColor', new THREE.BufferAttribute(colors, 3));
+
+        const material = new THREE.ShaderMaterial({
+            uniforms: {
+                amplitude: { value: 0.0 },
+                opacity: { value: materialParams.wireframeOpacity || 0.8 },
+                baseColor: { value: new THREE.Color(materialParams.color || '#ffffff') }
+            },
+            vertexShader,
+            fragmentShader: wireframeFragmentShader,
+            blending: THREE.AdditiveBlending,
+            depthTest: false,
+            transparent: true,
+            wireframe: true
+        });
+
+        return material;
+    } catch (error) {
+        console.error('Error creating wireframe material:', error);
+        // Return a basic wireframe material as fallback
+        return new THREE.MeshBasicMaterial({
+            color: materialParams.color || '#ffffff',
+            wireframe: true
+        });
     }
-
-    geometry.setAttribute('displacement', new THREE.BufferAttribute(displacement, 3));
-    geometry.setAttribute('customColor', new THREE.BufferAttribute(colors, 3));
-
-    return new THREE.ShaderMaterial({
-        uniforms: {
-            amplitude: { value: 0.0 },
-            opacity: { value: materialParams.wireframeOpacity },
-            baseColor: { value: new THREE.Color(materialParams.color) }
-        },
-        vertexShader,
-        fragmentShader: wireframeFragmentShader,
-        blending: THREE.AdditiveBlending,
-        depthTest: false,
-        transparent: true,
-        wireframe: true
-    });
 }
 
 function createShaderMaterial() {
-    return new THREE.ShaderMaterial({
-        uniforms: {
-            amplitude: { value: 0.0 },
-            metalness: { value: materialParams.metalness },
-            roughness: { value: materialParams.roughness }
-        },
-        vertexShader,
-        fragmentShader: tessellationFragmentShader,
-        wireframe: false
-    });
+    try {
+        return new THREE.ShaderMaterial({
+            uniforms: {
+                amplitude: { value: 0.0 },
+                metalness: { value: materialParams.metalness || 0 },
+                roughness: { value: materialParams.roughness || 0.5 }
+            },
+            vertexShader,
+            fragmentShader: tessellationFragmentShader,
+            wireframe: false,
+            // Add these properties to ensure proper rendering
+            transparent: false,
+            side: THREE.DoubleSide,
+            vertexColors: true
+        });
+    } catch (error) {
+        console.error('Error creating shader material:', error);
+        // Return a basic material as fallback
+        return new THREE.MeshStandardMaterial({
+            color: materialParams.color || '#ffffff',
+            metalness: materialParams.metalness || 0,
+            roughness: materialParams.roughness || 0.5
+        });
+    }
 }
 
 function sampleGeometryPoints(geometry, density) {
     const positions = [];
     const positionAttribute = geometry.attributes.position;
     const faces = positionAttribute.count / 3;
-    
+
+    // Adjust the density factor to be more reasonable
+    const densityFactor = 300; // Reduced from 1000 but still maintains good visual quality
+
     for (let face = 0; face < faces; face++) {
         const a = new THREE.Vector3();
         const b = new THREE.Vector3();
@@ -205,7 +264,7 @@ function sampleGeometryPoints(geometry, density) {
         }
         
         const area = getTriangleArea(a, b, c);
-        const numPoints = Math.ceil(area * density * 1000);
+        const numPoints = Math.ceil(area * density * densityFactor);
         
         for (let i = 0; i < numPoints; i++) {
             const point = getRandomPointInTriangle(a, b, c);
@@ -240,97 +299,166 @@ function getRandomPointInTriangle(a, b, c) {
 }
 
 function createParticleMaterial(geometry) {
-    const textureCoordinates = sampleGeometryPoints(geometry, materialParams.particleDensity);
-    
-    let particleGeometry;
-    switch (materialParams.particleShape) {
-        case 'cube':
-            particleGeometry = new THREE.BoxGeometry(
-                materialParams.particleSize,
-                materialParams.particleSize,
-                materialParams.particleSize
+    try {
+        const textureCoordinates = sampleGeometryPoints(geometry, materialParams.particleDensity);
+        
+        let particleGeometry;
+        const size = materialParams.particleSize * 1.5;
+        switch (materialParams.particleShape) {
+            case 'cube':
+                particleGeometry = new THREE.BoxGeometry(
+                    size,
+                    size,
+                    size
+                );
+                break;
+            case 'torus':
+                particleGeometry = new THREE.TorusGeometry(
+                    size,
+                    size * 0.5,
+                    8,
+                    16
+                );
+                break;
+            default: // sphere
+                particleGeometry = new THREE.SphereGeometry(
+                    size,
+                    8, // Slightly increased segments for better quality
+                    8
+                );
+        }
+
+        // Create array for colors
+        const colors = new Float32Array(textureCoordinates.length * 3);
+        const baseColor = new THREE.Color(materialParams.color || '#ffffff');
+        const baseHSL = {};
+        baseColor.getHSL(baseHSL);
+        const color = new THREE.Color();
+
+        // Apply color pattern
+        for(let i = 0; i < textureCoordinates.length; i++) {
+            let h, s, l;
+            const progress = i / textureCoordinates.length;
+            
+            switch (materialParams.colorPattern || 'random') {
+                case 'gradient':
+                    h = baseHSL.h + ((materialParams.colorHueRange || 0.2) * progress);
+                    s = baseHSL.s + ((materialParams.colorSatRange || 0.5) * progress);
+                    l = baseHSL.l + ((materialParams.colorLightRange || 0.3) * progress);
+                    break;
+                case 'waves':
+                    const wave = Math.sin(progress * Math.PI * 2);
+                    h = baseHSL.h + ((materialParams.colorHueRange || 0.2) * wave * 0.5);
+                    s = baseHSL.s + ((materialParams.colorSatRange || 0.5) * wave * 0.5);
+                    l = baseHSL.l + ((materialParams.colorLightRange || 0.3) * wave * 0.5);
+                    break;
+                default: // random
+                    h = baseHSL.h + (Math.random() - 0.5) * (materialParams.colorHueRange || 0.2);
+                    s = baseHSL.s + (Math.random() - 0.5) * (materialParams.colorSatRange || 0.5);
+                    l = baseHSL.l + (Math.random() - 0.5) * (materialParams.colorLightRange || 0.3);
+            }
+            
+            h = ((h % 1) + 1) % 1;
+            s = Math.max(0, Math.min(1, s));
+            l = Math.max(0, Math.min(1, l));
+            
+            color.setHSL(h, s, l);
+            colors[i * 3] = color.r;
+            colors[i * 3 + 1] = color.g;
+            colors[i * 3 + 2] = color.b;
+        }
+
+        // Create instanced mesh with colors
+        const particleMaterial = new THREE.MeshStandardMaterial({
+            color: 0xffffff,
+            vertexColors: true,
+            metalness: materialParams.metalness || 0,
+            roughness: materialParams.roughness || 0.5,
+            emissive: new THREE.Color(0x222222)
+        });
+
+        const instancedMesh = new THREE.InstancedMesh(
+            particleGeometry,
+            particleMaterial,
+            textureCoordinates.length
+        );
+
+        const dummy = new THREE.Object3D();
+        const scale = materialParams.particleScale || 1.0;
+
+        // Set initial positions and store original positions for animation
+        textureCoordinates.forEach((point, i) => {
+            dummy.position.set(
+                point.x,
+                point.y,
+                point.z
             );
-            break;
-        case 'torus':
-            particleGeometry = new THREE.TorusGeometry(
-                materialParams.particleSize,
-                materialParams.particleSize * 0.5,
-                16,
-                32
+            dummy.rotation.set(
+                Math.random() * Math.PI,
+                Math.random() * Math.PI,
+                Math.random() * Math.PI
             );
-            break;
-        default: // sphere
-            particleGeometry = new THREE.SphereGeometry(
-                materialParams.particleSize,
-                8,
-                8
-            );
+            dummy.scale.set(scale, scale, scale);
+            dummy.updateMatrix();
+            instancedMesh.setMatrixAt(i, dummy.matrix);
+            // Set color for this instance
+            instancedMesh.setColorAt(i, new THREE.Color(colors[i * 3], colors[i * 3 + 1], colors[i * 3 + 2]));
+        });
+
+        instancedMesh.instanceMatrix.needsUpdate = true;
+        if (instancedMesh.instanceColor) instancedMesh.instanceColor.needsUpdate = true;
+        instancedMesh.userData.originalPositions = textureCoordinates;
+
+        return {
+            geometry: geometry,
+            material: particleMaterial,
+            mesh: instancedMesh
+        };
+    } catch (error) {
+        console.error('Error creating particle material:', error);
+        // Return a basic material as fallback
+        return {
+            geometry: geometry,
+            material: new THREE.MeshStandardMaterial({
+                color: materialParams.color || '#ffffff',
+                metalness: materialParams.metalness || 0,
+                roughness: materialParams.roughness || 0.5
+            })
+        };
     }
-
-    const particleMaterial = new THREE.MeshStandardMaterial({
-        color: new THREE.Color(materialParams.color),
-        metalness: materialParams.metalness,
-        roughness: materialParams.roughness
-    });
-
-    const instancedMesh = new THREE.InstancedMesh(
-        particleGeometry,
-        particleMaterial,
-        textureCoordinates.length
-    );
-
-    const dummy = new THREE.Object3D();
-    const scale = materialParams.particleScale;
-
-    textureCoordinates.forEach((point, i) => {
-        const randomOffset = materialParams.particleRandomness;
-        const rx = (Math.random() - 0.5) * randomOffset;
-        const ry = (Math.random() - 0.5) * randomOffset;
-        const rz = (Math.random() - 0.5) * randomOffset;
-
-        dummy.position.set(
-            point.x + rx,
-            point.y + ry,
-            point.z + rz
-        );
-
-        dummy.rotation.set(
-            Math.random() * Math.PI,
-            Math.random() * Math.PI,
-            Math.random() * Math.PI
-        );
-
-        dummy.scale.set(scale, scale, scale);
-        dummy.updateMatrix();
-        instancedMesh.setMatrixAt(i, dummy.matrix);
-    });
-
-    instancedMesh.instanceMatrix.needsUpdate = true;
-    instancedMesh.userData.originalPositions = textureCoordinates;
-
-    return {
-        geometry: geometry,
-        material: particleMaterial,
-        mesh: instancedMesh
-    };
 }
 
 export function createMaterial(geometry) {
-    if (materialParams.particlesEnabled) {
-        return createParticleMaterial(geometry);
-    } else if (materialParams.wireframeEnabled) {
-        const wireframeMaterial = createWireframeMaterial(geometry);
-        return {
-            geometry: geometry,
-            material: wireframeMaterial
-        };
-    } else if (materialParams.tessellationEnabled) {
-        const tessellatedGeometry = createTessellatedGeometry(geometry);
-        return {
-            geometry: tessellatedGeometry,
-            material: createShaderMaterial()
-        };
-    } else {
+    // Ensure we have a valid geometry
+    if (!geometry) return null;
+
+    try {
+        if (materialParams.particlesEnabled) {
+            return createParticleMaterial(geometry);
+        } else if (materialParams.wireframeEnabled) {
+            return {
+                geometry: geometry,
+                material: createWireframeMaterial(geometry)
+            };
+        } else if (materialParams.tessellationEnabled) {
+            const tessellatedGeometry = createTessellatedGeometry(geometry);
+            return {
+                geometry: tessellatedGeometry,
+                material: createShaderMaterial()
+            };
+        } else {
+            return {
+                geometry: geometry,
+                material: new THREE.MeshStandardMaterial({
+                    color: new THREE.Color(materialParams.color),
+                    metalness: materialParams.metalness,
+                    roughness: materialParams.roughness
+                })
+            };
+        }
+    } catch (error) {
+        console.error('Error creating material:', error);
+        // Fallback to standard material if something goes wrong
         return {
             geometry: geometry,
             material: new THREE.MeshStandardMaterial({
@@ -382,23 +510,30 @@ export function updateParticleAnimation(mesh, time) {
     const speed = materialParams.manipulationAnimationSpeed;
 
     positions.forEach((pos, i) => {
-        // Calculate animated position
-        const angle = time * speed + i * 0.1;
-        const offsetX = Math.sin(angle) * intensity * 0.1;
-        const offsetY = Math.cos(angle * 0.7) * intensity * 0.1;
-        const offsetZ = Math.sin(angle * 0.5) * intensity * 0.1;
+        // Calculate direction from center (0,0,0) to particle
+        const dirX = pos.x;
+        const dirY = pos.y;
+        const dirZ = pos.z;
+        
+        // Normalize direction
+        const length = Math.sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
+        const normX = dirX / length;
+        const normY = dirY / length;
+        const normZ = dirZ / length;
 
+        // Create exploded position using normalized direction
+        const explosionFactor = Math.sin(time * speed) * intensity;
         dummy.position.set(
-            pos.x + offsetX,
-            pos.y + offsetY,
-            pos.z + offsetZ
+            pos.x + normX * explosionFactor,
+            pos.y + normY * explosionFactor,
+            pos.z + normZ * explosionFactor
         );
 
-        // Animate rotation too
+        // Add some rotation for more interesting movement
         dummy.rotation.set(
-            Math.sin(angle * 0.5) * 0.5,
-            Math.cos(angle * 0.3) * 0.5,
-            Math.sin(angle * 0.7) * 0.5
+            time * speed * 0.5,
+            time * speed * 0.3,
+            time * speed * 0.4
         );
 
         dummy.updateMatrix();

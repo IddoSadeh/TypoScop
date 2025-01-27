@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,8 +12,8 @@
             "three/addons/": "https://unpkg.com/three@0.152.0/examples/jsm/"
         }
     }
-    </script>
-
+  </script>
+  
   <style>
     .disabled-controls {
       opacity: 0.5;
@@ -23,6 +22,17 @@
     }
 
     .disabled-controls.enabled {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .particle-controls {
+      opacity: 0.5;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .particle-controls.enabled {
       opacity: 1;
       pointer-events: auto;
     }
@@ -72,19 +82,15 @@
 
         <!-- Chat Interface Section -->
         <h3>AI Chat Assistant</h3>
-
         <div id="chat-box" class="chat-box"></div>
         <div class="chat-input">
-          <input id="promptInput" type="text" placeholder="Describe how to customize the scene..."
-            aria-label="Chat input">
+          <input id="promptInput" type="text" placeholder="Describe how to customize the scene..." aria-label="Chat input">
           <button id="send" aria-label="Send message">Send</button>
         </div>
-
       </section>
 
       <!-- Manual Controls Tab -->
       <section class="tab-content" id="manual-tab">
-
         <!-- Basic Material Controls -->
         <div class="control-section">
           <button class="collapsible active">Material</button>
@@ -117,121 +123,93 @@
             </div>
           </div>
         </div>
-<!-- Add this within the Material control section -->
-<div class="control-section">
-  <button class="collapsible">Particle Settings</button>
-  <div class="collapsible-content">
-      <div class="toggle-group">
-          <label for="particle-toggle">Enable Particles</label>
-          <input type="checkbox" id="particle-toggle">
-      </div>
 
-      <div class="select-group">
-          <label for="particle-shape">Particle Shape</label>
-          <select id="particle-shape">
-              <option value="sphere">Sphere</option>
-              <option value="cube">Cube</option>
-              <option value="torus">Torus</option>
-          </select>
-      </div>
+        <!-- Manipulation Section -->
+        <div class="control-section">
+          <button class="collapsible">Manipulation</button>
+          <div class="collapsible-content">
+            <!-- Manipulation Type Toggles -->
+            <div class="toggle-group">
+              <div class="checkbox-group">
+                <input type="checkbox" id="wireframe-toggle">
+                <label for="wireframe-toggle">Wireframe</label>
+              </div>
+              <div class="checkbox-group">
+                <input type="checkbox" id="tessellation-toggle">
+                <label for="tessellation-toggle">Tessellation</label>
+              </div>
+              <div class="checkbox-group">
+                <input type="checkbox" id="particle-toggle">
+                <label for="particle-toggle">Particles</label>
+              </div>
+            </div>
 
-      <div class="slider-group">
-          <label for="particle-size">Particle Size</label>
-          <input type="range" id="particle-size" 
-                 min="0.01" max="0.2" step="0.01" value="0.05">
-          <span class="value-display">0.05</span>
-      </div>
+            <!-- Tessellation Segments -->
+            <div id="tessellation-segments" class="slider-group" style="display: none;">
+              <label for="tessellation-detail">Segments</label>
+              <input type="range" id="tessellation-detail" min="1" max="50" step="1" value="8">
+              <span class="value-display">8</span>
+            </div>
 
-      <div class="slider-group">
-          <label for="particle-density">Density</label>
-          <input type="range" id="particle-density" 
-                 min="0.1" max="5.0" step="0.1" value="1.0">
-          <span class="value-display">1.0</span>
-      </div>
+            <!-- Animation Controls -->
+            <div id="manipulation-animation-controls" class="disabled-controls">
+              <div class="toggle-group">
+                <label for="manipulation-animation-toggle">Enable Animation</label>
+                <input type="checkbox" id="manipulation-animation-toggle">
+              </div>
 
-      <div class="slider-group">
-          <label for="particle-randomness">Random Offset</label>
-          <input type="range" id="particle-randomness" 
-                 min="0" max="0.5" step="0.01" value="0.1">
-          <span class="value-display">0.1</span>
-      </div>
+              <div class="slider-group">
+                <label for="manipulation-animation-speed">Animation Speed</label>
+                <input type="range" id="manipulation-animation-speed" min="0.1" max="2.0" step="0.1" value="0.5">
+                <span class="value-display">0.5</span>
+              </div>
 
-      <div class="slider-group">
-          <label for="particle-scale">Scale</label>
-          <input type="range" id="particle-scale" 
-                 min="0.1" max="2.0" step="0.1" value="1.0">
-          <span class="value-display">1.0</span>
-      </div>
+              <div class="slider-group">
+                <label for="manipulation-animation-intensity">Animation Intensity</label>
+                <input type="range" id="manipulation-animation-intensity" min="0.1" max="3.0" step="0.1" value="1.0">
+                <span class="value-display">1.0</span>
+              </div>
+            </div>
 
-      <!-- Particle Animation Controls -->
-      <div class="animation-controls">
-          <div class="toggle-group">
-              <label for="particle-animation-toggle">Enable Animation</label>
-              <input type="checkbox" id="particle-animation-toggle">
+            <!-- Particle Controls -->
+            <div id="particle-controls" class="particle-controls">
+              <div class="select-group">
+                <label for="particle-shape">Particle Shape</label>
+                <select id="particle-shape">
+                  <option value="sphere">Sphere</option>
+                  <option value="cube">Cube</option>
+                  <option value="torus">Torus</option>
+                </select>
+              </div>
+
+              <div class="slider-group">
+                <label for="particle-size">Particle Size</label>
+                <input type="range" id="particle-size" min="0.01" max="1.0" step="0.01" value="0.05">
+                <span class="value-display">0.05</span>
+              </div>
+
+              <div class="slider-group">
+                <label for="particle-density">Density</label>
+                <input type="range" id="particle-density" min="0.1" max="1.0" step="0.1" value="1.0">
+                <span class="value-display">1.0</span>
+              </div>
+
+              <div class="slider-group">
+                <label for="particle-randomness">Random Offset</label>
+                <input type="range" id="particle-randomness" min="0" max="0.5" step="0.01" value="0.1">
+                <span class="value-display">0.1</span>
+              </div>
+
+              <div class="slider-group">
+                <label for="particle-scale">Scale</label>
+                <input type="range" id="particle-scale" min="0.1" max="1.0" step="0.1" value="1.0">
+                <span class="value-display">1.0</span>
+              </div>
+            </div>
           </div>
+        </div>
 
-          <div class="slider-group">
-              <label for="particle-animation-speed">Animation Speed</label>
-              <input type="range" id="particle-animation-speed" 
-                     min="0.1" max="2.0" step="0.1" value="0.5">
-              <span class="value-display">0.5</span>
-          </div>
-
-          <div class="slider-group">
-              <label for="particle-animation-intensity">Animation Intensity</label>
-              <input type="range" id="particle-animation-intensity" 
-                     min="0.1" max="3.0" step="0.1" value="1.0">
-              <span class="value-display">1.0</span>
-          </div>
-      </div>
-  </div>
-</div>
-<div class="control-section">
-  <button class="collapsible">Manipulation</button>
-  <div class="collapsible-content">
-    <!-- Manipulation Type Toggles -->
-    <div class="toggle-group">
-      <div class="checkbox-group">
-        <input type="checkbox" id="wireframe-toggle">
-        <label for="wireframe-toggle">Wireframe</label>
-      </div>
-      <div class="checkbox-group">
-        <input type="checkbox" id="tessellation-toggle">
-        <label for="tessellation-toggle">Tessellation</label>
-      </div>
-      
-    </div>
-
-    <!-- Tessellation Segments (only visible when tessellation is active) -->
-    <div id="tessellation-segments" class="slider-group" style="display: none;">
-      <label for="tessellation-detail">Segments</label>
-      <input type="range" id="tessellation-detail" min="1" max="50" step="1" value="8">
-      <span class="value-display">8</span>
-    </div>
-
-    <!-- Animation Controls -->
-    <div id="manipulation-animation-controls" class="disabled-controls">
-      <div class="toggle-group">
-        <label for="manipulation-animation-toggle">Enable Animation</label>
-        <input type="checkbox" id="manipulation-animation-toggle">
-      </div>
-
-      <div class="slider-group">
-        <label for="manipulation-animation-speed">Animation Speed</label>
-        <input type="range" id="manipulation-animation-speed" min="0.1" max="2.0" step="0.1" value="0.5">
-        <span class="value-display">0.5</span>
-      </div>
-
-      <div class="slider-group">
-        <label for="manipulation-animation-intensity">Animation Intensity</label>
-        <input type="range" id="manipulation-animation-intensity" min="0.1" max="3.0" step="0.1" value="1.0">
-        <span class="value-display">1.0</span>
-      </div>
-    </div>
-  </div>
-</div>
-
-        <!-- Color Pattern Controls (dependent on manipulation) -->
+        <!-- Color Pattern Controls -->
         <div id="color-pattern-section" class="control-section disabled-controls">
           <button class="collapsible">Manipulation Color Pattern</button>
           <div class="collapsible-content">
@@ -282,14 +260,11 @@
           </div>
         </div>
 
-
-
-
-        <!-- Animation controls section for manual-tab -->
-
+        <!-- Animation Controls -->
         <div class="control-section">
           <button class="collapsible">Animation</button>
           <div class="collapsible-content">
+            <!-- Rotation Controls -->
             <div class="rotation-control-group">
               <div class="axis-control">
                 <div class="axis-header">
@@ -324,7 +299,8 @@
                 </div>
               </div>
             </div>
-            <!-- Scale/Pulse Animation Controls -->
+
+            <!-- Scale/Pulse Animation -->
             <div class="axis-control">
               <div class="axis-header">
                 <label>Scale/Pulse</label>
@@ -347,7 +323,7 @@
               </div>
             </div>
 
-            <!-- Scramble Animation Controls -->
+            <!-- Scramble Animation -->
             <div class="axis-control">
               <div class="axis-header">
                 <label>Letter Scramble</label>
