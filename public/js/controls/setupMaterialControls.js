@@ -64,7 +64,7 @@ function setupManipulationControls() {
 
         // Color pattern visibility (only for tessellation and wireframe)
         if (colorPatternSection) {
-            colorPatternSection.classList.toggle('enabled', isTessellationActive || isWireframeActive);
+            colorPatternSection.classList.toggle('enabled', isAnyManipulationActive);
         }
 
         // Tessellation segments visibility
@@ -205,7 +205,9 @@ function setupColorPatternControls() {
         element?.addEventListener('input', (e) => {
             materialParams[paramName] = parseFloat(e.target.value);
             e.target.nextElementSibling.textContent = materialParams[paramName].toFixed(2);
-            if (materialParams.tessellationEnabled || materialParams.wireframeEnabled) {
+            if ( materialParams.tessellationEnabled ||
+                materialParams.wireframeEnabled ||
+                materialParams.particlesEnabled) {
                 createText();
             }
         });
@@ -221,8 +223,11 @@ function setupColorPatternControls() {
     const patternSelect = document.getElementById('color-pattern');
     patternSelect?.addEventListener('change', (e) => {
         materialParams.colorPattern = e.target.value;
-        if (materialParams.tessellationEnabled || materialParams.wireframeEnabled) {
+        if ( materialParams.tessellationEnabled ||
+            materialParams.wireframeEnabled ||
+            materialParams.particlesEnabled) {
             createText();
         }
+        
     });
 }

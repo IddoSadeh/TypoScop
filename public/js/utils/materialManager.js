@@ -241,39 +241,44 @@ function createShaderMaterial() {
 }
 
 function sampleGeometryPoints(geometry, density) {
-    const positions = [];
+    const samples = [];
     const positionAttribute = geometry.attributes.position;
     const faces = positionAttribute.count / 3;
-
-    // Adjust the density factor to be more reasonable
-    const densityFactor = 300; // Reduced from 1000 but still maintains good visual quality
-
+    const densityFactor = 300; // Adjust density factor as needed
+  
     for (let face = 0; face < faces; face++) {
-        const a = new THREE.Vector3();
-        const b = new THREE.Vector3();
-        const c = new THREE.Vector3();
-        
-        for (let i = 0; i < 3; i++) {
-            const baseIndex = face * 9 + i * 3;
-            const vertex = i === 0 ? a : (i === 1 ? b : c);
-            vertex.set(
-                positionAttribute.array[baseIndex],
-                positionAttribute.array[baseIndex + 1],
-                positionAttribute.array[baseIndex + 2]
-            );
-        }
-        
-        const area = getTriangleArea(a, b, c);
-        const numPoints = Math.ceil(area * density * densityFactor);
-        
-        for (let i = 0; i < numPoints; i++) {
-            const point = getRandomPointInTriangle(a, b, c);
-            positions.push(point);
-        }
+      const a = new THREE.Vector3();
+      const b = new THREE.Vector3();
+      const c = new THREE.Vector3();
+  
+      for (let i = 0; i < 3; i++) {
+        const baseIndex = face * 9 + i * 3;
+        const vertex = (i === 0) ? a : (i === 1 ? b : c);
+        vertex.set(
+          positionAttribute.array[baseIndex],
+          positionAttribute.array[baseIndex + 1],
+          positionAttribute.array[baseIndex + 2]
+        );
+      }
+      
+      // Compute the face normal.
+      const normal = new THREE.Vector3();
+      normal.crossVectors(b.clone().sub(a), c.clone().sub(a)).normalize();
+  
+      const area = getTriangleArea(a, b, c);
+      const numPoints = Math.ceil(area * density * densityFactor);
+  
+      for (let i = 0; i < numPoints; i++) {
+        const point = getRandomPointInTriangle(a, b, c);
+        samples.push({
+          position: point,
+          normal: { x: normal.x, y: normal.y, z: normal.z }
+        });
+      }
     }
-    
-    return positions;
-}
+    return samples;
+  }
+  
 
 function getTriangleArea(a, b, c) {
     const ab = new THREE.Vector3().subVectors(b, a);
@@ -298,135 +303,150 @@ function getRandomPointInTriangle(a, b, c) {
     };
 }
 
+
 function createParticleMaterial(geometry) {
     try {
-        const textureCoordinates = sampleGeometryPoints(geometry, materialParams.particleDensity);
-        
-        let particleGeometry;
-        const size = materialParams.particleSize * 1.5;
-        switch (materialParams.particleShape) {
-            case 'cube':
-                particleGeometry = new THREE.BoxGeometry(
-                    size,
-                    size,
-                    size
-                );
-                break;
-            case 'torus':
-                particleGeometry = new THREE.TorusGeometry(
-                    size,
-                    size * 0.5,
-                    8,
-                    16
-                );
-                break;
-            default: // sphere
-                particleGeometry = new THREE.SphereGeometry(
-                    size,
-                    8, // Slightly increased segments for better quality
-                    8
-                );
+      // Get an array of sample objects ({position, normal})
+      const textureSamples = sampleGeometryPoints(geometry, materialParams.particleDensity);
+      const instanceCount = textureSamples.length;
+  
+      // Create the particle geometry based on the selected shape.
+      let particleGeometry;
+      const size = materialParams.particleSize * 1.5;
+      switch (materialParams.particleShape) {
+        case 'cube':
+          particleGeometry = new THREE.BoxGeometry(size, size, size);
+          break;
+        case 'torus':
+          particleGeometry = new THREE.TorusGeometry(size, size * 0.5, 8, 16);
+          break;
+        default: // sphere
+          particleGeometry = new THREE.SphereGeometry(size, 8, 8);
+      }
+  
+      // Prepare an array for instance colors.
+      const colorsArray = new Float32Array(instanceCount * 3);
+      const baseColor = new THREE.Color(materialParams.color || '#ffffff');
+      const baseHSL = {};
+      baseColor.getHSL(baseHSL);
+      const tempColor = new THREE.Color();
+  
+      // Compute a color for each instance.
+      for (let i = 0; i < instanceCount; i++) {
+        let h, s, l;
+        const progress = i / instanceCount;
+        if (materialParams.colorPattern === 'gradient') {
+          h = baseHSL.h + ((materialParams.colorHueRange || 0.2) * progress);
+          s = baseHSL.s + ((materialParams.colorSatRange || 0.5) * progress);
+          l = baseHSL.l + ((materialParams.colorLightRange || 0.3) * progress);
+        } else if (materialParams.colorPattern === 'waves') {
+          const wave = Math.sin(progress * Math.PI * 2);
+          h = baseHSL.h + ((materialParams.colorHueRange || 0.2) * wave * 0.5);
+          s = baseHSL.s + ((materialParams.colorSatRange || 0.5) * wave * 0.5);
+          l = baseHSL.l + ((materialParams.colorLightRange || 0.3) * wave * 0.5);
+        } else { // random
+          h = baseHSL.h + (Math.random() - 0.5) * (materialParams.colorHueRange || 0.2);
+          s = baseHSL.s + (Math.random() - 0.5) * (materialParams.colorSatRange || 0.5);
+          l = baseHSL.l + (Math.random() - 0.5) * (materialParams.colorLightRange || 0.3);
         }
-
-        // Create array for colors
-        const colors = new Float32Array(textureCoordinates.length * 3);
-        const baseColor = new THREE.Color(materialParams.color || '#ffffff');
-        const baseHSL = {};
-        baseColor.getHSL(baseHSL);
-        const color = new THREE.Color();
-
-        // Apply color pattern
-        for(let i = 0; i < textureCoordinates.length; i++) {
-            let h, s, l;
-            const progress = i / textureCoordinates.length;
-            
-            switch (materialParams.colorPattern || 'random') {
-                case 'gradient':
-                    h = baseHSL.h + ((materialParams.colorHueRange || 0.2) * progress);
-                    s = baseHSL.s + ((materialParams.colorSatRange || 0.5) * progress);
-                    l = baseHSL.l + ((materialParams.colorLightRange || 0.3) * progress);
-                    break;
-                case 'waves':
-                    const wave = Math.sin(progress * Math.PI * 2);
-                    h = baseHSL.h + ((materialParams.colorHueRange || 0.2) * wave * 0.5);
-                    s = baseHSL.s + ((materialParams.colorSatRange || 0.5) * wave * 0.5);
-                    l = baseHSL.l + ((materialParams.colorLightRange || 0.3) * wave * 0.5);
-                    break;
-                default: // random
-                    h = baseHSL.h + (Math.random() - 0.5) * (materialParams.colorHueRange || 0.2);
-                    s = baseHSL.s + (Math.random() - 0.5) * (materialParams.colorSatRange || 0.5);
-                    l = baseHSL.l + (Math.random() - 0.5) * (materialParams.colorLightRange || 0.3);
-            }
-            
-            h = ((h % 1) + 1) % 1;
-            s = Math.max(0, Math.min(1, s));
-            l = Math.max(0, Math.min(1, l));
-            
-            color.setHSL(h, s, l);
-            colors[i * 3] = color.r;
-            colors[i * 3 + 1] = color.g;
-            colors[i * 3 + 2] = color.b;
-        }
-
-        // Create instanced mesh with colors
-        const particleMaterial = new THREE.MeshStandardMaterial({
-            color: 0xffffff,
-            vertexColors: true,
-            metalness: materialParams.metalness || 0,
-            roughness: materialParams.roughness || 0.5,
-            emissive: new THREE.Color(0x222222)
-        });
-
-        const instancedMesh = new THREE.InstancedMesh(
-            particleGeometry,
-            particleMaterial,
-            textureCoordinates.length
+        h = ((h % 1) + 1) % 1;
+        s = Math.max(0, Math.min(1, s));
+        l = Math.max(0, Math.min(1, l));
+        tempColor.setHSL(h, s, l);
+        colorsArray[i * 3] = tempColor.r;
+        colorsArray[i * 3 + 1] = tempColor.g;
+        colorsArray[i * 3 + 2] = tempColor.b;
+      }
+  
+      // Create the particle material.
+      const particleMaterial = new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        vertexColors: true,
+        metalness: materialParams.metalness || 0,
+        roughness: materialParams.roughness || 0.5,
+        emissive: new THREE.Color(materialParams.emissiveColor || 0x222222)
+      });
+  
+      // Inject shader modifications (using our revised onBeforeCompile).
+      particleMaterial.onBeforeCompile = (shader) => {
+        // Add a varying to pass the instance color.
+        shader.vertexShader = 'varying vec3 vInstanceColor;\n' + shader.vertexShader;
+        shader.vertexShader = shader.vertexShader.replace(
+          '#include <begin_vertex>',
+          `#include <begin_vertex>
+  vInstanceColor = instanceColor;`
         );
-
-        const dummy = new THREE.Object3D();
-        const scale = materialParams.particleScale || 1.0;
-
-        // Set initial positions and store original positions for animation
-        textureCoordinates.forEach((point, i) => {
-            dummy.position.set(
-                point.x,
-                point.y,
-                point.z
-            );
-            dummy.rotation.set(
-                Math.random() * Math.PI,
-                Math.random() * Math.PI,
-                Math.random() * Math.PI
-            );
-            dummy.scale.set(scale, scale, scale);
-            dummy.updateMatrix();
-            instancedMesh.setMatrixAt(i, dummy.matrix);
-            // Set color for this instance
-            instancedMesh.setColorAt(i, new THREE.Color(colors[i * 3], colors[i * 3 + 1], colors[i * 3 + 2]));
-        });
-
-        instancedMesh.instanceMatrix.needsUpdate = true;
-        if (instancedMesh.instanceColor) instancedMesh.instanceColor.needsUpdate = true;
-        instancedMesh.userData.originalPositions = textureCoordinates;
-
-        return {
-            geometry: geometry,
-            material: particleMaterial,
-            mesh: instancedMesh
-        };
+        shader.fragmentShader = 'varying vec3 vInstanceColor;\n' + shader.fragmentShader;
+        shader.fragmentShader = shader.fragmentShader.replace(
+          '#include <dithering_fragment>',
+          `#include <dithering_fragment>
+  gl_FragColor.rgb *= vInstanceColor;`
+        );
+      };
+  
+      // Create the instanced mesh.
+      const instancedMesh = new THREE.InstancedMesh(
+        particleGeometry,
+        particleMaterial,
+        instanceCount
+      );
+  
+      // Ensure the instanceColor attribute exists.
+      if (!instancedMesh.instanceColor) {
+        instancedMesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(instanceCount * 3), 3);
+      }
+  
+      // Set per-instance transformation matrices and colors.
+      const dummy = new THREE.Object3D();
+      const scale = materialParams.particleScale || 1.0;
+      for (let i = 0; i < instanceCount; i++) {
+        const sample = textureSamples[i];
+        const point = sample.position;
+        dummy.position.set(point.x, point.y, point.z);
+        dummy.rotation.set(
+          Math.random() * Math.PI,
+          Math.random() * Math.PI,
+          Math.random() * Math.PI
+        );
+        dummy.scale.set(scale, scale, scale);
+        dummy.updateMatrix();
+        instancedMesh.setMatrixAt(i, dummy.matrix);
+        // Set per-instance color.
+        instancedMesh.setColorAt(
+          i,
+          new THREE.Color(
+            colorsArray[i * 3],
+            colorsArray[i * 3 + 1],
+            colorsArray[i * 3 + 2]
+          )
+        );
+      }
+      instancedMesh.instanceMatrix.needsUpdate = true;
+      instancedMesh.instanceColor.needsUpdate = true;
+      // Store the entire sample (position & normal) for animation.
+      instancedMesh.userData.originalPositions = textureSamples;
+    
+      return {
+        geometry: geometry,
+        material: particleMaterial,
+        mesh: instancedMesh
+      };
     } catch (error) {
-        console.error('Error creating particle material:', error);
-        // Return a basic material as fallback
-        return {
-            geometry: geometry,
-            material: new THREE.MeshStandardMaterial({
-                color: materialParams.color || '#ffffff',
-                metalness: materialParams.metalness || 0,
-                roughness: materialParams.roughness || 0.5
-            })
-        };
+      console.error('Error creating particle material:', error);
+      // Fallback.
+      return {
+        geometry: geometry,
+        material: new THREE.MeshStandardMaterial({
+          color: materialParams.color || '#ffffff',
+          metalness: materialParams.metalness || 0,
+          roughness: materialParams.roughness || 0.5
+        })
+      };
     }
-}
+  }
+  
+
+
 
 export function createMaterial(geometry) {
     // Ensure we have a valid geometry
@@ -503,42 +523,30 @@ export function updateMaterialUniforms(mesh) {
 
 export function updateParticleAnimation(mesh, time) {
     if (!mesh || !mesh.isInstancedMesh) return;
-
+  
     const dummy = new THREE.Object3D();
-    const positions = mesh.userData.originalPositions;
+    const samples = mesh.userData.originalPositions; // Now an array of { position, normal }
     const intensity = materialParams.manipulationAnimationIntensity;
     const speed = materialParams.manipulationAnimationSpeed;
-
-    positions.forEach((pos, i) => {
-        // Calculate direction from center (0,0,0) to particle
-        const dirX = pos.x;
-        const dirY = pos.y;
-        const dirZ = pos.z;
-        
-        // Normalize direction
-        const length = Math.sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
-        const normX = dirX / length;
-        const normY = dirY / length;
-        const normZ = dirZ / length;
-
-        // Create exploded position using normalized direction
-        const explosionFactor = Math.sin(time * speed) * intensity;
-        dummy.position.set(
-            pos.x + normX * explosionFactor,
-            pos.y + normY * explosionFactor,
-            pos.z + normZ * explosionFactor
-        );
-
-        // Add some rotation for more interesting movement
-        dummy.rotation.set(
-            time * speed * 0.5,
-            time * speed * 0.3,
-            time * speed * 0.4
-        );
-
-        dummy.updateMatrix();
-        mesh.setMatrixAt(i, dummy.matrix);
+  
+    samples.forEach((sample, i) => {
+      const pos = sample.position;
+      const norm = sample.normal; // Use the face normal from sampling
+      const explosionFactor = Math.sin(time * speed) * intensity;
+      dummy.position.set(
+        pos.x + norm.x * explosionFactor,
+        pos.y + norm.y * explosionFactor,
+        pos.z + norm.z * explosionFactor
+      );
+      dummy.rotation.set(
+        time * speed * 0.5,
+        time * speed * 0.3,
+        time * speed * 0.4
+      );
+      dummy.updateMatrix();
+      mesh.setMatrixAt(i, dummy.matrix);
     });
-
+  
     mesh.instanceMatrix.needsUpdate = true;
-}
+  }
+  

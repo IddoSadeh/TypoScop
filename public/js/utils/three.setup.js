@@ -70,74 +70,73 @@ function setupLighting() {
 }
 
 export function createText() {
-    // Process text and get appropriate font
+    // Process text and get the appropriate font.
     const { text, font: selectedFont, isHebrew } = fontManager.processText(textParams.text, textParams.font);
-    
-    // Update the font in textParams
     textParams.font = selectedFont;
     
     fontManager.loadFont(selectedFont, isHebrew)
-        .then((font) => {
-            try {
-                const geometry = new TextGeometry(text, {
-                    font: font,
-                    size: textParams.size,
-                    height: textParams.height,
-                    curveSegments: textParams.curveSegments,
-                    bevelEnabled: textParams.bevelEnabled,
-                    bevelThickness: textParams.bevelThickness,
-                    bevelSize: textParams.bevelSize,
-                    bevelSegments: textParams.bevelSegments
-                });
-
-                const materialObject = createMaterial(geometry);
-                
-                // Store old position and rotation if they exist
-                const oldPosition = textMesh ? textMesh.position.clone() : new THREE.Vector3();
-                const oldRotation = textMesh ? textMesh.rotation.clone() : new THREE.Euler();
-
-                // Clean up old mesh
-                if (textMesh) {
-                    scene.remove(textMesh);
-                    textMesh.geometry.dispose();
-                    textMesh.material.dispose();
-                }
-                
-                // Handle particle mesh separately since it comes as instancedMesh
-                if (materialObject.mesh) {
-                    textMesh = materialObject.mesh;
-                } else {
-                    textMesh = new THREE.Mesh(
-                        materialObject.geometry, 
-                        materialObject.material
-                    );
-                }
+      .then((font) => {
+        try {
+          // Create the text geometry.
+          const geometry = new TextGeometry(text, {
+            font: font,
+            size: textParams.size,
+            height: textParams.height,
+            curveSegments: textParams.curveSegments,
+            bevelEnabled: textParams.bevelEnabled,
+            bevelThickness: textParams.bevelThickness,
+            bevelSize: textParams.bevelSize,
+            bevelSegments: textParams.bevelSegments
+          });
+          
+          // Build the material (or particle mesh) using your new createMaterial.
+          const materialObject = createMaterial(geometry);
+          
+          // Preserve the old transformation, if any.
+          const oldPosition = textMesh ? textMesh.position.clone() : new THREE.Vector3();
+          const oldRotation = textMesh ? textMesh.rotation.clone() : new THREE.Euler();
+          
+          // Remove and dispose of the old mesh.
+          if (textMesh) {
+            scene.remove(textMesh);
+            if (textMesh.geometry) textMesh.geometry.dispose();
+            if (textMesh.material) textMesh.material.dispose();
+          }
+          
+          // For particle materials, materialObject.mesh exists; otherwise, create a normal Mesh.
+          if (materialObject.mesh) {
+            textMesh = materialObject.mesh;
+          } else {
+            textMesh = new THREE.Mesh(materialObject.geometry, materialObject.material);
+          }
+          
+          // Compute the bounding box and center the text.
+          geometry.computeBoundingBox();
+          const centerOffset = -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x);
+          textMesh.position.copy(oldPosition);
+          textMesh.position.x = centerOffset;
+          textMesh.rotation.copy(oldRotation);
+          
+          // Add the new text mesh to the scene.
+          scene.add(textMesh);
+          camera.lookAt(textMesh.position);
+          
+          // Reinitialize the animation manager with the new text mesh.
+          initAnimationManager(scene, textMesh);
+          
+          // If multi-copy mode is enabled, update the copies.
+          if (animationParams.multiTextEnabled) {
+            updateMultiTextCopies();
+          }
+        } catch (error) {
+          console.error('Error creating text geometry:', error);
+        }
+      })
+      .catch((error) => {
+        console.error('Error loading font:', error);
+      });
+  }
   
-                geometry.computeBoundingBox();
-                const centerOffset = -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x);
-                textMesh.position.copy(oldPosition);
-                textMesh.position.x = centerOffset;
-                textMesh.rotation.copy(oldRotation);
-
-                scene.add(textMesh);
-                camera.lookAt(textMesh.position);
-                
-                // Update animation manager with new text mesh
-                initAnimationManager(scene, textMesh);
-                
-                if (animationParams.multiTextEnabled) {
-                    updateMultiTextCopies();
-                }
-
-            } catch (error) {
-                console.error('Error creating text geometry:', error);
-            }
-        })
-        .catch(error => {
-            console.error('Error loading font:', error);
-        });
-}
-
 export function updateMaterial() {
     if (!textMesh) return;
 
