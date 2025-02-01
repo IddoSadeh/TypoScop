@@ -11,7 +11,7 @@ const defaultState = {
     // Scene Properties
     backgroundColor: '#000000',
 
-    // Animation parameters
+    // Animation parameters (applies to all materials)
     rotateX: 0,
     rotateY: 0,
     rotateZ: 0,
@@ -25,7 +25,7 @@ const defaultState = {
     scaleMin: 0.8,
     scaleMax: 1.2,
 
-    // Manipulation parameters
+    // Manipulation parameters for tessellation and wireframe
     tessellationEnabled: false,
     tessellationSegments: 8,
     wireframeEnabled: false,
@@ -43,8 +43,17 @@ const defaultState = {
     // Unified manipulation animation parameters
     manipulationAnimationEnabled: false,
     manipulationAnimationSpeed: 0.5,
-    manipulationAnimationIntensity: 1.0
+    manipulationAnimationIntensity: 1.0,
+
+    // ─ Particle–specific parameters ─
+    particlesEnabled: false,       // Enable particle material rendering
+    particleShape: 'sphere',       // Options: 'sphere', 'cube', 'torus'
+    particleSize: 1.0,             // Base size multiplier for each particle
+    particleDensity: 1.0,          // Density factor for sampling particles from the text geometry
+    particleRandomness: 0.5,       // Randomness factor (0 to 1) for particle distribution (if used in your logic)
+    particleScale: 1.0             // Uniform scale factor applied to each particle instance
 };
+
 
 const functionSchema = {
     name: 'updateText',
@@ -245,6 +254,39 @@ const functionSchema = {
                 description: 'Intensity of manipulation animation (0.1-3.0)',
                 minimum: 0.1,
                 maximum: 3.0
+            },
+            particlesEnabled: {
+                type: 'boolean',
+                description: 'Enable or disable particle material rendering'
+            },
+            particleShape: {
+                type: 'string',
+                description: 'Shape of individual particles; choose between "sphere", "cube", or "torus"',
+                enum: ['sphere', 'cube', 'torus']
+            },
+            particleSize: {
+                type: 'number',
+                description: 'Base size multiplier for particle geometry',
+                minimum: 0.1,
+                maximum: 10
+            },
+            particleDensity: {
+                type: 'number',
+                description: 'Density factor for sampling particles from the text geometry',
+                minimum: 0.1,
+                maximum: 10
+            },
+            particleRandomness: {
+                type: 'number',
+                description: 'Randomness factor for particle distribution (0 to 1)',
+                minimum: 0,
+                maximum: 1
+            },
+            particleScale: {
+                type: 'number',
+                description: 'Uniform scale factor applied to each particle instance',
+                minimum: 0.1,
+                maximum: 10
             }
         },
         required: [],
@@ -253,76 +295,6 @@ const functionSchema = {
 };
 
 const systemPrompt = `You are a typography expert helping users customize 3D text. You can change any number of parameters to capture the users prompt. Be tasteful in your choice of arguments. More is not always better. Try to make a symbiotic choice between parameters `;
-
-// You should ONLY modify parameters that the user explicitly mentions or requests to change.
-
-// Current state will be provided in the next message.
-
-// Guidelines:
-// - ONLY change parameters that the user specifically mentions or requests
-// - Keep all other parameters unchanged from their current values
-// - Keep text short and readable (max 30 chars)
-// - When changing colors, ensure good contrast and visibility
-// - For metallic looks: use high metalness (0.8-1.0) and low roughness (0-0.2)
-// - For matte looks: use low metalness (0-0.2) and high roughness (0.7-1.0)
-
-// Guidelines for Animations:
-// 1. Rotation Animation:
-//    - When user mentions rotation, set appropriate speeds and enable relevant axes
-//    - Use smaller values (0.01-0.03) for slower rotation, larger (0.05-0.1) for faster
-//    - For "spin" or "rotate" without direction, default to Y-axis
-//    - When user mentions specific axes, enable only those axes
-//    - When user says "stop" or "stop spinning", disable all rotations
-
-// 2. Scale/Pulse Animation:
-//    - For gentle pulse: scaleSpeed: 0.02, scaleMin: 0.9, scaleMax: 1.1
-//    - For dramatic pulse: scaleSpeed: 0.05, scaleMin: 0.7, scaleMax: 1.3
-//    - "Fast pulse" increases scaleSpeed (0.05-0.1)
-//    - "Slow pulse" decreases scaleSpeed (0.01-0.02)
-
-// 3. Scramble Animation:
-//    - Responds to words like "scramble", "scatter", "chaos", "randomize"
-//    - Random mode: Letters move randomly (default)
-//    - Swap mode: Letters swap positions in pairs
-//    - Circular mode: Letters move in circular patterns
-//    - Use intensity 0.5-1.0 for subtle movement, 1.5-3.0 for dramatic
-//    - Speed 0.1-0.5 for slow movement, 1.0-2.0 for fast
-// 4. Multiple Text Copies:
-// - When user mentions "copies", "duplicate", or "multiply", enable multiTextEnabled
-// - Number words like "three", "few", "many" should adjust copyCount appropriately
-// - Words about spacing like "spread out", "close", "far" adjust the spread parameter
-// - Phrases like "different speeds", "unique rotation" enable rotateIndependently
-// - Default values: 3 copies, spread of 50 units
-// - Maximum of 10 copies to maintain performance
-// - When user says "single" or "remove copies", disable multiTextEnabled
-
-
-// Examples:
-// - "make it pulse slowly" → scaleEnabled: true, scaleSpeed: 0.01
-// - "make it throb dramatically" → scaleEnabled: true, scaleSpeed: 0.05, scaleMin: 0.7, scaleMax: 1.3
-// - "stop all animations" → disable both rotation and scale
-// - "spin and pulse" → enable both rotation and scale with moderate speeds
-// - "pulse subtly" → gentle pulse settings
-// - "make it breathe naturally" → moderate pulse settings
-// - "scramble the letters" → scrambleEnabled: true, scrambleMode: 'random', scrambleIntensity: 1.0
-// - "scatter letters chaotically" → scrambleMode: 'random', scrambleIntensity: 2.0
-// - "make letters swap places" → scrambleMode: 'swap'
-// - "make letters move in a circle" → scrambleMode: 'circular'
-// - "scramble faster" → increase scrambleSpeed
-// - "scatter letters more widely" → increase scrambleIntensity
-// - "stop scrambling" → scrambleEnabled: false
-// - "make three copies" → multiTextEnabled: true, copyCount: 3
-// - "create many copies spread far apart" → multiTextEnabled: true, copyCount: 8, spread: 90
-// - "duplicate text with different rotations" → multiTextEnabled: true
-// - "make it single again" → multiTextEnabled: false
-// - "add 5 copies rotating differently" → multiTextEnabled: true, copyCount: 5
-
-
-// Remember to:
-// - ONLY change parameters that the user specifically mentions
-// - Keep all other parameters unchanged from their current values
-// - Consider natural language variations for animation requests
-// - Pay attention to speed and intensity modifiers
 
 module.exports = {
     defaultState,

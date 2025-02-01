@@ -84,7 +84,14 @@ function handleAPIResponse(result) {
             // Unified manipulation animation parameters
             manipulationAnimationEnabled: result.response.manipulationAnimationEnabled ?? materialParams.manipulationAnimationEnabled,
             manipulationAnimationSpeed: result.response.manipulationAnimationSpeed ?? materialParams.manipulationAnimationSpeed,
-            manipulationAnimationIntensity: result.response.manipulationAnimationIntensity ?? materialParams.manipulationAnimationIntensity
+            manipulationAnimationIntensity: result.response.manipulationAnimationIntensity ?? materialParams.manipulationAnimationIntensity,
+                // ─ Particle-specific parameters ─
+            particlesEnabled: result.response.particlesEnabled ?? materialParams.particlesEnabled,
+            particleShape: result.response.particleShape || materialParams.particleShape,
+            particleSize: result.response.particleSize ?? materialParams.particleSize,
+            particleDensity: result.response.particleDensity ?? materialParams.particleDensity,
+            particleRandomness: result.response.particleRandomness ?? materialParams.particleRandomness,
+            particleScale: result.response.particleScale ?? materialParams.particleScale
         });
 
         // Update text parameters
@@ -152,6 +159,7 @@ function updateUIControls() {
     updateRotationControls();
     updateScaleControls();
     updateScrambleControls();
+    updateParticleControls();
 
 }
 
@@ -389,6 +397,60 @@ function updateManipulationControls() {
             }
         } else {
             colorPatternSection.classList.remove('enabled');
+        }
+    }
+}
+function updateParticleControls() {
+    // Particle toggle (enable/disable particles)
+    const particleToggle = document.getElementById('particle-toggle');
+    if (particleToggle) {
+        particleToggle.checked = materialParams.particlesEnabled;
+    }
+  
+    // Particle shape selection (e.g., a <select> element)
+    const particleShapeSelect = document.getElementById('particle-shape');
+    if (particleShapeSelect) {
+        particleShapeSelect.value = materialParams.particleShape;
+    }
+  
+    // Particle size slider
+    const particleSizeSlider = document.getElementById('particle-size');
+    if (particleSizeSlider) {
+        particleSizeSlider.value = materialParams.particleSize;
+        // Assuming you want to display the value in a sibling element:
+        const display = particleSizeSlider.nextElementSibling;
+        if (display) {
+            display.textContent = materialParams.particleSize;
+        }
+    }
+  
+    // Particle density slider
+    const particleDensitySlider = document.getElementById('particle-density');
+    if (particleDensitySlider) {
+        particleDensitySlider.value = materialParams.particleDensity;
+        const display = particleDensitySlider.nextElementSibling;
+        if (display) {
+            display.textContent = materialParams.particleDensity;
+        }
+    }
+  
+    // Particle randomness slider
+    const particleRandomnessSlider = document.getElementById('particle-randomness');
+    if (particleRandomnessSlider) {
+        particleRandomnessSlider.value = materialParams.particleRandomness;
+        const display = particleRandomnessSlider.nextElementSibling;
+        if (display) {
+            display.textContent = materialParams.particleRandomness;
+        }
+    }
+  
+    // Particle scale slider
+    const particleScaleSlider = document.getElementById('particle-scale');
+    if (particleScaleSlider) {
+        particleScaleSlider.value = materialParams.particleScale;
+        const display = particleScaleSlider.nextElementSibling;
+        if (display) {
+            display.textContent = materialParams.particleScale;
         }
     }
 }
