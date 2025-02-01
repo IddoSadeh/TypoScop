@@ -368,7 +368,7 @@ function updateManipulationControls() {
     // Update color pattern controls
     const colorPatternSection = document.getElementById('color-pattern-section');
     if (colorPatternSection) {
-        if (materialParams.tessellationEnabled || materialParams.wireframeEnabled) {
+        if (materialParams.tessellationEnabled || materialParams.wireframeEnabled || materialParams.particlesEnabled) {
             colorPatternSection.classList.add('enabled');
             // Update all color pattern controls
             const controls = {
