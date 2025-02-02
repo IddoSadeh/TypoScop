@@ -2,6 +2,8 @@
 import * as THREE from 'three';
 import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { mergeBufferGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+
 
 import { textParams } from '../parameters/textParams.js';
 import { materialParams } from '../parameters/materialParams.js';

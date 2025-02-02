@@ -6,12 +6,16 @@
   <title>Three.js + AI Typography</title>
   <link rel="stylesheet" href="/css/style.css">
   <script type="importmap">
-    {
+
+      {
         "imports": {
             "three": "https://unpkg.com/three@0.152.0/build/three.module.js",
-            "three/addons/": "https://unpkg.com/three@0.152.0/examples/jsm/"
+            "three/addons/": "https://unpkg.com/three@0.152.0/examples/jsm/",
+            "three/examples/jsm/utils/": "https://unpkg.com/three@0.152.0/examples/jsm/utils/"
         }
     }
+    
+
   </script>
   
   <style>
@@ -110,7 +114,19 @@
               <input id="roughness-slider" type="range" min="0" max="1" step="0.1" value="0.5">
               <span class="value-display">0.5</span>
             </div>
+            <div class="slider-group">
+              <label for="letter-spacing-slider">Letter Spacing</label>
+              <input type="range" id="letter-spacing-slider" min="0" max="10" step="0.1" value="3">
+              <span class="value-display">3</span>
+            </div>
+            <div class="slider-group">
+              <label for="text-height-slider">Height</label>
+              <input type="range" id="text-height-slider" min="0" max="10" step="0.1" value="2">
+              <span class="value-display">2</span>
+            </div>
           </div>
+          
+                    
         </div>
 
         <!-- Background -->

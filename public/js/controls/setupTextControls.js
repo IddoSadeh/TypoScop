@@ -7,6 +7,7 @@ export function setupTextControls() {
     const textInput = document.getElementById('ai-text-input');
     const fontSelect = document.getElementById('ai-font-name');
     const heightSlider = document.getElementById('text-height-slider');
+    const letterSpacingSlider = document.getElementById('letter-spacing-slider');
 
     // Text input
     textInput?.addEventListener('input', (e) => {
@@ -28,6 +29,13 @@ export function setupTextControls() {
     heightSlider?.addEventListener('input', (e) => {
         textParams.height = parseFloat(e.target.value);
         e.target.nextElementSibling.textContent = textParams.height;
+        createText();
+    });
+
+    // Letter Spacing
+    letterSpacingSlider?.addEventListener('input', (e) => {
+        textParams.letterSpacing = parseFloat(e.target.value);
+        e.target.nextElementSibling.textContent = textParams.letterSpacing;
         createText();
     });
 

@@ -144,7 +144,7 @@ function updateScrambleAnimation() {
                 if (!copy.mesh) return;
                 
                 const textContent = textParams.text;
-                const letterSpacing = textParams.size * 0.6;
+                const letterSpacing = textParams.letterSpacing;;
                 
                 // Hide the copy’s main mesh
                 copy.mesh.visible = false;
