@@ -5,7 +5,7 @@ export const textParams = {
     hebrewFont: "haim", 
     size: 5,
     height: 2,
-    letterSpacing: 3,  
+    letterSpacing: 0.5,  
     curveSegments: 12,
     bevelEnabled: true,
     bevelThickness: 0.15,
