@@ -10,8 +10,10 @@ import { materialParams } from '../parameters/materialParams.js';
 import { sceneParams } from '../parameters/sceneParams.js';
 import { animationParams } from '../parameters/animationParams.js';
 import { createMaterial, updateMaterialUniforms, updateParticleAnimation } from './materialManager.js';
-import { initAnimationManager, updateAnimation, updateMultiTextCopies, getLetterMeshes } from './animationManager.js';
+import { initAnimationManager, updateAnimation, updateMultiTextCopies, getLetterMeshes, cleanupLetterMeshes } from './animationManager.js';
 import fontManager from './fontManager.js';
+
+
 
 let scene, camera, renderer, textMesh, controls;
 
@@ -74,105 +76,111 @@ function setupLighting() {
 
 
 export function createText() {
-  // Process the text and font.
-  const { text, font: selectedFont, isHebrew } = fontManager.processText(textParams.text, textParams.font);
-  textParams.font = selectedFont;
-
-  fontManager.loadFont(selectedFont, isHebrew)
-    .then((font) => {
-      let geometry;
-      
-      // If letterSpacing is defined (nonzero), build geometry per letter.
-      if (typeof textParams.letterSpacing === 'number' && textParams.letterSpacing !== 0) {
-        const letterGeometries = [];
-        let offsetX = 0;
-        for (let char of text) {
-          // Optional: handle spaces manually
-          if (char === ' ') {
-            // Increase offset for a space (adjust multiplier as needed)
-            offsetX += textParams.size * 0.5 + textParams.letterSpacing;
-            continue;
+    // Process text and get the appropriate font.
+    const { text, font: selectedFont, isHebrew } = fontManager.processText(textParams.text, textParams.font);
+    textParams.font = selectedFont;
+  
+    fontManager.loadFont(selectedFont, isHebrew)
+      .then((font) => {
+        try {
+          let geometry;
+  
+          // If letterSpacing is defined (nonzero), build the text geometry letter by letter.
+          if (typeof textParams.letterSpacing === 'number' && textParams.letterSpacing !== 0) {
+            const letterGeometries = [];
+            let offsetX = 0;
+            for (const char of text) {
+              // Handle spaces explicitly.
+              if (char === ' ') {
+                offsetX += textParams.size * 0.5 + textParams.letterSpacing;
+                continue;
+              }
+              const letterGeom = new TextGeometry(char, {
+                font: font,
+                size: textParams.size,
+                height: textParams.height,
+                curveSegments: textParams.curveSegments,
+                bevelEnabled: textParams.bevelEnabled,
+                bevelThickness: textParams.bevelThickness,
+                bevelSize: textParams.bevelSize,
+                bevelSegments: textParams.bevelSegments
+              });
+              letterGeom.computeBoundingBox();
+              // Translate the letter by the current offset.
+              letterGeom.translate(offsetX, 0, 0);
+              letterGeometries.push(letterGeom);
+  
+              // Calculate letter width (if available) and update offset.
+              const bbox = letterGeom.boundingBox;
+              const letterWidth = bbox ? (bbox.max.x - bbox.min.x) : 0;
+              offsetX += letterWidth + textParams.letterSpacing;
+            }
+            geometry = mergeGeometries(letterGeometries);
+          } else {
+            // Otherwise, build the text geometry normally.
+            geometry = new TextGeometry(text, {
+              font: font,
+              size: textParams.size,
+              height: textParams.height,
+              curveSegments: textParams.curveSegments,
+              bevelEnabled: textParams.bevelEnabled,
+              bevelThickness: textParams.bevelThickness,
+              bevelSize: textParams.bevelSize,
+              bevelSegments: textParams.bevelSegments
+            });
           }
-          
-          const letterGeom = new TextGeometry(char, {
-            font: font,
-            size: textParams.size,
-            height: textParams.height,
-            curveSegments: textParams.curveSegments,
-            bevelEnabled: textParams.bevelEnabled,
-            bevelThickness: textParams.bevelThickness,
-            bevelSize: textParams.bevelSize,
-            bevelSegments: textParams.bevelSegments
-          });
-          letterGeom.computeBoundingBox();
-          
-          // Translate letter geometry by the current offset.
-          letterGeom.translate(offsetX, 0, 0);
-          letterGeometries.push(letterGeom);
-          
-          // Calculate width of the letter (if boundingBox exists).
-          const bbox = letterGeom.boundingBox;
-          const letterWidth = bbox ? (bbox.max.x - bbox.min.x) : 0;
-          // Increment the offset by the letter's width plus the extra letter spacing.
-          offsetX += letterWidth + textParams.letterSpacing;
+  
+          // Center the geometry.
+          geometry.computeBoundingBox();
+          const centerOffset = -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x);
+          const oldPosition = textMesh ? textMesh.position.clone() : new THREE.Vector3();
+          const oldRotation = textMesh ? textMesh.rotation.clone() : new THREE.Euler();
+  
+          // Remove and dispose the old text mesh.
+          if (textMesh) {
+            scene.remove(textMesh);
+            if (textMesh.geometry) textMesh.geometry.dispose();
+            if (textMesh.material) textMesh.material.dispose();
+          }
+  
+          // Create the new material/mesh.
+          const materialObject = createMaterial(geometry);
+          if (materialObject.mesh) {
+            textMesh = materialObject.mesh;
+          } else {
+            textMesh = new THREE.Mesh(materialObject.geometry, materialObject.material);
+          }
+  
+          // Restore transform and center the text.
+          textMesh.position.copy(oldPosition);
+          textMesh.position.x = centerOffset;
+          textMesh.rotation.copy(oldRotation);
+  
+          // Add the new text mesh to the scene and orient the camera.
+          scene.add(textMesh);
+          camera.lookAt(textMesh.position);
+  
+          // Reinitialize the animation manager with the new text mesh.
+          initAnimationManager(scene, textMesh);
+  
+          // Update multi-text copies if enabled.
+          if (animationParams.multiTextEnabled) {
+            updateMultiTextCopies();
+          }
+  
+          // NEW: If letter scramble is enabled, clear any existing scrambled letter meshes.
+          if (animationParams.scrambleEnabled) {
+            cleanupLetterMeshes();
+          }
+        } catch (error) {
+          console.error('Error creating text geometry:', error);
         }
-        
-        // Merge the individual letter geometries into one.
-        geometry = mergeGeometries (letterGeometries);
-      } else {
-        // If letterSpacing is zero or undefined, just build the geometry normally.
-        geometry = new TextGeometry(text, {
-          font: font,
-          size: textParams.size,
-          height: textParams.height,
-          curveSegments: textParams.curveSegments,
-          bevelEnabled: textParams.bevelEnabled,
-          bevelThickness: textParams.bevelThickness,
-          bevelSize: textParams.bevelSize,
-          bevelSegments: textParams.bevelSegments
-        });
-      }
-      
-      // Center the merged geometry.
-      geometry.computeBoundingBox();
-      const centerOffset = -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x);
-
-      // Create or update the material/mesh as in your current code.
-      const materialObject = createMaterial(geometry);
-      const oldPosition = textMesh ? textMesh.position.clone() : new THREE.Vector3();
-      const oldRotation = textMesh ? textMesh.rotation.clone() : new THREE.Euler();
-
-      // Clean up old mesh if it exists.
-      if (textMesh) {
-        scene.remove(textMesh);
-        if (textMesh.geometry) textMesh.geometry.dispose();
-        if (textMesh.material) textMesh.material.dispose();
-      }
-
-      // Create the new mesh.
-      if (materialObject.mesh) {
-        textMesh = materialObject.mesh;
-      } else {
-        textMesh = new THREE.Mesh(materialObject.geometry, materialObject.material);
-      }
-      // Set the position so that the text is centered.
-      textMesh.position.copy(oldPosition);
-      textMesh.position.x = centerOffset;
-      textMesh.rotation.copy(oldRotation);
-
-      scene.add(textMesh);
-      camera.lookAt(textMesh.position);
-      
-      // Reinitialize the animation manager with the new text mesh.
-      initAnimationManager(scene, textMesh);
-      if (animationParams.multiTextEnabled) {
-        updateMultiTextCopies();
-      }
-    })
-    .catch((error) => {
-      console.error('Error loading font:', error);
-    });
-}
+      })
+      .catch((error) => {
+        console.error('Error loading font:', error);
+      });
+  }
+  
 
   
 export function updateMaterial() {
@@ -180,39 +188,42 @@ export function updateMaterial() {
 
     const materialObject = createMaterial(textMesh.geometry.clone());
     
-    // Store current transform
+    // Store current transform.
     const oldPosition = textMesh.position.clone();
     const oldRotation = textMesh.rotation.clone();
     const oldScale = textMesh.scale.clone();
     
-    // Clean up old mesh
+    // Clean up old mesh.
     scene.remove(textMesh);
     textMesh.geometry.dispose();
     textMesh.material.dispose();
     
-    // Update with new geometry and material
+    // Update with new geometry and material.
     if (materialObject.mesh) {
         textMesh = materialObject.mesh;
     } else {
-        textMesh = new THREE.Mesh(
-            materialObject.geometry, 
-            materialObject.material
-        );
+        textMesh = new THREE.Mesh(materialObject.geometry, materialObject.material);
     }
     
-    // Restore transform
+    // Restore transform.
     textMesh.position.copy(oldPosition);
     textMesh.rotation.copy(oldRotation);
     textMesh.scale.copy(oldScale);
     
-    // Add back to scene
+    // Add back to scene.
     scene.add(textMesh);
     
-    // Update the material for all copies and letter meshes
+    // Update the material for all copies and letter meshes.
     if (animationParams.multiTextEnabled) {
         updateMultiTextCopies();
     }
+    
+    // NEW: If letter scramble is enabled, clear any existing scrambled letters so they are re-created with the new material.
+    if (animationParams.scrambleEnabled) {
+        cleanupLetterMeshes();
+    }
 }
+
 
 export function updateSceneBackground() {
     scene.background.set(sceneParams.backgroundColor);
