@@ -48,7 +48,7 @@ export function initThreeJS(container) {
     animate();
 
     // Initialize animation manager
-    initAnimationManager(scene, textMesh);
+    initAnimationManager(scene, textMesh, renderer, camera);
 
     // Window resize handler
     window.addEventListener('resize', () => {
@@ -161,7 +161,7 @@ export function createText() {
           camera.lookAt(textMesh.position);
   
           // Reinitialize the animation manager with the new text mesh.
-          initAnimationManager(scene, textMesh);
+          initAnimationManager(scene, textMesh, renderer, camera);
   
           // Update multi-text copies if enabled.
           if (animationParams.multiTextEnabled) {

@@ -31,5 +31,10 @@ export const animationParams = {
     multiTextEnabled: false,
     copyCount: 3,
     spread: 50,
-    copies: []
+    copies: [],
+
+    projectionEnabled: false,      // Toggle: if true, show projected mesh; if false, revert to original
+    projectionMode: 'torusknot',     // Options: 'torusknot', 'cube', 'sphere', 'twisted'
+    projectionScale: 1.0, 
+    projectionRepeat:10
 };

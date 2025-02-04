@@ -10,14 +10,18 @@ import { createMaterial } from './materialManager.js';
 let letterMeshes = [];
 let scene;
 let mainTextMesh;
+let rendererRef = null;
+let cameraRef = null;
+let backupTextMesh = null;
 
 /*──────────────────────────────────────────────────────────────
-  INITIALIZATION & HELPER FUNCTIONS
+  INITIALIZATION
 ──────────────────────────────────────────────────────────────*/
-
-export function initAnimationManager(threeScene, textMesh) {
-    scene = threeScene;
-    mainTextMesh = textMesh;
+export function initAnimationManager(threeScene, textMesh, renderer, camera) {
+  scene = threeScene;
+  mainTextMesh = textMesh;
+  rendererRef = renderer;
+  cameraRef = camera;
 }
 
 function getRandomPosition(spread) {
@@ -387,3 +391,180 @@ function updateScaleAnimation() {
 export function getLetterMeshes() {
     return letterMeshes;
 }
+
+
+  // Helper function to properly dispose of a mesh and its resources
+function disposeMesh(mesh) {
+    if (!mesh) return;
+    
+    // Remove from scene
+    scene.remove(mesh);
+    
+    // Dispose of geometry
+    if (mesh.geometry) {
+      mesh.geometry.dispose();
+    }
+    
+    // Dispose of material(s)
+    if (Array.isArray(mesh.material)) {
+      mesh.material.forEach(material => material.dispose());
+    } else if (mesh.material) {
+      // Handle special case of shader materials
+      if (mesh.material.type === 'ShaderMaterial') {
+        Object.values(mesh.material.uniforms).forEach(uniform => {
+          if (uniform.value instanceof THREE.Texture) {
+            uniform.value.dispose();
+          }
+        });
+      }
+      mesh.material.dispose();
+    }
+  }
+  
+  function cleanupAllMeshes() {
+    // Clean up letter meshes
+    letterMeshes.forEach(disposeMesh);
+    letterMeshes = [];
+  
+    // Clean up multi-text copies
+    if (animationParams.copies) {
+      animationParams.copies.forEach(copy => {
+        if (copy && copy.mesh && copy.mesh !== mainTextMesh) {
+          disposeMesh(copy.mesh);
+        }
+      });
+      animationParams.copies = [];
+    }
+  }
+  
+  export function projectTextMesh() {
+    if (!rendererRef || !cameraRef) {
+      console.error('Renderer or camera not set in animationManager.');
+      return;
+    }
+  
+    // Handle disabling projection
+    if (!animationParams.projectionEnabled) {
+      if (backupTextMesh) {
+        disposeMesh(mainTextMesh);
+        mainTextMesh = backupTextMesh;
+        backupTextMesh = null;
+        scene.add(mainTextMesh);
+        initAnimationManager(scene, mainTextMesh, rendererRef, cameraRef);
+      }
+      return;
+    }
+  
+    // Store backup if not already stored
+    if (!backupTextMesh) {
+      backupTextMesh = mainTextMesh;
+    }
+  
+    // Create render target
+    const size = new THREE.Vector2();
+    rendererRef.getSize(size);
+    const factor = 2;
+    const renderTarget = new THREE.WebGLRenderTarget(size.x * factor, size.y * factor);
+  
+    // Render to target
+    rendererRef.setRenderTarget(renderTarget);
+    rendererRef.render(scene, cameraRef);
+    rendererRef.setRenderTarget(null);
+  
+    // Clean up all existing meshes
+    cleanupAllMeshes();
+  
+    // Create new projected mesh based on mode...
+    let newGeometry, newMaterial;
+    
+   
+    switch (animationParams.projectionMode) {
+        case 'torusknot':
+          newGeometry = new THREE.TorusKnotGeometry(10, 3, 100, 16);
+          newMaterial = new THREE.MeshBasicMaterial({ map: renderTarget.texture });
+          break;
+        case 'cube':
+          newGeometry = new THREE.BoxGeometry(10, 10, 10);
+          newMaterial = new THREE.MeshBasicMaterial({ map: renderTarget.texture });
+          break;
+        case 'sphere':
+          newGeometry = new THREE.SphereGeometry(7, 32, 32);
+          newMaterial = new THREE.MeshBasicMaterial({ map: renderTarget.texture });
+          break;
+        case 'twisted':
+          newGeometry = new THREE.TorusKnotGeometry(10, 2.5, 150, 20);
+          newMaterial = new THREE.MeshBasicMaterial({ map: renderTarget.texture });
+          break;
+        case 'artistic': {
+          // Create a custom parametric geometry.
+          // This function creates a twisted, undulating surface.
+          newGeometry = new THREE.ParametricBufferGeometry(function(u, v, target) {
+            // u, v in [0,1]
+            const U = u * Math.PI * 2;       // full circle
+            const V = (v - 0.5) * 10;         // height from -5 to +5
+            // Base radius oscillates with v.
+            const baseRadius = 8 + 2 * Math.sin(v * Math.PI * 4);
+            // Add a twist: vary the angle based on v.
+            const twist = 0.5 * Math.sin(u * Math.PI * 4 + v * Math.PI * 2);
+            const angle = U + twist;
+            const x = baseRadius * Math.cos(angle);
+            const y = baseRadius * Math.sin(angle);
+            const z = V + 2 * Math.cos(u * Math.PI * 6);
+            target.set(x, y, z);
+          }, 200, 50);
+          
+          // Create a custom shader material.
+          newMaterial = new THREE.ShaderMaterial({
+            uniforms: {
+              uTime: { value: 0 },
+              uTexture: { value: renderTarget.texture }
+            },
+            vertexShader: `
+              uniform float uTime;
+              varying vec2 vUv;
+              void main() {
+                vUv = uv;
+                vec3 pos = position;
+                // Apply an additional time-based distortion.
+                pos.z += sin(uv.x * 10.0 + uTime * 2.0) * 1.0;
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+              }
+            `,
+            fragmentShader: `
+              uniform sampler2D uTexture;
+              varying vec2 vUv;
+              void main() {
+                vec4 color = texture2D(uTexture, vUv);
+                gl_FragColor = color;
+              }`
+            ,
+            side: THREE.DoubleSide,
+            transparent: true
+          });
+          break;
+        }
+        default:
+          console.warn('Unknown projection mode:', animationParams.projectionMode);
+          return;
+      }
+      
+      // Apply projectionScale to new geometry.
+      newGeometry.scale(animationParams.projectionScale, animationParams.projectionScale, animationParams.projectionScale);
+      
+  
+    // Create and add new mesh
+    const projectedMesh = new THREE.Mesh(newGeometry, newMaterial);
+    if (backupTextMesh) {
+      projectedMesh.position.copy(backupTextMesh.position);
+      projectedMesh.rotation.copy(backupTextMesh.rotation);
+      projectedMesh.scale.copy(backupTextMesh.scale);
+    }
+  
+    scene.add(projectedMesh);
+    mainTextMesh = projectedMesh;
+  
+    // Store render target reference for cleanup
+    mainTextMesh.userData.renderTarget = renderTarget;
+  
+    initAnimationManager(scene, mainTextMesh, rendererRef, cameraRef);
+  }

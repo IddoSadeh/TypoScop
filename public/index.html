@@ -275,6 +275,30 @@
             </div>
           </div>
         </div>
+<!-- Projection Controls Section (in the Manual Tab) -->
+<div class="control-section">
+  <button class="collapsible">Projection</button>
+  <div class="collapsible-content">
+    <div class="checkbox-group">
+      <input type="checkbox" id="projection-toggle" />
+      <label for="projection-toggle">Enable Projection</label>
+    </div>
+    <div class="select-group">
+      <label for="projection-mode">Projection Mode</label>
+      <select id="projection-mode">
+        <option value="torusknot">Torus Knot</option>
+        <option value="cube">Cube</option>
+        <option value="sphere">Sphere</option>
+        <option value="twisted">Twisted Torus</option>
+      </select>
+    </div>
+    <div class="slider-group">
+      <label for="projection-scale">Projection Scale</label>
+      <input type="range" id="projection-scale" min="0.1" max="3.0" step="0.1" value="1.0" />
+      <span id="projection-scale-value" class="value-display">1.0</span>
+    </div>
+  </div>
+</div>
 
         <!-- Animation Controls -->
         <div class="control-section">
