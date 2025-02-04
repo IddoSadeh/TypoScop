@@ -5,6 +5,7 @@ import { animationParams } from '../parameters/animationParams.js';
 import { textParams } from '../parameters/textParams.js';
 import fontManager from './fontManager.js';
 import { createMaterial } from './materialManager.js';
+import { createText } from './three.setup.js';
 
 
 let letterMeshes = [];
@@ -12,7 +13,8 @@ let scene;
 let mainTextMesh;
 let rendererRef = null;
 let cameraRef = null;
-let backupTextMesh = null;
+let currentProjection = null;
+
 
 /*──────────────────────────────────────────────────────────────
   INITIALIZATION
@@ -443,128 +445,79 @@ function disposeMesh(mesh) {
       return;
     }
   
-    // Handle disabling projection
+    // If projection is being disabled, just recreate the original text scene
     if (!animationParams.projectionEnabled) {
-      if (backupTextMesh) {
-        disposeMesh(mainTextMesh);
-        mainTextMesh = backupTextMesh;
-        backupTextMesh = null;
-        scene.add(mainTextMesh);
-        initAnimationManager(scene, mainTextMesh, rendererRef, cameraRef);
+      if (currentProjection) {
+        disposeMesh(currentProjection);
+        currentProjection = null;
       }
+      createText();
       return;
     }
   
-    // Store backup if not already stored
-    if (!backupTextMesh) {
-      backupTextMesh = mainTextMesh;
-    }
-  
-    // Create render target
+    // Create render target and capture current scene
     const size = new THREE.Vector2();
     rendererRef.getSize(size);
-    const factor = 2;
-    const renderTarget = new THREE.WebGLRenderTarget(size.x * factor, size.y * factor);
-  
-    // Render to target
+    const renderTarget = new THREE.WebGLRenderTarget(size.x * 2, size.y * 2);
     rendererRef.setRenderTarget(renderTarget);
     rendererRef.render(scene, cameraRef);
     rendererRef.setRenderTarget(null);
   
-    // Clean up all existing meshes
-    cleanupAllMeshes();
-  
-    // Create new projected mesh based on mode...
-    let newGeometry, newMaterial;
-    
-   
-    switch (animationParams.projectionMode) {
-        case 'torusknot':
-          newGeometry = new THREE.TorusKnotGeometry(10, 3, 100, 16);
-          newMaterial = new THREE.MeshBasicMaterial({ map: renderTarget.texture });
-          break;
-        case 'cube':
-          newGeometry = new THREE.BoxGeometry(10, 10, 10);
-          newMaterial = new THREE.MeshBasicMaterial({ map: renderTarget.texture });
-          break;
-        case 'sphere':
-          newGeometry = new THREE.SphereGeometry(7, 32, 32);
-          newMaterial = new THREE.MeshBasicMaterial({ map: renderTarget.texture });
-          break;
-        case 'twisted':
-          newGeometry = new THREE.TorusKnotGeometry(10, 2.5, 150, 20);
-          newMaterial = new THREE.MeshBasicMaterial({ map: renderTarget.texture });
-          break;
-        case 'artistic': {
-          // Create a custom parametric geometry.
-          // This function creates a twisted, undulating surface.
-          newGeometry = new THREE.ParametricBufferGeometry(function(u, v, target) {
-            // u, v in [0,1]
-            const U = u * Math.PI * 2;       // full circle
-            const V = (v - 0.5) * 10;         // height from -5 to +5
-            // Base radius oscillates with v.
-            const baseRadius = 8 + 2 * Math.sin(v * Math.PI * 4);
-            // Add a twist: vary the angle based on v.
-            const twist = 0.5 * Math.sin(u * Math.PI * 4 + v * Math.PI * 2);
-            const angle = U + twist;
-            const x = baseRadius * Math.cos(angle);
-            const y = baseRadius * Math.sin(angle);
-            const z = V + 2 * Math.cos(u * Math.PI * 6);
-            target.set(x, y, z);
-          }, 200, 50);
-          
-          // Create a custom shader material.
-          newMaterial = new THREE.ShaderMaterial({
-            uniforms: {
-              uTime: { value: 0 },
-              uTexture: { value: renderTarget.texture }
-            },
-            vertexShader: `
-              uniform float uTime;
-              varying vec2 vUv;
-              void main() {
-                vUv = uv;
-                vec3 pos = position;
-                // Apply an additional time-based distortion.
-                pos.z += sin(uv.x * 10.0 + uTime * 2.0) * 1.0;
-                gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
-              }
-            `,
-            fragmentShader: `
-              uniform sampler2D uTexture;
-              varying vec2 vUv;
-              void main() {
-                vec4 color = texture2D(uTexture, vUv);
-                gl_FragColor = color;
-              }`
-            ,
-            side: THREE.DoubleSide,
-            transparent: true
-          });
-          break;
+    // Clean up EVERYTHING in the current scene
+    if (currentProjection) {
+      disposeMesh(currentProjection);
+    }
+    if (mainTextMesh) {
+      disposeMesh(mainTextMesh);
+    }
+    // Clean up multi-text copies
+    if (animationParams.copies) {
+      animationParams.copies.forEach(copy => {
+        if (copy && copy.mesh) {
+          disposeMesh(copy.mesh);
         }
-        default:
-          console.warn('Unknown projection mode:', animationParams.projectionMode);
-          return;
-      }
-      
-      // Apply projectionScale to new geometry.
-      newGeometry.scale(animationParams.projectionScale, animationParams.projectionScale, animationParams.projectionScale);
-      
+      });
+      animationParams.copies = [];
+    }
+    // Clean up letter meshes
+    cleanupLetterMeshes();
   
-    // Create and add new mesh
-    const projectedMesh = new THREE.Mesh(newGeometry, newMaterial);
-    if (backupTextMesh) {
-      projectedMesh.position.copy(backupTextMesh.position);
-      projectedMesh.rotation.copy(backupTextMesh.rotation);
-      projectedMesh.scale.copy(backupTextMesh.scale);
+    // Create new projection geometry
+    let newGeometry;
+    switch (animationParams.projectionMode) {
+      case 'torusknot':
+        newGeometry = new THREE.TorusKnotGeometry(10, 3, 100, 16);
+        break;
+      case 'cube':
+        newGeometry = new THREE.BoxGeometry(10, 10, 10);
+        break;
+      case 'sphere':
+        newGeometry = new THREE.SphereGeometry(7, 32, 32);
+        break;
+      case 'twisted':
+        newGeometry = new THREE.TorusKnotGeometry(10, 2.5, 150, 20);
+        break;
+      default:
+        console.warn('Unknown projection mode:', animationParams.projectionMode);
+        return;
     }
   
-    scene.add(projectedMesh);
-    mainTextMesh = projectedMesh;
+    // Scale geometry
+    newGeometry.scale(
+      animationParams.projectionScale,
+      animationParams.projectionScale,
+      animationParams.projectionScale
+    );
   
-    // Store render target reference for cleanup
-    mainTextMesh.userData.renderTarget = renderTarget;
+    // Create projection mesh
+    const newMaterial = new THREE.MeshBasicMaterial({ 
+      map: renderTarget.texture,
+      side: THREE.DoubleSide 
+    });
+    currentProjection = new THREE.Mesh(newGeometry, newMaterial);
+    currentProjection.userData.renderTarget = renderTarget;
   
+    scene.add(currentProjection);
+    mainTextMesh = currentProjection;
     initAnimationManager(scene, mainTextMesh, rendererRef, cameraRef);
   }
