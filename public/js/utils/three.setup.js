@@ -9,12 +9,12 @@ import { materialParams } from '../parameters/materialParams.js';
 import { sceneParams } from '../parameters/sceneParams.js';
 import { animationParams } from '../parameters/animationParams.js';
 import { projectionParams } from '../parameters/projectionParams.js';
-import { ProjectionManager } from './projectionManager.js';
+import { initProjectionManager, project } from './projectionManager.js';
 import { createMaterial, updateMaterialUniforms, updateParticleAnimation } from './materialManager.js';
 import { initAnimationManager, updateAnimation, updateMultiTextCopies, getLetterMeshes, cleanupLetterMeshes } from './animationManager.js';
 import fontManager from './fontManager.js';
 
-let scene, camera, renderer, textMesh, controls, projectionManager;
+let scene, camera, renderer, textMesh, controls;
 
 export function initThreeJS(container) {
     // Scene setup
@@ -32,8 +32,8 @@ export function initThreeJS(container) {
     renderer.setSize(width, height);
     container.appendChild(renderer.domElement);
 
-    // Initialize projection manager
-    projectionManager = new ProjectionManager(scene, renderer, camera);
+    // Initialize managers
+    initProjectionManager(scene, renderer, camera);
 
     // Controls setup
     controls = new OrbitControls(camera, renderer.domElement);
@@ -159,8 +159,8 @@ export function createText() {
                 textMesh.rotation.copy(oldRotation);
 
                 // Handle projection
-                if (projectionManager && projectionParams.enabled) {
-                    textMesh = projectionManager.project(textMesh);
+                if (projectionParams.enabled) {
+                    textMesh = project(textMesh);
                 } else {
                     scene.add(textMesh);
                 }
@@ -215,8 +215,8 @@ export function updateMaterial() {
     textMesh.scale.copy(oldScale);
     
     // Handle projection
-    if (projectionManager && projectionParams.enabled) {
-        textMesh = projectionManager.project(textMesh);
+    if (projectionParams.enabled) {
+        textMesh = project(textMesh);
     } else {
         scene.add(textMesh);
     }
@@ -238,6 +238,53 @@ export function getTextMesh() {
     return textMesh;
 }
 
+// Add these functions to three.setup.js
+
+export function updateSceneLighting() {
+    const lights = scene.children.filter(child => child.isLight);
+    
+    // Update ambient light
+    const ambientLight = lights.find(light => light.isAmbientLight);
+    if (ambientLight) {
+        ambientLight.intensity = sceneParams.ambientLightIntensity;
+    }
+    
+    // Update main light (first directional light)
+    const mainLight = lights.find(light => light.isDirectionalLight);
+    if (mainLight) {
+        mainLight.intensity = sceneParams.mainLightIntensity;
+    }
+    
+    // Update fill light (second directional light)
+    const fillLight = lights.filter(light => light.isDirectionalLight)[1];
+    if (fillLight) {
+        fillLight.intensity = sceneParams.fillLightIntensity;
+    }
+}
+
+export function updateSceneCamera() {
+    if (!camera) return;
+    
+    // Update field of view
+    camera.fov = sceneParams.fieldOfView;
+    
+    // Update camera distance (z position)
+    camera.position.z = sceneParams.cameraDistance;
+    
+    // Update fog if enabled
+    if (sceneParams.fogEnabled) {
+        scene.fog = new THREE.Fog(
+            sceneParams.fogColor,
+            sceneParams.cameraDistance * 0.5, // Near
+            sceneParams.cameraDistance * 2    // Far
+        );
+    } else {
+        scene.fog = null;
+    }
+    
+    // Make sure to update the projection matrix when changing camera parameters
+    camera.updateProjectionMatrix();
+}
 function animate() {
     requestAnimationFrame(animate);
 
