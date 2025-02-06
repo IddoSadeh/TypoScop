@@ -1,6 +1,8 @@
 // projectionManager.js
 import * as THREE from 'three';
 import { projectionParams } from '../parameters/projectionParams.js';
+import { textParams } from '../parameters/textParams.js';
+import { materialParams } from '../parameters/materialParams.js';
 import { createText } from './three.setup.js';
 
 let scene = null;
@@ -96,58 +98,139 @@ export function project(originalMesh) {
 
     cleanup();
 
-    // Temporarily add original mesh to scene and render to texture
-    scene.add(originalMesh);
-    
-    // Create and setup render target
-    const size = new THREE.Vector2();
-    renderer.getSize(size);
-    renderTarget = new THREE.WebGLRenderTarget(size.x * 2, size.y * 2, {
-        minFilter: THREE.LinearFilter,
-        magFilter: THREE.LinearFilter,
-        format: THREE.RGBAFormat
-    });
+    if (projectionParams.projectionType === 'pattern') {
+        const geometry = createProjectionGeometry();
+        geometry.scale(
+            projectionParams.scale,
+            projectionParams.scale,
+            projectionParams.scale
+        );
 
-    // Store current scene state
-    const currentBackground = scene.background;
-    
-    // Render to texture
-    renderer.setRenderTarget(renderTarget);
-    renderer.render(scene, camera);
-    renderer.setRenderTarget(null);
-    
-    // Restore scene state
-    scene.background = currentBackground;
+        // Create canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 512;
+        const ctx = canvas.getContext('2d');
+        
+        // Set background
+        ctx.fillStyle = projectionParams.pattern.backgroundColor;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Setup text parameters
+        const fontSize = Math.floor(canvas.height * 0.2);
+        ctx.fillStyle = projectionParams.pattern.textColor;
+        ctx.font = `${fontSize}px ${textParams.font}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        // Apply letter and word spacing
+        const text = textParams.text.split('').join('\u200B'.repeat(
+            Math.floor(projectionParams.pattern.letterSpacing * 5)
+        ));
+        const words = text.split(' ').join(' '.repeat(
+            Math.floor(projectionParams.pattern.wordSpacing * 5)
+        ));
+        
+        // Draw text
+        ctx.fillText(words, canvas.width/2, canvas.height/2);
 
-    // Remove original mesh
-    scene.remove(originalMesh);
-    
-    // Create projection geometry
-    const geometry = createProjectionGeometry();
-    geometry.scale(
-        projectionParams.scale,
-        projectionParams.scale,
-        projectionParams.scale
-    );
+        // Create texture
+        const texture = new THREE.Texture(canvas);
+        texture.needsUpdate = true;
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        texture.repeat.set(
+            projectionParams.pattern.repeatX,
+            projectionParams.pattern.repeatY
+        );
 
-    // Create material with captured texture
-    const material = new THREE.MeshBasicMaterial({
-        map: renderTarget.texture,
-        side: THREE.DoubleSide
-    });
+        // Create material
+        const material = new THREE.MeshPhongMaterial({
+            map: texture,
+            side: THREE.DoubleSide,
+            transparent: true,
+            opacity: projectionParams.pattern.opacity,
+            color: projectionParams.pattern.objectColor
+        });
 
-    // Create and add projection mesh
-    currentProjection = new THREE.Mesh(geometry, material);
-    currentProjection.rotation.set(
-        projectionParams.rotation.x,
-        projectionParams.rotation.y,
-        projectionParams.rotation.z
-    );
+        // Create mesh
+        currentProjection = new THREE.Mesh(geometry, material);
+        currentProjection.rotation.set(
+            projectionParams.rotation.x,
+            projectionParams.rotation.y,
+            projectionParams.rotation.z
+        );
 
-    scene.add(currentProjection);
-    return currentProjection;
+        // Setup animation
+        function animate() {
+            if (!projectionParams.pattern.animatePattern) return;
+            
+            requestAnimationFrame(animate);
+            const speed = projectionParams.pattern.animationSpeed * 
+                         (projectionParams.pattern.animationReverse ? -1 : 1);
+
+            switch(projectionParams.pattern.animationDirection) {
+                case 'vertical':
+                    texture.offset.y -= speed;
+                    break;
+                case 'horizontal':
+                    texture.offset.x -= speed;
+                    break;
+                case 'diagonal':
+                    texture.offset.x -= speed;
+                    texture.offset.y -= speed;
+                    break;
+            }
+        }
+        animate();
+
+        scene.add(currentProjection);
+        return currentProjection;
+    }else {
+        // Standard projection - keep exactly as before
+        scene.add(originalMesh);
+        
+        const size = new THREE.Vector2();
+        renderer.getSize(size);
+        renderTarget = new THREE.WebGLRenderTarget(size.x * 2, size.y * 2, {
+            minFilter: THREE.LinearFilter,
+            magFilter: THREE.LinearFilter,
+            format: THREE.RGBAFormat
+        });
+
+        const currentBackground = scene.background;
+        
+        renderer.setRenderTarget(renderTarget);
+        renderer.render(scene, camera);
+        renderer.setRenderTarget(null);
+        
+        scene.background = currentBackground;
+
+        scene.remove(originalMesh);
+        
+        const geometry = createProjectionGeometry();
+        geometry.scale(
+            projectionParams.scale,
+            projectionParams.scale,
+            projectionParams.scale
+        );
+
+        const material = new THREE.MeshBasicMaterial({
+            map: renderTarget.texture,
+            side: THREE.DoubleSide
+        });
+
+        currentProjection = new THREE.Mesh(geometry, material);
+        currentProjection.rotation.set(
+            projectionParams.rotation.x,
+            projectionParams.rotation.y,
+            projectionParams.rotation.z
+        );
+
+        scene.add(currentProjection);
+        return currentProjection;
+    }
 }
-
 /*──────────────────────────────────────────────────────────────
   PARAMETER UPDATES
 ──────────────────────────────────────────────────────────────*/
