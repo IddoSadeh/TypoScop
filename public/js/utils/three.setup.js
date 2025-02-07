@@ -15,6 +15,7 @@ import { initAnimationManager, updateAnimation, updateMultiTextCopies, getLetter
 import fontManager from './fontManager.js';
 
 let scene, camera, renderer, textMesh, controls;
+let centerOffset = 0; // Store centerOffset for position calculations
 
 export function initThreeJS(container) {
     // Scene setup
@@ -61,6 +62,7 @@ export function initThreeJS(container) {
         renderer.setSize(width, height);
     });
 }
+
 
 function setupLighting() {
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
@@ -153,9 +155,10 @@ export function createText() {
                     textMesh = new THREE.Mesh(materialObject.geometry, materialObject.material);
                 }
 
-                // Apply transform
+                // Apply transform with scene position
                 textMesh.position.copy(oldPosition);
-                textMesh.position.x = centerOffset;
+                textMesh.position.x = centerOffset + sceneParams.position.x;
+                textMesh.position.y = sceneParams.position.y;
                 textMesh.rotation.copy(oldRotation);
 
                 // Handle projection
@@ -230,15 +233,37 @@ export function updateMaterial() {
     }
 }
 
+
+export function updateScenePosition() {
+    if (!textMesh) return;
+    
+    // Update main text mesh position
+    textMesh.position.x = centerOffset + sceneParams.position.x;
+    textMesh.position.y = sceneParams.position.y;
+    
+    // Update positions for multiple copies
+    if (animationParams.multiTextEnabled && animationParams.copies) {
+        animationParams.copies.forEach(copy => {
+            if (copy && copy.mesh) {
+                copy.mesh.position.x = copy.basePosition.x + sceneParams.position.x;
+                copy.mesh.position.y = copy.basePosition.y + sceneParams.position.y;
+            }
+        });
+    }
+    
+    // Update letter positions if scramble is enabled
+    const letterMeshes = getLetterMeshes();
+    if (letterMeshes.length > 0) {
+        letterMeshes.forEach(mesh => {
+            mesh.position.x = mesh.userData.originalX + sceneParams.position.x;
+            mesh.position.y = mesh.userData.originalY + sceneParams.position.y;
+        });
+    }
+}
+
 export function updateSceneBackground() {
     scene.background.set(sceneParams.backgroundColor);
 }
-
-export function getTextMesh() {
-    return textMesh;
-}
-
-// Add these functions to three.setup.js
 
 export function updateSceneLighting() {
     const lights = scene.children.filter(child => child.isLight);
@@ -282,9 +307,9 @@ export function updateSceneCamera() {
         scene.fog = null;
     }
     
-    // Make sure to update the projection matrix when changing camera parameters
     camera.updateProjectionMatrix();
 }
+
 function animate() {
     requestAnimationFrame(animate);
 
@@ -331,4 +356,8 @@ function animate() {
     // Update controls and render
     controls.update();
     renderer.render(scene, camera);
+}
+
+export function getTextMesh() {
+    return textMesh;
 }

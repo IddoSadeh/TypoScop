@@ -199,6 +199,28 @@
               <input type="range" id="field-of-view" min="30" max="120" step="1" value="45">
               <span class="value-display">45</span>
           </div>
+          <!-- Add this inside the Scene Controls Section, after the Camera Settings subsection -->
+<div class="subsection">
+  <h4>Scene Position</h4>
+  <div class="scene-position-controls">
+      <!-- X Position -->
+      <div class="slider-group">
+          <label for="scene-position-x">Left/Right</label>
+          <input type="range" id="scene-position-x" min="-50" max="50" step="1" value="0">
+          <span class="value-display">0</span>
+      </div>
+      
+      <!-- Y Position -->
+      <div class="slider-group">
+          <label for="scene-position-y">Up/Down</label>
+          <input type="range" id="scene-position-y" min="-50" max="50" step="1" value="0">
+          <span class="value-display">0</span>
+      </div>
+
+      <!-- Reset Button -->
+      <button id="reset-scene-position" class="control-button">Reset Position</button>
+  </div>
+</div>
       </div>
   </div>
 </div>

@@ -18,6 +18,13 @@ export const sceneParams = {
     cameraDistance: 30,
     fieldOfView: 45,
     
+    // Scene position settings
+    position: {
+        x: 0,
+        y: 0,
+        z: 0
+    },
+    
     // Store the original state of the scene (for projection feature)
     originalState: null  // Will be populated when needed
 };
