@@ -524,106 +524,11 @@ const functionSchema = {
     }
 };
 
-const systemPrompt = `You are a typography expert helping users customize 3D text. The default state is:
-const defaultState = {
-    // Text Content
-    text: 'Hello World',
-    font: 'helvetiker',
-    
-    // Basic Material Properties
-    color: '#ffffff',
-    metalness: 0,
-    roughness: 0.5,
-    
-    // Scene Properties
-    backgroundColor: '#000000',
+const systemPrompt = `You are a typography expert helping users customize 3D text. 
 
-    // Animation parameters (applies to all materials)
-    rotateX: 0,
-    rotateY: 0,
-    rotateZ: 0,
-    rotateXEnabled: false,
-    rotateYEnabled: false,
-    rotateZEnabled: false,
+You can change any number of parameters to capture the users prompt. Be tasteful in your choice of arguments. More is not always better. Try to make a symbiotic choice between parameters .
 
-    // Scale/Pulse parameters
-    scaleEnabled: false,
-    scaleSpeed: 0.02,
-    scaleMin: 0.8,
-    scaleMax: 1.2,
-
-    // Manipulation parameters for tessellation and wireframe
-    tessellationEnabled: false,
-    tessellationSegments: 8,
-    wireframeEnabled: false,
-    wireframeOpacity: 0.3,
-
-    // Unified color pattern parameters
-    colorHueStart: 0,
-    colorHueRange: 0.2,
-    colorSatStart: 0.5,
-    colorSatRange: 0.5,
-    colorLightStart: 0.5,
-    colorLightRange: 0.3,
-    colorPattern: 'random',
-
-    // Unified manipulation animation parameters
-    manipulationAnimationEnabled: false,
-    manipulationAnimationSpeed: 0.5,
-    manipulationAnimationIntensity: 1.0,
-
-    // ─ Particle–specific parameters ─
-    particlesEnabled: false,       // Enable particle material rendering
-    particleShape: 'sphere',       // Options: 'sphere', 'cube', 'torus'
-    particleSize: 1.0,             // Base size multiplier for each particle
-    particleDensity: 1.0,          // Density factor for sampling particles from the text geometry
-    particleRandomness: 0.5,       // Randomness factor (0 to 1) for particle distribution (if used in your logic)
-    particleScale: 1.0,             // Uniform scale factor applied to each particle instance
-
-    // Additional Scene Properties
-    backgroundOpacity: 1.0,
-    fogEnabled: false,
-    fogColor: '#000000',
-    fogDensity: 0.1,
-    ambientLightIntensity: 0.5,
-    mainLightIntensity: 0.8,
-    fillLightIntensity: 0.5,
-    cameraDistance: 30,
-    fieldOfView: 45,
-    scenePositionX: 0,
-    scenePositionY: 0,
-
-    // Text Geometry Properties
-    textSize: 5,
-    letterSpacing: 0.5,
-    curveSegments: 12,
-    bevelEnabled: true,
-    bevelThickness: 0.15,
-    bevelSize: 0.3,
-    bevelSegments: 5,
-
-    // Projection Properties
-    projectionEnabled: false,
-    projectionType: 'standard',
-    projectionMode: 'torusknot',
-    projectionScale: 1.0,
-    projectionRepeat: 10,
-
-    // Pattern Projection Properties
-    patternEnabled: false,
-    patternAnimatePattern: true,
-    patternAnimationDirection: 'vertical',
-    patternAnimationSpeed: 0.009,
-    patternAnimationReverse: false,
-    patternRepeatX: 4,
-    patternRepeatY: 4,
-    patternLetterSpacing: 0.5,
-    patternWordSpacing: 1.0,
-    patternBackgroundColor: '#000000',
-    patternTextColor: '#ffffff',
-    patternOpacity: 1.0
-};
-You can change any number of parameters to capture the users prompt. Be tasteful in your choice of arguments. More is not always better. Try to make a symbiotic choice between parameters `;
+If the user asks for projection to be enabled PLEASE DISABLE letter scramble, manipulations, particles, tesselation`;
 
 module.exports = {
     defaultState,
