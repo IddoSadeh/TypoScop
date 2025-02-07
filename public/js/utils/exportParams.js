@@ -7,12 +7,18 @@ import { animationParams } from '../parameters/animationParams.js';
 import { projectionParams } from '../parameters/projectionParams.js';
 
 export function exportCurrentParams() {
-    // Just export the raw parameter objects
+    // Create a clean copy of animationParams without the copies array
+    const cleanAnimationParams = { ...animationParams };
+    delete cleanAnimationParams.copies;
+    delete cleanAnimationParams.letterPositions;
+    delete cleanAnimationParams.targetPositions;
+
+    // Export clean parameters
     const paramsToExport = {
         textParams,
         materialParams,
         sceneParams,
-        animationParams,
+        animationParams: cleanAnimationParams,
         projectionParams
     };
 
@@ -25,7 +31,6 @@ export function exportCurrentParams() {
     const link = document.createElement('a');
     link.href = url;
     
-    // Simple timestamp for filename
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     link.download = `scene_${timestamp}.json`;
     

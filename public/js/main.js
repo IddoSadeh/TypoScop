@@ -6,6 +6,7 @@ import { setupChatInterface } from './utils/chatInterface.js';
 import { setupAnimationControls } from './controls/setupAnimationControls.js';
 import { setupProjectionControls } from './controls/setupProjectionControls.js';
 import { exportCurrentParams } from './utils/exportParams.js';
+import { initSaveSystem } from './utils/saveSystem.js';
 
 function setupTabs() {
     const tabButtons = document.querySelectorAll('.tab-button');
@@ -41,6 +42,7 @@ function setupCollapsibles() {
         });
     });
 }
+
 function setupExportButton() {
     const exportButton = document.getElementById('export-params');
     if (exportButton) {
@@ -56,8 +58,16 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    // Initialize Three.js scene
-    initThreeJS(container);
+    // Initialize Three.js scene - only call once and store result
+    const sceneElements = initThreeJS(container);
+
+    // Initialize save system with scene elements
+    initSaveSystem(
+        sceneElements.scene, 
+        sceneElements.camera, 
+        sceneElements.renderer, 
+        sceneElements.textMesh
+    );
 
     // Setup all controls
     setupTextControls();

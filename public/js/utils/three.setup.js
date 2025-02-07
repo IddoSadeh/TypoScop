@@ -61,6 +61,13 @@ export function initThreeJS(container) {
         camera.updateProjectionMatrix();
         renderer.setSize(width, height);
     });
+
+    return {
+        scene,
+        camera,
+        renderer,
+        textMesh
+    };
 }
 
 
