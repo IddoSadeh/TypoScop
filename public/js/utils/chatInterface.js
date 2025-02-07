@@ -571,7 +571,45 @@ Mode: Random
 Number of Copies: 10  
 Spread Distance: 60  
             `
-        }
+        },{
+        prefix: "Prompt 3",
+        completion: "Glowing letters scattered over a fiery red background, crackling with neon-like energy. Chaotic, flickering, and full of motion—like electric sparks or a digital punk aesthetic.",
+        aiContext: `
+*Material Settings:*  
+Color: Bright Yellow (RGB: 255, 247, 5)  
+Metalness: 0  
+Roughness: 1  
+Letter Spacing: 1.2  
+Height: 0  
+
+*Scene Settings:*  
+Background Color: Intense Red (RGB: 255, 0, 0)  
+Background Opacity: 1  
+
+*Lighting Settings:*  
+Ambient Light: 0.5  
+Main Light: 0.4  
+Fill Light: 1.0  
+
+*Manipulation & Animation Settings:*  
+Wireframe: Enabled  
+Enable Animation: 
+Animation Speed: 2.0  
+Animation Intensity: 3.0  
+
+*Letter Scramble:*  
+Speed: 1.3  
+Intensity: 3.0  
+Mode: Random  
+
+*Multiple Text Copies:*  
+Number of Copies: 10  
+Spread Distance: 60  
+        `
+    }
+
+
+        
     ];
 
     const scrollContainer = document.createElement('div');

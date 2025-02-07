@@ -1,4 +1,4 @@
-// Add this to a new file like utils/exportParams.js
+// Add this to utils/exportParams.js
 
 import { textParams } from '../parameters/textParams.js';
 import { materialParams } from '../parameters/materialParams.js';
@@ -7,36 +7,30 @@ import { animationParams } from '../parameters/animationParams.js';
 import { projectionParams } from '../parameters/projectionParams.js';
 
 export function exportCurrentParams() {
-    // Collect all parameters into one object
-    const currentParams = {
-        text: textParams,
-        material: materialParams,
-        scene: sceneParams,
-        animation: animationParams,
-        projection: projectionParams
+    // Just export the raw parameter objects
+    const paramsToExport = {
+        textParams,
+        materialParams,
+        sceneParams,
+        animationParams,
+        projectionParams
     };
 
-    // Create a Blob with the JSON data
     const blob = new Blob(
-        [JSON.stringify(currentParams, null, 2)], 
+        [JSON.stringify(paramsToExport, null, 2)], 
         { type: 'application/json' }
     );
-
-    // Create a download link
+    
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
     
-    // Generate filename with timestamp
-    const date = new Date();
-    const timestamp = `${date.getFullYear()}${(date.getMonth()+1).toString().padStart(2, '0')}${date.getDate().toString().padStart(2, '0')}_${date.getHours().toString().padStart(2, '0')}${date.getMinutes().toString().padStart(2, '0')}`;
-    link.download = `scene_params_${timestamp}.json`;
-
-    // Trigger download
+    // Simple timestamp for filename
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    link.download = `scene_${timestamp}.json`;
+    
     document.body.appendChild(link);
     link.click();
-
-    // Cleanup
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
 }
