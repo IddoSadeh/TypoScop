@@ -5,6 +5,7 @@ import { setupSceneControls } from './controls/setupSceneControls.js';
 import { setupChatInterface } from './utils/chatInterface.js';
 import { setupAnimationControls } from './controls/setupAnimationControls.js';
 import { setupProjectionControls } from './controls/setupProjectionControls.js';
+import { exportCurrentParams } from './utils/exportParams.js';
 
 function setupTabs() {
     const tabButtons = document.querySelectorAll('.tab-button');
@@ -40,6 +41,12 @@ function setupCollapsibles() {
         });
     });
 }
+function setupExportButton() {
+    const exportButton = document.getElementById('export-params');
+    if (exportButton) {
+        exportButton.addEventListener('click', exportCurrentParams);
+    }
+}
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
@@ -59,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupAnimationControls(); 
     setupChatInterface();
     setupProjectionControls();
-
+    setupExportButton();
 
     // Setup UI components
     setupTabs();
