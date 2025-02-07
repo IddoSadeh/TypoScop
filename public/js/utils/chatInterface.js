@@ -500,8 +500,8 @@ function createSuggestionBubbles() {
             prefix: "Prompt 1",
             completion: "A cascading wall of text resembling digital rainfall, creating an immersive, hypnotic effect. The letters blur as they descend, mimicking the aesthetic of heavy rain in a cybernetic world.",
             aiContext: `
-Default settings + 
-            *Scene Settings:*  
+            *Scene Settings:* 
+            Projection Enabled: True 
 Projection Type: Pattern  
 Mode: Torus Knot  
 Horizontal Repeat: 19.00  
@@ -510,7 +510,7 @@ Letter Spacing: Custom
 Word Spacing: 0.50  
 Animation Direction: Diagonal  
 Reverse Direction: Disabled  
-Animation Speed: 0.05  
+Animation Speed: 0.00  
 Background Color: Deep Blue (RGB: 5, 0, 92)  
 Text Color: Light Cyan (RGB: 173, 216, 230)  
             `
@@ -519,8 +519,8 @@ Text Color: Light Cyan (RGB: 173, 216, 230)
             prefix: "Prompt 2",
             completion: "Text morphing into fluid, organic forms, appearing as if it is melting or stretching in a surreal liquid-like motion. It flows dynamically, reacting to movement as if suspended in an unseen gravitational field.",
             aiContext: `
-Default settings + 
-            *Scene Settings:*  
+            *Scene Settings:* 
+             Projection Enabled: True  
 Projection Type: Pattern  
 Mode: Torus Knot  
 Horizontal Repeat: 19.00  
@@ -529,7 +529,7 @@ Letter Spacing: Custom
 Word Spacing: 0.50  
 Animation Direction: Diagonal  
 Reverse Direction: Disabled  
-Animation Speed: 0.05  
+Animation Speed: 0.02  
 Background Color: Deep Red (RGB: 75, 7, 7)  
 Text Color: Intense Red (RGB: 255, 0, 0)  
 Object Color: Matching Red (RGB: 255, 0, 0)  
@@ -540,37 +540,36 @@ Opacity: 0.70
             prefix: "Prompt 3",
             completion: "Glowing letters scattered over a fiery red background, crackling with neon-like energy. Chaotic, flickering, and full of motion—like electric sparks or a digital punk aesthetic.",
             aiContext: `
-            Default settings +  
-            *Material Settings:*  
-            Color: Bright Yellow (RGB: 255, 247, 5)  
-            Metalness: 0  
-            Roughness: 1  
-            Letter Spacing: 1.2  
-            Height: 0  
-            
-            *Scene Settings:*  
-            Background Color: Intense Red (RGB: 255, 0, 0)  
-            Background Opacity: 1  
-            
-            *Lighting Settings:*  
-            Ambient Light: 0.5  
-            Main Light: 0.4  
-            Fill Light: 1.0  
-            
-            *Manipulation & Animation Settings:*  
-            Wireframe: Enabled  
-            Enable Animation: 
-            Animation Speed: 2.0  
-            Animation Intensity: 3.0  
-            
-            *Letter Scramble:*  
-            Speed: 1.3  
-            Intensity: 3.0  
-            Mode: Random  
-            
-            *Multiple Text Copies:*  
-            Number of Copies: 10  
-            Spread Distance: 60  
+ *Material Settings:*  
+Color: Bright Yellow (RGB: 255, 247, 5)  
+Metalness: 0  
+Roughness: 1  
+Letter Spacing: 1.2  
+Height: 0  
+
+*Scene Settings:*  
+Background Color: Intense Red (RGB: 255, 0, 0)  
+Background Opacity: 1  
+
+*Lighting Settings:*  
+Ambient Light: 0.5  
+Main Light: 0.4  
+Fill Light: 1.0  
+
+*Manipulation & Animation Settings:*  
+Wireframe: Enabled  
+Enable Animation: 
+Animation Speed: 2.0  
+Animation Intensity: 3.0  
+
+*Letter Scramble:*  
+Speed: 1.3  
+Intensity: 3.0  
+Mode: Random  
+
+*Multiple Text Copies:*  
+Number of Copies: 10  
+Spread Distance: 60  
             `
         }
     ];
@@ -610,7 +609,13 @@ Opacity: 0.70
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
-                        prompt: suggestion.aiContext 
+                        prompt: `Start fresh with default settings and apply only these new changes:
+
+${suggestion.aiContext}
+
+To achieve this visual effect: ${suggestion.completion}
+
+Previous settings or prompts should be completely ignored.` 
                     })
                 });
 
