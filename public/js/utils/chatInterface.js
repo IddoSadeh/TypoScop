@@ -3,8 +3,10 @@ import { textParams } from '../parameters/textParams.js';
 import { materialParams } from '../parameters/materialParams.js';
 import { sceneParams } from '../parameters/sceneParams.js';
 import { animationParams } from '../parameters/animationParams.js';
+import { projectionParams } from '../parameters/projectionParams.js';
 import { createText, updateSceneBackground } from './three.setup.js';
 import { updateMultiTextCopies } from './animationManager.js';
+import { updateProjectionControls } from '../controls/setupProjectionControls.js';
 import fontManager from './fontManager.js';
 
 export function setupChatInterface() {
@@ -57,17 +59,13 @@ function handleAPIResponse(result) {
         
         updateChatHistory('ai', message);
 
-        // Update manipulation parameters
+        // Update material parameters
         Object.assign(materialParams, {
-            // Tessellation parameters
+            // Previous material parameters remain the same
             tessellationEnabled: result.response.tessellationEnabled ?? materialParams.tessellationEnabled,
             tessellationSegments: result.response.tessellationSegments ?? materialParams.tessellationSegments,
-
-            // Wireframe parameters
             wireframeEnabled: result.response.wireframeEnabled ?? materialParams.wireframeEnabled,
             wireframeOpacity: result.response.wireframeOpacity ?? materialParams.wireframeOpacity,
-
-            // Shared color pattern properties
             colorHueStart: result.response.colorHueStart ?? materialParams.colorHueStart,
             colorHueRange: result.response.colorHueRange ?? materialParams.colorHueRange,
             colorSatStart: result.response.colorSatStart ?? materialParams.colorSatStart,
@@ -75,17 +73,12 @@ function handleAPIResponse(result) {
             colorLightStart: result.response.colorLightStart ?? materialParams.colorLightStart,
             colorLightRange: result.response.colorLightRange ?? materialParams.colorLightRange,
             colorPattern: result.response.colorPattern || materialParams.colorPattern,
-
-            // Basic material properties
             color: result.response.color || materialParams.color,
             metalness: result.response.metalness ?? materialParams.metalness,
             roughness: result.response.roughness ?? materialParams.roughness,
-
-            // Unified manipulation animation parameters
             manipulationAnimationEnabled: result.response.manipulationAnimationEnabled ?? materialParams.manipulationAnimationEnabled,
             manipulationAnimationSpeed: result.response.manipulationAnimationSpeed ?? materialParams.manipulationAnimationSpeed,
             manipulationAnimationIntensity: result.response.manipulationAnimationIntensity ?? materialParams.manipulationAnimationIntensity,
-                // ─ Particle-specific parameters ─
             particlesEnabled: result.response.particlesEnabled ?? materialParams.particlesEnabled,
             particleShape: result.response.particleShape || materialParams.particleShape,
             particleSize: result.response.particleSize ?? materialParams.particleSize,
@@ -96,10 +89,17 @@ function handleAPIResponse(result) {
 
         // Update text parameters
         Object.assign(textParams, {
-            height: result.response.height ?? textParams.height
+            height: result.response.height ?? textParams.height,
+            size: result.response.textSize ?? textParams.size,
+            letterSpacing: result.response.letterSpacing ?? textParams.letterSpacing,
+            curveSegments: result.response.curveSegments ?? textParams.curveSegments,
+            bevelEnabled: result.response.bevelEnabled ?? textParams.bevelEnabled,
+            bevelThickness: result.response.bevelThickness ?? textParams.bevelThickness,
+            bevelSize: result.response.bevelSize ?? textParams.bevelSize,
+            bevelSegments: result.response.bevelSegments ?? textParams.bevelSegments
         });
 
-        // If there's a font change, let the font manager handle it
+        // Handle font changes
         if (result.response.font) {
             const { font } = fontManager.processText(textParams.text, result.response.font);
             textParams.font = font;
@@ -107,37 +107,76 @@ function handleAPIResponse(result) {
 
         // Update scene parameters
         Object.assign(sceneParams, {
-            backgroundColor: result.response.backgroundColor || sceneParams.backgroundColor
+            backgroundColor: result.response.backgroundColor || sceneParams.backgroundColor,
+            backgroundOpacity: result.response.backgroundOpacity ?? sceneParams.backgroundOpacity,
+            fogEnabled: result.response.fogEnabled ?? sceneParams.fogEnabled,
+            fogColor: result.response.fogColor || sceneParams.fogColor,
+            fogDensity: result.response.fogDensity ?? sceneParams.fogDensity,
+            ambientLightIntensity: result.response.ambientLightIntensity ?? sceneParams.ambientLightIntensity,
+            mainLightIntensity: result.response.mainLightIntensity ?? sceneParams.mainLightIntensity,
+            fillLightIntensity: result.response.fillLightIntensity ?? sceneParams.fillLightIntensity,
+            cameraDistance: result.response.cameraDistance ?? sceneParams.cameraDistance,
+            fieldOfView: result.response.fieldOfView ?? sceneParams.fieldOfView,
+            position: {
+                x: result.response.scenePositionX ?? sceneParams.position.x,
+                y: result.response.scenePositionY ?? sceneParams.position.y,
+                z: sceneParams.position.z
+            }
         });
 
         // Update animation parameters
         Object.assign(animationParams, {
-            // Rotation parameters
+            // Previous animation parameters remain the same
             rotateX: result.response.rotateX ?? animationParams.rotateX,
             rotateY: result.response.rotateY ?? animationParams.rotateY,
             rotateZ: result.response.rotateZ ?? animationParams.rotateZ,
             rotateXEnabled: result.response.rotateXEnabled ?? animationParams.rotateXEnabled,
             rotateYEnabled: result.response.rotateYEnabled ?? animationParams.rotateYEnabled,
             rotateZEnabled: result.response.rotateZEnabled ?? animationParams.rotateZEnabled,
-
-            // Scale parameters
             scaleEnabled: result.response.scaleEnabled ?? animationParams.scaleEnabled,
             scaleSpeed: result.response.scaleSpeed ?? animationParams.scaleSpeed,
             scaleMin: result.response.scaleMin ?? animationParams.scaleMin,
             scaleMax: result.response.scaleMax ?? animationParams.scaleMax,
-
-            // Scramble parameters
             scrambleEnabled: result.response.scrambleEnabled ?? animationParams.scrambleEnabled,
             scrambleSpeed: result.response.scrambleSpeed ?? animationParams.scrambleSpeed,
             scrambleIntensity: result.response.scrambleIntensity ?? animationParams.scrambleIntensity,
             scrambleMode: result.response.scrambleMode || animationParams.scrambleMode,
-
-            // Multi-text parameters
             multiTextEnabled: result.response.multiTextEnabled ?? animationParams.multiTextEnabled,
             copyCount: result.response.copyCount ?? animationParams.copyCount,
             spread: result.response.spread ?? animationParams.spread,
-            rotateIndependently: result.response.rotateIndependently ?? animationParams.rotateIndependently
+            rotateIndependently: result.response.rotateIndependently ?? animationParams.rotateIndependently,
+            // Add projection parameters
+            projectionEnabled: result.response.projectionEnabled ?? animationParams.projectionEnabled,
+            projectionMode: result.response.projectionMode || animationParams.projectionMode,
+            projectionScale: result.response.projectionScale ?? animationParams.projectionScale,
+            projectionRepeat: result.response.projectionRepeat ?? animationParams.projectionRepeat
         });
+
+        
+        Object.assign(projectionParams, {
+            enabled: result.response.projectionEnabled ?? projectionParams.enabled,
+            projectionType: result.response.projectionType || projectionParams.projectionType,
+            mode: result.response.projectionMode || projectionParams.mode,
+            scale: result.response.projectionScale ?? projectionParams.scale,
+            repeat: result.response.projectionRepeat ?? projectionParams.repeat,
+            // Pattern parameters
+            pattern: {
+                ...projectionParams.pattern,
+                enabled: result.response.patternEnabled ?? projectionParams.pattern.enabled,
+                animatePattern: result.response.patternAnimatePattern ?? projectionParams.pattern.animatePattern,
+                animationDirection: result.response.patternAnimationDirection || projectionParams.pattern.animationDirection,
+                animationSpeed: result.response.patternAnimationSpeed ?? projectionParams.pattern.animationSpeed,
+                animationReverse: result.response.patternAnimationReverse ?? projectionParams.pattern.animationReverse,
+                repeatX: result.response.patternRepeatX ?? projectionParams.pattern.repeatX,
+                repeatY: result.response.patternRepeatY ?? projectionParams.pattern.repeatY,
+                letterSpacing: result.response.patternLetterSpacing ?? projectionParams.pattern.letterSpacing,
+                wordSpacing: result.response.patternWordSpacing ?? projectionParams.pattern.wordSpacing,
+                backgroundColor: result.response.patternBackgroundColor || projectionParams.pattern.backgroundColor,
+                textColor: result.response.patternTextColor || projectionParams.pattern.textColor,
+                opacity: result.response.patternOpacity ?? projectionParams.pattern.opacity
+            }
+        });
+
 
         // Update UI
         updateUIControls();
@@ -150,8 +189,6 @@ function handleAPIResponse(result) {
     }
 }
 
-// ... rest of the UI update functions remain the same ...
-
 function updateUIControls() {
     updateManipulationControls();
     updateMultiTextControls();
@@ -160,7 +197,7 @@ function updateUIControls() {
     updateScaleControls();
     updateScrambleControls();
     updateParticleControls();
-
+    updateProjectionControls();
 }
 
 function updateStaticTypography() {

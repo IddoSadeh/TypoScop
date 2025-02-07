@@ -51,7 +51,50 @@ const defaultState = {
     particleSize: 1.0,             // Base size multiplier for each particle
     particleDensity: 1.0,          // Density factor for sampling particles from the text geometry
     particleRandomness: 0.5,       // Randomness factor (0 to 1) for particle distribution (if used in your logic)
-    particleScale: 1.0             // Uniform scale factor applied to each particle instance
+    particleScale: 1.0,             // Uniform scale factor applied to each particle instance
+
+    // Additional Scene Properties
+    backgroundOpacity: 1.0,
+    fogEnabled: false,
+    fogColor: '#000000',
+    fogDensity: 0.1,
+    ambientLightIntensity: 0.5,
+    mainLightIntensity: 0.8,
+    fillLightIntensity: 0.5,
+    cameraDistance: 30,
+    fieldOfView: 45,
+    scenePositionX: 0,
+    scenePositionY: 0,
+
+    // Text Geometry Properties
+    textSize: 5,
+    letterSpacing: 0.5,
+    curveSegments: 12,
+    bevelEnabled: true,
+    bevelThickness: 0.15,
+    bevelSize: 0.3,
+    bevelSegments: 5,
+
+    // Projection Properties
+    projectionEnabled: false,
+    projectionType: 'standard',
+    projectionMode: 'torusknot',
+    projectionScale: 1.0,
+    projectionRepeat: 10,
+
+    // Pattern Projection Properties
+    patternEnabled: false,
+    patternAnimatePattern: true,
+    patternAnimationDirection: 'vertical',
+    patternAnimationSpeed: 0.009,
+    patternAnimationReverse: false,
+    patternRepeatX: 4,
+    patternRepeatY: 4,
+    patternLetterSpacing: 0.5,
+    patternWordSpacing: 1.0,
+    patternBackgroundColor: '#000000',
+    patternTextColor: '#ffffff',
+    patternOpacity: 1.0
 };
 
 
@@ -287,7 +330,194 @@ const functionSchema = {
                 description: 'Uniform scale factor applied to each particle instance',
                 minimum: 0.1,
                 maximum: 10
+            },
+            // Scene Control Properties
+            backgroundOpacity: {
+                type: 'number',
+                description: 'Background opacity (0-1)',
+                minimum: 0,
+                maximum: 1
+            },
+            fogEnabled: {
+                type: 'boolean',
+                description: 'Enable/disable fog effect'
+            },
+            fogColor: {
+                type: 'string',
+                description: 'Color of the fog effect (hexadecimal)'
+            },
+            fogDensity: {
+                type: 'number',
+                description: 'Density of the fog effect (0-1)',
+                minimum: 0,
+                maximum: 1
+            },
+            ambientLightIntensity: {
+                type: 'number',
+                description: 'Intensity of ambient lighting (0-1)',
+                minimum: 0,
+                maximum: 1
+            },
+            mainLightIntensity: {
+                type: 'number',
+                description: 'Intensity of main directional light (0-1)',
+                minimum: 0,
+                maximum: 1
+            },
+            fillLightIntensity: {
+                type: 'number',
+                description: 'Intensity of fill light (0-1)',
+                minimum: 0,
+                maximum: 1
+            },
+            cameraDistance: {
+                type: 'number',
+                description: 'Camera distance from scene (10-100)',
+                minimum: 10,
+                maximum: 100
+            },
+            fieldOfView: {
+                type: 'number',
+                description: 'Camera field of view in degrees (30-120)',
+                minimum: 30,
+                maximum: 120
+            },
+            scenePositionX: {
+                type: 'number',
+                description: 'Horizontal position of the scene (-50 to 50)',
+                minimum: -50,
+                maximum: 50
+            },
+            scenePositionY: {
+                type: 'number',
+                description: 'Vertical position of the scene (-50 to 50)',
+                minimum: -50,
+                maximum: 50
+            },
+
+            // Text Geometry Properties
+            textSize: {
+                type: 'number',
+                description: 'Size of the text (1-10)',
+                minimum: 1,
+                maximum: 10
+            },
+            letterSpacing: {
+                type: 'number',
+                description: 'Spacing between letters (0-2)',
+                minimum: 0,
+                maximum: 2
+            },
+            curveSegments: {
+                type: 'integer',
+                description: 'Number of curve segments for text geometry (4-32)',
+                minimum: 4,
+                maximum: 32
+            },
+            bevelEnabled: {
+                type: 'boolean',
+                description: 'Enable/disable bevel effect on text'
+            },
+            bevelThickness: {
+                type: 'number',
+                description: 'Thickness of bevel effect (0-1)',
+                minimum: 0,
+                maximum: 1
+            },
+            bevelSize: {
+                type: 'number',
+                description: 'Size of bevel effect (0-1)',
+                minimum: 0,
+                maximum: 1
+            },
+            bevelSegments: {
+                type: 'integer',
+                description: 'Number of bevel segments (1-10)',
+                minimum: 1,
+                maximum: 10
+            },
+
+            // Projection Properties
+            projectionEnabled: {
+                type: 'boolean',
+                description: 'Enable/disable projection effect'
+            },
+            projectionType: {
+                type: 'string',
+                description: 'Type of projection to use',
+                enum: ['standard', 'pattern']
+            },
+            projectionMode: {
+                type: 'string',
+                description: 'Shape to project onto',
+                enum: ['torusknot', 'donut', 'sphere', 'cube', 'cylinder', 'cone', 'octahedron']
+            },
+            projectionScale: {
+                type: 'number',
+                description: 'Scale of the projection (0.1-3)',
+                minimum: 0.1,
+                maximum: 3
+            },
+
+            // Pattern Projection Properties
+            patternAnimatePattern: {
+                type: 'boolean',
+                description: 'Enable/disable pattern animation'
+            },
+            patternAnimationDirection: {
+                type: 'string',
+                description: 'Direction of pattern animation',
+                enum: ['vertical', 'horizontal', 'diagonal']
+            },
+            patternAnimationSpeed: {
+                type: 'number',
+                description: 'Speed of pattern animation (0.001-0.05)',
+                minimum: 0.001,
+                maximum: 0.05
+            },
+            patternAnimationReverse: {
+                type: 'boolean',
+                description: 'Reverse pattern animation direction'
+            },
+            patternRepeatX: {
+                type: 'integer',
+                description: 'Horizontal pattern repetitions (1-20)',
+                minimum: 1,
+                maximum: 20
+            },
+            patternRepeatY: {
+                type: 'integer',
+                description: 'Vertical pattern repetitions (1-20)',
+                minimum: 1,
+                maximum: 20
+            },
+            patternLetterSpacing: {
+                type: 'number',
+                description: 'Letter spacing in pattern (0-2)',
+                minimum: 0,
+                maximum: 2
+            },
+            patternWordSpacing: {
+                type: 'number',
+                description: 'Word spacing in pattern (0.5-3)',
+                minimum: 0.5,
+                maximum: 3
+            },
+            patternBackgroundColor: {
+                type: 'string',
+                description: 'Background color for pattern (hexadecimal)'
+            },
+            patternTextColor: {
+                type: 'string',
+                description: 'Text color in pattern (hexadecimal)'
+            },
+            patternOpacity: {
+                type: 'number',
+                description: 'Opacity of pattern (0-1)',
+                minimum: 0,
+                maximum: 1
             }
+        
         },
         required: [],
         additionalProperties: false

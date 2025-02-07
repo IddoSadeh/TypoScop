@@ -120,3 +120,75 @@ export function setupProjectionControls() {
         });
     }
 }
+
+export function updateProjectionControls() {
+  // Update basic projection controls
+  const projectionToggle = document.getElementById('projection-toggle');
+  const projectionType = document.getElementById('projection-type');
+  const projectionMode = document.getElementById('projection-mode');
+
+  if (projectionToggle) {
+      projectionToggle.checked = projectionParams.enabled;
+  }
+
+  if (projectionType || projectionParams.pattern.enabled) {
+      projectionType.value = projectionParams.projectionType;
+  }
+
+  if (projectionMode) {
+      projectionMode.value = projectionParams.mode;
+  }
+
+  // Update pattern controls
+  const updateRangeControl = (id, value) => {
+      const element = document.getElementById(id);
+      if (element) {
+          element.value = value;
+          const valueDisplay = element.nextElementSibling;
+          if (valueDisplay) {
+              valueDisplay.textContent = value.toFixed(2);
+          }
+      }
+  };
+
+  // Update all range controls
+  updateRangeControl('pattern-repeat-x', projectionParams.pattern.repeatX);
+  updateRangeControl('pattern-repeat-y', projectionParams.pattern.repeatY);
+  updateRangeControl('pattern-letter-spacing', projectionParams.pattern.letterSpacing);
+  updateRangeControl('pattern-word-spacing', projectionParams.pattern.wordSpacing);
+  updateRangeControl('pattern-animation-speed', projectionParams.pattern.animationSpeed);
+  updateRangeControl('pattern-opacity', projectionParams.pattern.opacity);
+
+  // Update color controls
+  const backgroundColorPicker = document.getElementById('pattern-background-color');
+  if (backgroundColorPicker) {
+      backgroundColorPicker.value = projectionParams.pattern.backgroundColor;
+  }
+
+  const textColorPicker = document.getElementById('pattern-text-color');
+  if (textColorPicker) {
+      textColorPicker.value = projectionParams.pattern.textColor;
+  }
+
+  const objectColorPicker = document.getElementById('pattern-object-color');
+  if (objectColorPicker) {
+      objectColorPicker.value = projectionParams.pattern.objectColor;
+  }
+
+  // Update toggle controls
+  const animationToggle = document.getElementById('pattern-animation-toggle');
+  if (animationToggle) {
+      animationToggle.checked = projectionParams.pattern.animatePattern;
+  }
+
+  const reverseToggle = document.getElementById('pattern-animation-reverse');
+  if (reverseToggle) {
+      reverseToggle.checked = projectionParams.pattern.animationReverse;
+  }
+
+  // Update direction select
+  const directionSelect = document.getElementById('pattern-animation-direction');
+  if (directionSelect) {
+      directionSelect.value = projectionParams.pattern.animationDirection;
+  }
+}
