@@ -144,3 +144,68 @@
 .save-btn:hover {
   background-color: #0056b3;
 }
+/* Add this to chat.css */
+
+.suggestions-scroll-container {
+  width: calc(100% - 32px); /* Account for padding */
+  overflow-x: auto;
+  padding: 8px 0 16px; /* Removed horizontal padding */
+  margin: 0 16px 8px 16px; /* Added horizontal margin instead */
+  
+  /* Basic scrollbar styling */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(52, 53, 65, 0.95) transparent;
+}
+
+/* Custom scrollbar styling for Webkit browsers */
+.suggestions-scroll-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.suggestions-scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.suggestions-scroll-container::-webkit-scrollbar-thumb {
+  background-color: rgba(52, 53, 65, 0.95);
+  border-radius: 12px;
+}
+
+.suggestions-scroll-container::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(62, 63, 75, 0.95);
+}
+
+.suggestions-container {
+  display: flex;
+  gap: 8px;
+  width: max-content;
+}
+
+.suggestion-bubble {
+  background-color: rgba(52, 53, 65, 0.95);
+  border-radius: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  border: none;
+  text-align: left;
+  backdrop-filter: blur(8px);
+  min-width: 200px;
+  transition: background-color 0.2s ease;
+}
+
+.suggestion-bubble:hover {
+  background-color: rgba(62, 63, 75, 0.95);
+}
+
+.suggestion-prefix {
+  color: #ffffff;
+  font-weight: 500;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.suggestion-completion {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  line-height: 1.4;
+}
