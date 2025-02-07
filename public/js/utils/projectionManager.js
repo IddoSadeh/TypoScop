@@ -61,33 +61,57 @@ function cleanup() {
   GEOMETRY CREATION
 ──────────────────────────────────────────────────────────────*/
 function createProjectionGeometry() {
+    const segments = projectionParams.segments;
+    
     switch (projectionParams.mode) {
         case 'torusknot':
             return new THREE.TorusKnotGeometry(
                 10, 3,
-                projectionParams.segments.torusknot.turns,
-                projectionParams.segments.torusknot.tubes
+                segments.torusknot.turns,
+                segments.torusknot.tubes
             );
+            
         case 'cube':
             return new THREE.BoxGeometry(10, 10, 10);
+            
         case 'sphere':
             return new THREE.SphereGeometry(
                 7,
-                projectionParams.segments.sphere.width,
-                projectionParams.segments.sphere.height
+                segments.sphere.width,
+                segments.sphere.height
             );
-        case 'twisted':
-            return new THREE.TorusKnotGeometry(
-                10, 2.5,
-                projectionParams.segments.twisted.turns,
-                projectionParams.segments.twisted.tubes
+            
+        case 'donut':
+            return new THREE.TorusGeometry(
+                segments.donut.radius,
+                segments.donut.tube,
+                segments.donut.radialSegments,
+                segments.donut.tubularSegments
             );
+            
+        case 'cylinder':
+            return new THREE.CylinderGeometry(
+                segments.cylinder.radiusTop,
+                segments.cylinder.radiusBottom,
+                segments.cylinder.height,
+                segments.cylinder.segments
+            );
+            
+        case 'cone':
+            return new THREE.ConeGeometry(
+                segments.cone.radius,
+                segments.cone.height,
+                segments.cone.segments
+            );
+            
+        case 'octahedron':
+            return new THREE.OctahedronGeometry(segments.octahedron.radius);
+            
         default:
             console.warn('Unknown projection mode:', projectionParams.mode);
             return new THREE.TorusKnotGeometry(10, 3, 100, 16);
     }
 }
-
 /*──────────────────────────────────────────────────────────────
   PROJECTION HANDLING
 ──────────────────────────────────────────────────────────────*/

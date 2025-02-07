@@ -1,7 +1,7 @@
 export const projectionParams = {
     enabled: false,
     projectionType: 'standard', // 'standard' or 'pattern'
-    mode: 'torusknot',     // Options: 'torusknot', 'cube', 'sphere', 'twisted'
+    mode: 'torusknot',     // Options: 'torusknot', 'cube', 'sphere', 'donut', 'cylinder', 'cone', 'octahedron'
     scale: 1.0,
     repeat: 10,
     // Geometry segment parameters
@@ -9,13 +9,10 @@ export const projectionParams = {
         torusknot: { tubes: 16, turns: 100 },
         sphere: { width: 32, height: 32 },
         cube: { segments: 1 },
-        twisted: { tubes: 20, turns: 150 },
-        pattern: { 
-            width: 4,      // Pattern repeat width
-            height: 4,     // Pattern repeat height
-            speed: 0.009,  // Animation speed
-            segments: 32   // Geometry detail
-        }
+        donut: { radius: 10, tube: 3, radialSegments: 16, tubularSegments: 100 },
+        cylinder: { radiusTop: 5, radiusBottom: 5, height: 20, segments: 32 },
+        cone: { radius: 5, height: 20, segments: 32 },
+        octahedron: { radius: 10 }
     },
     // Rotation parameters
     rotation: {
@@ -39,7 +36,6 @@ export const projectionParams = {
         // Colors
         backgroundColor: '#000000',
         textColor: '#ffffff',
-        objectColor: '#ffffff',
         opacity: 1.0
     }
 };
