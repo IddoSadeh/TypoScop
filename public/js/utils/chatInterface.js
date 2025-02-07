@@ -498,9 +498,9 @@ function createSuggestionBubbles() {
     const suggestions = [
         {
             prefix: "Prompt 1",
-            completion: "A cascading wall of text resembling digital rainfall, creating an immersive, hypnotic effect. The letters blur as they descend, mimicking the aesthetic of heavy rain in a cybernetic world.  ",
-            // Hidden context that will be added to the prompt
+            completion: "A cascading wall of text resembling digital rainfall, creating an immersive, hypnotic effect. The letters blur as they descend, mimicking the aesthetic of heavy rain in a cybernetic world.",
             aiContext: `
+Default settings + 
             *Scene Settings:*  
 Projection Type: Pattern  
 Mode: Torus Knot  
@@ -510,16 +510,16 @@ Letter Spacing: Custom
 Word Spacing: 0.50  
 Animation Direction: Diagonal  
 Reverse Direction: Disabled  
-Animation Speed: 0.00  
+Animation Speed: 0.05  
 Background Color: Deep Blue (RGB: 5, 0, 92)  
 Text Color: Light Cyan (RGB: 173, 216, 230)  
             `
         },
         {
             prefix: "Prompt 2",
-            completion: "Text morphing into fluid, organic forms, appearing as if it is melting or stretching in a surreal liquid-like motion. It flows dynamically, reacting to movement as if suspended in an unseen gravitational field. ",
-            aiContext: 
-            `
+            completion: "Text morphing into fluid, organic forms, appearing as if it is melting or stretching in a surreal liquid-like motion. It flows dynamically, reacting to movement as if suspended in an unseen gravitational field.",
+            aiContext: `
+Default settings + 
             *Scene Settings:*  
 Projection Type: Pattern  
 Mode: Torus Knot  
@@ -529,7 +529,7 @@ Letter Spacing: Custom
 Word Spacing: 0.50  
 Animation Direction: Diagonal  
 Reverse Direction: Disabled  
-Animation Speed: 0.00  
+Animation Speed: 0.05  
 Background Color: Deep Red (RGB: 75, 7, 7)  
 Text Color: Intense Red (RGB: 255, 0, 0)  
 Object Color: Matching Red (RGB: 255, 0, 0)  
@@ -538,28 +538,43 @@ Opacity: 0.70
         },
         {
             prefix: "Prompt 3",
-            completion: "Glowing letters scattered over a fiery red background, crackling with neon-like energy. Chaotic, flickering, and full of motion—like electric sparks or a digital punk aesthetic. ",
+            completion: "Glowing letters scattered over a fiery red background, crackling with neon-like energy. Chaotic, flickering, and full of motion—like electric sparks or a digital punk aesthetic.",
             aiContext: `
+            Default settings +  
             *Material Settings:*  
-Color: Bright Yellow (RGB: 255, 247, 5)  
-Metalness: 0  
-Roughness: 1  
-Letter Spacing: 1.2  
-Height: 0  
-
-*Scene Settings:*  
-Background Color: Intense Red (RGB: 255, 0, 0)  
-Background Opacity: 1  
-
-*Lighting Settings:*  
-Ambient Light: 0.5  
-Main Light: 0.4  
-Fill Light: 1.0  
+            Color: Bright Yellow (RGB: 255, 247, 5)  
+            Metalness: 0  
+            Roughness: 1  
+            Letter Spacing: 1.2  
+            Height: 0  
+            
+            *Scene Settings:*  
+            Background Color: Intense Red (RGB: 255, 0, 0)  
+            Background Opacity: 1  
+            
+            *Lighting Settings:*  
+            Ambient Light: 0.5  
+            Main Light: 0.4  
+            Fill Light: 1.0  
+            
+            *Manipulation & Animation Settings:*  
+            Wireframe: Enabled  
+            Enable Animation: 
+            Animation Speed: 2.0  
+            Animation Intensity: 3.0  
+            
+            *Letter Scramble:*  
+            Speed: 1.3  
+            Intensity: 3.0  
+            Mode: Random  
+            
+            *Multiple Text Copies:*  
+            Number of Copies: 10  
+            Spread Distance: 60  
             `
         }
     ];
 
-    // Create container with horizontal scroll
     const scrollContainer = document.createElement('div');
     scrollContainer.className = 'suggestions-scroll-container';
 
@@ -581,15 +596,34 @@ Fill Light: 1.0
         bubble.appendChild(prefix);
         bubble.appendChild(completion);
         
-        // Add click handler with hidden context
-        bubble.addEventListener('click', () => {
+        // Add click handler to simulate chat interaction
+        bubble.addEventListener('click', async () => {
             const promptInput = document.getElementById('promptInput');
-            if (promptInput) {
-                // Set the visible text in the input
-                promptInput.value = `${suggestion.prefix} ${suggestion.completion}`;
-                // Store the hidden context as a data attribute on the input
-                promptInput.dataset.aiContext = suggestion.aiContext;
-                promptInput.focus();
+            if (!promptInput) return;
+
+            // Add user message to chat
+            updateChatHistory('user', suggestion.completion);
+
+            try {
+                // Make API request with hidden context
+                const response = await fetch('/api/customize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        prompt: suggestion.aiContext 
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                handleAPIResponse(result);
+                
+            } catch (error) {
+                console.error('API Error:', error);
+                updateChatHistory('ai', 'Error: Could not connect to the server.');
             }
         });
         
@@ -601,26 +635,4 @@ Fill Light: 1.0
     // Insert before the chat input area
     const chatInput = document.querySelector('.chat-input');
     chatInput.parentNode.insertBefore(scrollContainer, chatInput);
-
-    // Modify your send button handler to include the hidden context
-    const sendButton = document.getElementById('send');
-    const originalClickHandler = sendButton.onclick;
-    sendButton.onclick = async (e) => {
-        const promptInput = document.getElementById('promptInput');
-        const aiContext = promptInput.dataset.aiContext || '';
-        
-        // If there's hidden context, prepend it to the actual prompt
-        if (aiContext) {
-            const visiblePrompt = promptInput.value;
-            promptInput.value = `${aiContext}\n\nUser's request: ${visiblePrompt}`;
-        }
-        
-        // Call the original handler
-        if (originalClickHandler) {
-            originalClickHandler.call(sendButton, e);
-        }
-        
-        // Clear the hidden context after sending
-        delete promptInput.dataset.aiContext;
-    };
 }
