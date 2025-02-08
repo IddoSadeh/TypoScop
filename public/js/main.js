@@ -7,6 +7,7 @@ import { setupAnimationControls } from './controls/setupAnimationControls.js';
 import { setupProjectionControls } from './controls/setupProjectionControls.js';
 import { exportCurrentParams } from './utils/exportParams.js';
 import { initSaveSystem } from './utils/saveSystem.js';
+import { initResetButton } from './utils/resetScene.js';
 
 function setupTabs() {
     const tabButtons = document.querySelectorAll('.tab-button');
@@ -77,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupChatInterface();
     setupProjectionControls();
     setupExportButton();
-
+    initResetButton();
     // Setup UI components
     setupTabs();
     setupCollapsibles();

@@ -495,550 +495,93 @@ function updateParticleControls() {
 
 
 function createSuggestionBubbles() {
-    const suggestions = [
-        {
-            prefix: "Prompt 1",
-            completion: "prompt 1",
-            aiContext: `
-{
-  "textParams": {
-    "text": "Hello World",
-    "font": "helvetiker",
-    "hebrewFont": "haim",
-    "size": 5,
-    "height": 0,
-    "letterSpacing": 0,
-    "curveSegments": 12,
-    "bevelEnabled": true,
-    "bevelThickness": 0.15,
-    "bevelSize": 0.3,
-    "bevelSegments": 5
-  },
-  "materialParams": {
-    "color": "#ffffff",
-    "metalness": 0,
-    "roughness": 0,
-    "tessellationEnabled": false,
-    "wireframeEnabled": false,
-    "particlesEnabled": false,
-    "tessellationSegments": 8,
-    "tessellationHueStart": 0,
-    "tessellationHueRange": 0.2,
-    "tessellationSatStart": 0.5,
-    "tessellationSatRange": 0.5,
-    "tessellationLightStart": 0.5,
-    "tessellationLightRange": 0.3,
-    "tessellationPattern": "random",
-    "wireframeOpacity": 0.8,
-    "particleSize": 0.05,
-    "particleDensity": 1,
-    "particleRandomness": 0.1,
-    "particleShape": "sphere",
-    "particleScale": 1,
-    "manipulationAnimationEnabled": false,
-    "manipulationAnimationSpeed": 0.5,
-    "manipulationAnimationIntensity": 1
-  },
-  "sceneParams": {
-    "backgroundColor": "#000000",
-    "backgroundOpacity": 1,
-    "fogEnabled": true,
-    "fogColor": "#00bfff",
-    "fogDensity": 0,
-    "ambientLightIntensity": 0.3,
-    "mainLightIntensity": 0.8,
-    "fillLightIntensity": 0.5,
-    "cameraDistance": 12,
-    "fieldOfView": 45,
-    "position": {
-      "x": 0,
-      "y": 0,
-      "z": 0
-    },
-    "originalState": null
-  },
-  "animationParams": {
-    "rotateX": 0,
-    "rotateY": 0,
-    "rotateZ": 0,
-    "rotateXEnabled": false,
-    "rotateYEnabled": false,
-    "rotateZEnabled": false,
-    "scaleEnabled": false,
-    "scaleSpeed": 0.02,
-    "scaleMin": 0.8,
-    "scaleMax": 1.2,
-    "currentScale": 1,
-    "scaleDirection": 1,
-    "scrambleEnabled": false,
-    "scrambleSpeed": 0.5,
-    "scrambleIntensity": 1,
-    "scrambleMode": "random",
-    "letterPositions": [],
-    "targetPositions": [],
-    "scrambleProgress": 0,
-    "lastScrambleTime": 0,
-    "multiTextEnabled": false,
-    "copyCount": 3,
-    "spread": 50,
-    "copies": [],
-    "projectionEnabled": false,
-    "projectionMode": "torusknot",
-    "projectionScale": 1,
-    "projectionRepeat": 10
-  },
-  "projectionParams": {
-    "enabled": true,
-    "projectionType": "pattern",
-    "mode": "cube",
-    "scale": 1,
-    "repeat": 10,
-    "segments": {
-      "torusknot": {
-        "tubes": 16,
-        "turns": 100
+  const suggestions = [
+      {
+          prefix: "Prompt 1",
+          completion: "Radioactive Cluster",
+          configPath: "presets/radioactive_cluster.json"
       },
-      "sphere": {
-        "width": 32,
-        "height": 32
+      {
+          prefix: "Prompt 2",
+          completion: "Futuristic Architecture",
+          configPath: "presets/futuristic_architecture.json"
       },
-      "cube": {
-        "segments": 1
+      {
+          prefix: "Prompt 3",
+          completion: "Fire Cracker",
+          configPath: "presets/fire_cracker.json"
       },
-      "donut": {
-        "radius": 10,
-        "tube": 3,
-        "radialSegments": 16,
-        "tubularSegments": 100
+      {
+          prefix: "Prompt 4",
+          completion: "Organic Fluid",
+          configPath: "presets/organic_fluid.json"
       },
-      "cylinder": {
-        "radiusTop": 5,
-        "radiusBottom": 5,
-        "height": 20,
-        "segments": 32
-      },
-      "cone": {
-        "radius": 5,
-        "height": 20,
-        "segments": 32
-      },
-      "octahedron": {
-        "radius": 10
+      {
+          prefix: "Prompt 5",
+          completion: "Rainfall",
+          configPath: "presets/rainfall.json"
       }
-    },
-    "rotation": {
-      "x": 0,
-      "y": 0,
-      "z": 0
-    },
-    "pattern": {
-      "enabled": false,
-      "animatePattern": true,
-      "animationDirection": "vertical",
-      "animationSpeed": 0.007,
-      "animationReverse": true,
-      "repeatX": 20,
-      "repeatY": 3,
-      "letterSpacing": 2,
-      "wordSpacing": 3,
-      "backgroundColor": "#02000a",
-      "textColor": "#54aac0",
-      "opacity": 0.8
-    }
-  }
-}
-            `
-        },
-        {
-            prefix: "Prompt 2",
-            completion: "prompt 2",
-            aiContext: `
-           {
-  "textParams": {
-    "text": "Hello World",
-    "font": "helvetiker",
-    "hebrewFont": "haim",
-    "size": 5,
-    "height": 2,
-    "letterSpacing": 0.5,
-    "curveSegments": 12,
-    "bevelEnabled": true,
-    "bevelThickness": 0.15,
-    "bevelSize": 0.3,
-    "bevelSegments": 5
-  },
-  "materialParams": {
-    "color": "#c40808",
-    "metalness": 0,
-    "roughness": 0.5,
-    "tessellationEnabled": false,
-    "wireframeEnabled": false,
-    "particlesEnabled": false,
-    "tessellationSegments": 8,
-    "tessellationHueStart": 0,
-    "tessellationHueRange": 0.2,
-    "tessellationSatStart": 0.5,
-    "tessellationSatRange": 0.5,
-    "tessellationLightStart": 0.5,
-    "tessellationLightRange": 0.3,
-    "tessellationPattern": "random",
-    "wireframeOpacity": 0.8,
-    "particleSize": 0.05,
-    "particleDensity": 1,
-    "particleRandomness": 0.1,
-    "particleShape": "sphere",
-    "particleScale": 1,
-    "manipulationAnimationEnabled": false,
-    "manipulationAnimationSpeed": 0.5,
-    "manipulationAnimationIntensity": 1,
-    "basicMaterialColor": "#c40808"
-  },
-  "sceneParams": {
-    "backgroundColor": "#990505",
-    "backgroundOpacity": 1,
-    "fogEnabled": true,
-    "fogColor": "#7a0000",
-    "fogDensity": 0.1,
-    "ambientLightIntensity": 0.4,
-    "mainLightIntensity": 0.8,
-    "fillLightIntensity": 0.1,
-    "cameraDistance": 18,
-    "fieldOfView": 45,
-    "position": {
-      "x": 0,
-      "y": 0,
-      "z": 0
-    },
-    "originalState": null
-  },
-  "animationParams": {
-    "rotateX": 0,
-    "rotateY": 0,
-    "rotateZ": 0,
-    "rotateXEnabled": false,
-    "rotateYEnabled": false,
-    "rotateZEnabled": false,
-    "scaleEnabled": false,
-    "scaleSpeed": 0.02,
-    "scaleMin": 0.8,
-    "scaleMax": 1.2,
-    "currentScale": 1,
-    "scaleDirection": 1,
-    "scrambleEnabled": false,
-    "scrambleSpeed": 0.5,
-    "scrambleIntensity": 1,
-    "scrambleMode": "random",
-    "letterPositions": [],
-    "targetPositions": [],
-    "scrambleProgress": 0,
-    "lastScrambleTime": 0,
-    "multiTextEnabled": false,
-    "copyCount": 3,
-    "spread": 50,
-    "copies": [],
-    "projectionEnabled": false,
-    "projectionMode": "torusknot",
-    "projectionScale": 1,
-    "projectionRepeat": 10
-  },
-  "projectionParams": {
-    "enabled": true,
-    "projectionType": "pattern",
-    "mode": "torusknot",
-    "scale": 1,
-    "repeat": 10,
-    "segments": {
-      "torusknot": {
-        "tubes": 16,
-        "turns": 100
-      },
-      "sphere": {
-        "width": 32,
-        "height": 32
-      },
-      "cube": {
-        "segments": 1
-      },
-      "donut": {
-        "radius": 10,
-        "tube": 3,
-        "radialSegments": 16,
-        "tubularSegments": 100
-      },
-      "cylinder": {
-        "radiusTop": 5,
-        "radiusBottom": 5,
-        "height": 20,
-        "segments": 32
-      },
-      "cone": {
-        "radius": 5,
-        "height": 20,
-        "segments": 32
-      },
-      "octahedron": {
-        "radius": 10
-      }
-    },
-    "rotation": {
-      "x": 0,
-      "y": 0,
-      "z": 0
-    },
-    "pattern": {
-      "enabled": false,
-      "animatePattern": true,
-      "animationDirection": "diagonal",
-      "animationSpeed": 0.002,
-      "animationReverse": false,
-      "repeatX": 20,
-      "repeatY": 20,
-      "letterSpacing": 2,
-      "wordSpacing": 0.5,
-      "backgroundColor": "#840101",
-      "textColor": "#ff8585",
-      "opacity": 0.6
-    }
-  }
-}
-            `
-        },
-        {
-            prefix: "Prompt 3",
-            completion: "problem",
-            aiContext: `
+  ];
 
-            `
-        },{
-        prefix: "Prompt 4",
-        completion: "problem",
-        aiContext: `
+  const scrollContainer = document.createElement('div');
+  scrollContainer.className = 'suggestions-scroll-container';
 
-        `
-    },
-    {
-        prefix: "Prompt 5",
-        completion: "prompt 5",
-        aiContext: `
- {
-  "textParams": {
-    "text": "ori",
-    "font": "haim",
-    "hebrewFont": "haim",
-    "size": 5,
-    "height": 10,
-    "letterSpacing": 4.3,
-    "curveSegments": 12,
-    "bevelEnabled": true,
-    "bevelThickness": 0.15,
-    "bevelSize": 0.3,
-    "bevelSegments": 5
-  },
-  "materialParams": {
-    "color": "#82ff05",
-    "metalness": 0,
-    "roughness": 0,
-    "tessellationEnabled": false,
-    "wireframeEnabled": false,
-    "particlesEnabled": true,
-    "tessellationSegments": 8,
-    "tessellationHueStart": 0,
-    "tessellationHueRange": 0.2,
-    "tessellationSatStart": 0.5,
-    "tessellationSatRange": 0.5,
-    "tessellationLightStart": 0.5,
-    "tessellationLightRange": 0.3,
-    "tessellationPattern": "random",
-    "wireframeOpacity": 0.8,
-    "particleSize": 1,
-    "particleDensity": 1,
-    "particleRandomness": 0.1,
-    "particleShape": "sphere",
-    "particleScale": 1,
-    "manipulationAnimationEnabled": true,
-    "manipulationAnimationSpeed": 0.1,
-    "manipulationAnimationIntensity": 3,
-    "basicMaterialColor": "#82ff05"
-  },
-  "sceneParams": {
-    "backgroundColor": "#0aae15",
-    "backgroundOpacity": 1,
-    "fogEnabled": false,
-    "fogColor": "#000000",
-    "fogDensity": 0.1,
-    "ambientLightIntensity": 0.5,
-    "mainLightIntensity": 0.8,
-    "fillLightIntensity": 0.5,
-    "cameraDistance": 30,
-    "fieldOfView": 45,
-    "position": {
-      "x": -10,
-      "y": -3,
-      "z": 0
-    },
-    "originalState": null
-  },
-  "animationParams": {
-    "rotateX": 0,
-    "rotateY": 0,
-    "rotateZ": 0,
-    "rotateXEnabled": false,
-    "rotateYEnabled": false,
-    "rotateZEnabled": false,
-    "scaleEnabled": false,
-    "scaleSpeed": 0.02,
-    "scaleMin": 0.8,
-    "scaleMax": 1.2,
-    "currentScale": 1,
-    "scaleDirection": 1,
-    "scrambleEnabled": false,
-    "scrambleSpeed": 0.5,
-    "scrambleIntensity": 1,
-    "scrambleMode": "random",
-    "letterPositions": [],
-    "targetPositions": [],
-    "scrambleProgress": 0,
-    "lastScrambleTime": 0,
-    "multiTextEnabled": false,
-    "copyCount": 3,
-    "spread": 50,
-    "copies": [],
-    "projectionEnabled": false,
-    "projectionMode": "torusknot",
-    "projectionScale": 1,
-    "projectionRepeat": 10
-  },
-  "projectionParams": {
-    "enabled": false,
-    "projectionType": "standard",
-    "mode": "torusknot",
-    "scale": 1,
-    "repeat": 10,
-    "segments": {
-      "torusknot": {
-        "tubes": 16,
-        "turns": 100
-      },
-      "sphere": {
-        "width": 32,
-        "height": 32
-      },
-      "cube": {
-        "segments": 1
-      },
-      "donut": {
-        "radius": 10,
-        "tube": 3,
-        "radialSegments": 16,
-        "tubularSegments": 100
-      },
-      "cylinder": {
-        "radiusTop": 5,
-        "radiusBottom": 5,
-        "height": 20,
-        "segments": 32
-      },
-      "cone": {
-        "radius": 5,
-        "height": 20,
-        "segments": 32
-      },
-      "octahedron": {
-        "radius": 10
-      }
-    },
-    "rotation": {
-      "x": 0,
-      "y": 0,
-      "z": 0
-    },
-    "pattern": {
-      "enabled": false,
-      "animatePattern": true,
-      "animationDirection": "vertical",
-      "animationSpeed": 0.009,
-      "animationReverse": false,
-      "repeatX": 4,
-      "repeatY": 4,
-      "letterSpacing": 0.5,
-      "wordSpacing": 1,
-      "backgroundColor": "#000000",
-      "textColor": "#ffffff",
-      "opacity": 1
-    }
-  }
-}
-        `
-    },
+  const suggestionsContainer = document.createElement('div');
+  suggestionsContainer.className = 'suggestions-container';
 
+  suggestions.forEach(suggestion => {
+      const bubble = document.createElement('button');
+      bubble.className = 'suggestion-bubble';
+      
+      const prefix = document.createElement('div');
+      prefix.className = 'suggestion-prefix';
+      prefix.textContent = suggestion.prefix;
+      
+      const completion = document.createElement('div');
+      completion.className = 'suggestion-completion';
+      completion.textContent = suggestion.completion;
+      
+      bubble.appendChild(prefix);
+      bubble.appendChild(completion);
+      
+      bubble.addEventListener('click', async () => {
+          try {
+              // Use regular fetch instead of window.fs.readFile
+              const response = await fetch(suggestion.configPath);
+              if (!response.ok) {
+                  throw new Error(`HTTP error! status: ${response.status}`);
+              }
+              const config = await response.json();
 
-        
-    ];
+              updateChatHistory('user', suggestion.completion);
 
-    const scrollContainer = document.createElement('div');
-    scrollContainer.className = 'suggestions-scroll-container';
+              const customizeResponse = await fetch('/api/customize', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ 
+                      prompt: `Start fresh with default settings and apply only these new changes to achieve this visual effect: ${suggestion.completion}`,
+                      config
+                  })
+              });
 
-    const suggestionsContainer = document.createElement('div');
-    suggestionsContainer.className = 'suggestions-container';
+              if (!customizeResponse.ok) {
+                  throw new Error(`HTTP error! status: ${customizeResponse.status}`);
+              }
 
-    suggestions.forEach(suggestion => {
-        const bubble = document.createElement('button');
-        bubble.className = 'suggestion-bubble';
-        
-        const prefix = document.createElement('div');
-        prefix.className = 'suggestion-prefix';
-        prefix.textContent = suggestion.prefix;
-        
-        const completion = document.createElement('div');
-        completion.className = 'suggestion-completion';
-        completion.textContent = suggestion.completion;
-        
-        bubble.appendChild(prefix);
-        bubble.appendChild(completion);
-        
-        // Add click handler to simulate chat interaction
-        bubble.addEventListener('click', async () => {
-            const promptInput = document.getElementById('promptInput');
-            if (!promptInput) return;
+              const result = await customizeResponse.json();
+              handleAPIResponse(result);
+              
+          } catch (error) {
+              console.error('Error loading preset:', error);
+              updateChatHistory('ai', `Error: Could not load preset configuration - ${error.message}`);
+          }
+      });
+      
+      suggestionsContainer.appendChild(bubble);
+  });
 
-            // Add user message to chat
-            updateChatHistory('user', suggestion.completion);
+  scrollContainer.appendChild(suggestionsContainer);
 
-            try {
-                // Make API request with hidden context
-                const response = await fetch('/api/customize', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        prompt: `Start fresh with default settings and apply only these new changes:
-
-${suggestion.aiContext}
-
-To achieve this visual effect: ${suggestion.completion}
-
-Previous settings or prompts should be completely ignored.` 
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const result = await response.json();
-                handleAPIResponse(result);
-                
-            } catch (error) {
-                console.error('API Error:', error);
-                updateChatHistory('ai', 'Error: Could not connect to the server.');
-            }
-        });
-        
-        suggestionsContainer.appendChild(bubble);
-    });
-
-    scrollContainer.appendChild(suggestionsContainer);
-
-    // Insert before the chat input area
-    const chatInput = document.querySelector('.chat-input');
-    chatInput.parentNode.insertBefore(scrollContainer, chatInput);
+  const chatInput = document.querySelector('.chat-input');
+  chatInput.parentNode.insertBefore(scrollContainer, chatInput);
 }

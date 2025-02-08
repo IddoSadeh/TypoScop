@@ -368,3 +368,7 @@ function animate() {
 export function getTextMesh() {
     return textMesh;
 }
+
+export function getCamera() {
+    return camera;
+}

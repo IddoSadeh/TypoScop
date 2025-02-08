@@ -1,0 +1,148 @@
+{
+  "textParams": {
+    "text": "ori",
+    "font": "haim",
+    "hebrewFont": "haim",
+    "size": 5,
+    "height": 10,
+    "letterSpacing": 4.3,
+    "curveSegments": 12,
+    "bevelEnabled": true,
+    "bevelThickness": 0.15,
+    "bevelSize": 0.3,
+    "bevelSegments": 5
+  },
+  "materialParams": {
+    "color": "#82ff05",
+    "metalness": 0,
+    "roughness": 0,
+    "tessellationEnabled": false,
+    "wireframeEnabled": false,
+    "particlesEnabled": true,
+    "tessellationSegments": 8,
+    "tessellationHueStart": 0,
+    "tessellationHueRange": 0.2,
+    "tessellationSatStart": 0.5,
+    "tessellationSatRange": 0.5,
+    "tessellationLightStart": 0.5,
+    "tessellationLightRange": 0.3,
+    "tessellationPattern": "random",
+    "wireframeOpacity": 0.8,
+    "particleSize": 1,
+    "particleDensity": 1,
+    "particleRandomness": 0.1,
+    "particleShape": "sphere",
+    "particleScale": 1,
+    "manipulationAnimationEnabled": true,
+    "manipulationAnimationSpeed": 0.1,
+    "manipulationAnimationIntensity": 3,
+    "basicMaterialColor": "#82ff05"
+  },
+  "sceneParams": {
+    "backgroundColor": "#0aae15",
+    "backgroundOpacity": 1,
+    "fogEnabled": false,
+    "fogColor": "#000000",
+    "fogDensity": 0.1,
+    "ambientLightIntensity": 0.5,
+    "mainLightIntensity": 0.8,
+    "fillLightIntensity": 0.5,
+    "cameraDistance": 30,
+    "fieldOfView": 45,
+    "position": {
+      "x": -10,
+      "y": -3,
+      "z": 0
+    },
+    "originalState": null
+  },
+  "animationParams": {
+    "rotateX": 0,
+    "rotateY": 0,
+    "rotateZ": 0,
+    "rotateXEnabled": false,
+    "rotateYEnabled": false,
+    "rotateZEnabled": false,
+    "scaleEnabled": false,
+    "scaleSpeed": 0.02,
+    "scaleMin": 0.8,
+    "scaleMax": 1.2,
+    "currentScale": 1,
+    "scaleDirection": 1,
+    "scrambleEnabled": false,
+    "scrambleSpeed": 0.5,
+    "scrambleIntensity": 1,
+    "scrambleMode": "random",
+    "letterPositions": [],
+    "targetPositions": [],
+    "scrambleProgress": 0,
+    "lastScrambleTime": 0,
+    "multiTextEnabled": false,
+    "copyCount": 3,
+    "spread": 50,
+    "copies": [],
+    "projectionEnabled": false,
+    "projectionMode": "torusknot",
+    "projectionScale": 1,
+    "projectionRepeat": 10
+  },
+  "projectionParams": {
+    "enabled": false,
+    "projectionType": "standard",
+    "mode": "torusknot",
+    "scale": 1,
+    "repeat": 10,
+    "segments": {
+      "torusknot": {
+        "tubes": 16,
+        "turns": 100
+      },
+      "sphere": {
+        "width": 32,
+        "height": 32
+      },
+      "cube": {
+        "segments": 1
+      },
+      "donut": {
+        "radius": 10,
+        "tube": 3,
+        "radialSegments": 16,
+        "tubularSegments": 100
+      },
+      "cylinder": {
+        "radiusTop": 5,
+        "radiusBottom": 5,
+        "height": 20,
+        "segments": 32
+      },
+      "cone": {
+        "radius": 5,
+        "height": 20,
+        "segments": 32
+      },
+      "octahedron": {
+        "radius": 10
+      }
+    },
+    "rotation": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "pattern": {
+      "enabled": false,
+      "animatePattern": true,
+      "animationDirection": "vertical",
+      "animationSpeed": 0.009,
+      "animationReverse": false,
+      "repeatX": 4,
+      "repeatY": 4,
+      "letterSpacing": 0.5,
+      "wordSpacing": 1,
+      "backgroundColor": "#000000",
+      "textColor": "#ffffff",
+      "opacity": 1
+    }
+  }
+}
