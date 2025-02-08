@@ -559,7 +559,7 @@ function createSuggestionBubbles() {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
                   body: JSON.stringify({ 
-                      prompt: `Start fresh with default settings and apply only these new changes to achieve this visual effect: ${suggestion.completion}`,
+                      prompt: `go over the parameters int the following json scheme and return the functions EXCETLY: ${suggestion.completion}`,
                       config
                   })
               });

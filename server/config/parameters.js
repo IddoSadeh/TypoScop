@@ -101,434 +101,426 @@ const defaultState = {
 const functionSchema = {
     name: 'updateText',
     description: 'Update specific aspects of 3D text appearance based only on what the user explicitly mentions',
+    strict: true,
     parameters: {
         type: 'object',
         properties: {
             color: {
                 type: 'string',
-                description: 'Update ONLY if user specifically mentions text color or material color (hexadecimal e.g., #ff0000)'
+                description: 'Update ONLY if user specifically mentions text color or material color (hexadecimal e.g., #ff0000). Default: #ffffff'
             },
             height: {
                 type: 'number',
-                description: 'The depth/thickness of the 3D text (range: 0.1-5)',
+                description: 'The depth/thickness of the 3D text (range: 0.1-5). Default: 1.0',
                 minimum: 0.1,
                 maximum: 5
             },
             metalness: {
                 type: 'number',
-                description: 'Update ONLY if user mentions metallic quality or shininess (range: 0-1)'
+                description: 'Update ONLY if user mentions metallic quality or shininess (range: 0-1). Default: 0',
+                minimum: 0,
+                maximum: 1
             },
             roughness: {
                 type: 'number',
-                description: 'Update ONLY if user mentions texture roughness or smoothness (range: 0-1)'
+                description: 'Update ONLY if user mentions texture roughness or smoothness (range: 0-1). Default: 0.5',
+                minimum: 0,
+                maximum: 1
             },
             backgroundColor: {
                 type: 'string',
-                description: 'Update ONLY if user specifically mentions background or scene color (hexadecimal)'
+                description: 'Update ONLY if user specifically mentions background or scene color (hexadecimal). Default: #000000'
             },
             rotateX: {
                 type: 'number',
-                description: 'X-axis rotation speed (-0.1 to 0.1)',
+                description: 'X-axis rotation speed (-0.1 to 0.1). Default: 0',
                 minimum: -0.1,
                 maximum: 0.1
             },
             rotateXEnabled: {
                 type: 'boolean',
-                description: 'Enable/disable X-axis rotation'
+                description: 'Enable/disable X-axis rotation. Default: false'
             },
             rotateY: {
                 type: 'number',
-                description: 'Y-axis rotation speed (-0.1 to 0.1)',
+                description: 'Y-axis rotation speed (-0.1 to 0.1). Default: 0',
                 minimum: -0.1,
                 maximum: 0.1
             },
             rotateYEnabled: {
                 type: 'boolean',
-                description: 'Enable/disable Y-axis rotation'
+                description: 'Enable/disable Y-axis rotation. Default: false'
             },
             rotateZ: {
                 type: 'number',
-                description: 'Z-axis rotation speed (-0.1 to 0.1)',
+                description: 'Z-axis rotation speed (-0.1 to 0.1). Default: 0',
                 minimum: -0.1,
                 maximum: 0.1
             },
             rotateZEnabled: {
                 type: 'boolean',
-                description: 'Enable/disable Z-axis rotation'
+                description: 'Enable/disable Z-axis rotation. Default: false'
             },
             scaleEnabled: {
                 type: 'boolean',
-                description: 'Enable/disable scale/pulse animation'
+                description: 'Enable/disable scale/pulse animation. Default: false'
             },
             scaleSpeed: {
                 type: 'number',
-                description: 'Speed of scale/pulse animation (0.01 to 0.1)',
+                description: 'Speed of scale/pulse animation (0.01 to 0.1). Default: 0.02',
                 minimum: 0.01,
                 maximum: 0.1
             },
             scaleMin: {
                 type: 'number',
-                description: 'Minimum scale factor (0.5 to 1)',
+                description: 'Minimum scale factor (0.5 to 1). Default: 0.8',
                 minimum: 0.5,
                 maximum: 1
             },
             scaleMax: {
                 type: 'number',
-                description: 'Maximum scale factor (1 to 2)',
+                description: 'Maximum scale factor (1 to 2). Default: 1.2',
                 minimum: 1,
                 maximum: 2
             },
             scrambleEnabled: {
                 type: 'boolean',
-                description: 'Enable/disable letter scramble animation'
+                description: 'Enable/disable letter scramble animation. Default: false'
             },
             scrambleSpeed: {
                 type: 'number',
-                description: 'Speed of scramble animation (0.1 to 2.0)',
+                description: 'Speed of scramble animation (0.1 to 2.0). Default: 1.0',
                 minimum: 0.1,
                 maximum: 2.0
             },
             scrambleIntensity: {
                 type: 'number',
-                description: 'Intensity of scramble movement (0.1 to 3.0)',
+                description: 'Intensity of scramble movement (0.1 to 3.0). Default: 1.0',
                 minimum: 0.1,
                 maximum: 3.0
             },
             scrambleMode: {
                 type: 'string',
-                description: 'Type of scramble animation pattern',
+                description: 'Type of scramble animation pattern. Default: random',
                 enum: ['random', 'swap', 'circular']
             },
             multiTextEnabled: {
                 type: 'boolean',
-                description: 'Enable/disable multiple copies of the text'
+                description: 'Enable/disable multiple copies of the text. Default: false'
             },
             copyCount: {
                 type: 'integer',
-                description: 'Number of text copies to create (1-10)',
+                description: 'Number of text copies to create (1-10). Default: 1',
                 minimum: 1,
                 maximum: 10
             },
             spread: {
                 type: 'number',
-                description: 'How far apart the copies should be spread (10-100)',
+                description: 'How far apart the copies should be spread (10-100). Default: 50',
                 minimum: 10,
                 maximum: 100
             },
-            // Tessellation properties
             tessellationEnabled: {
                 type: 'boolean',
-                description: 'Enable/disable tessellation effect'
+                description: 'Enable/disable tessellation effect. Default: false'
             },
             tessellationSegments: {
                 type: 'integer',
-                description: 'Number of segments for tessellation (1-20)',
+                description: 'Number of segments for tessellation (1-20). Default: 8',
                 minimum: 1,
                 maximum: 50
             },
-            // Wireframe properties
             wireframeEnabled: {
                 type: 'boolean',
-                description: 'Enable/disable wireframe effect'
+                description: 'Enable/disable wireframe effect. Default: false'
             },
             wireframeOpacity: {
                 type: 'number',
-                description: 'Opacity of wireframe effect (0.1-1.0)',
+                description: 'Opacity of wireframe effect (0.1-1.0). Default: 0.3',
                 minimum: 0.1,
                 maximum: 1.0
             },
-
-            // Color pattern properties
             colorHueStart: {
                 type: 'number',
-                description: 'Base hue for color patterns (0-1)',
+                description: 'Base hue for color patterns (0-1). Default: 0',
                 minimum: 0,
                 maximum: 1
             },
             colorHueRange: {
                 type: 'number',
-                description: 'Range of hue variation (0-1)',
+                description: 'Range of hue variation (0-1). Default: 0.2',
                 minimum: 0,
                 maximum: 1
             },
             colorSatStart: {
                 type: 'number',
-                description: 'Base saturation for color patterns (0-1)',
+                description: 'Base saturation for color patterns (0-1). Default: 0.5',
                 minimum: 0,
                 maximum: 1
             },
             colorSatRange: {
                 type: 'number',
-                description: 'Range of saturation variation (0-1)',
+                description: 'Range of saturation variation (0-1). Default: 0.5',
                 minimum: 0,
                 maximum: 1
             },
             colorLightStart: {
                 type: 'number',
-                description: 'Base lightness for color patterns (0-1)',
+                description: 'Base lightness for color patterns (0-1). Default: 0.5',
                 minimum: 0,
                 maximum: 1
             },
             colorLightRange: {
                 type: 'number',
-                description: 'Range of lightness variation (0-1)',
+                description: 'Range of lightness variation (0-1). Default: 0.3',
                 minimum: 0,
                 maximum: 1
             },
             colorPattern: {
                 type: 'string',
-                description: 'Pattern type for color variations',
+                description: 'Pattern type for color variations. Default: random',
                 enum: ['random', 'gradient', 'waves']
             },
-
-            // Unified manipulation animation parameters
             manipulationAnimationEnabled: {
                 type: 'boolean',
-                description: 'Enable/disable animation for active manipulation effect'
+                description: 'Enable/disable animation for active manipulation effect. Default: false'
             },
             manipulationAnimationSpeed: {
                 type: 'number',
-                description: 'Speed of manipulation animation (0.1-2.0)',
+                description: 'Speed of manipulation animation (0.1-2.0). Default: 0.5',
                 minimum: 0.1,
                 maximum: 2.0
             },
             manipulationAnimationIntensity: {
                 type: 'number',
-                description: 'Intensity of manipulation animation (0.1-3.0)',
+                description: 'Intensity of manipulation animation (0.1-3.0). Default: 1.0',
                 minimum: 0.1,
                 maximum: 3.0
             },
             particlesEnabled: {
                 type: 'boolean',
-                description: 'Enable or disable particle material rendering'
+                description: 'Enable or disable particle material rendering. Default: false'
             },
             particleShape: {
                 type: 'string',
-                description: 'Shape of individual particles; choose between "sphere", "cube", or "torus"',
+                description: 'Shape of individual particles; choose between "sphere", "cube", or "torus". Default: sphere',
                 enum: ['sphere', 'cube', 'torus']
             },
             particleSize: {
                 type: 'number',
-                description: 'Base size multiplier for particle geometry',
+                description: 'Base size multiplier for particle geometry. Default: 1.0',
                 minimum: 0.1,
                 maximum: 10
             },
             particleDensity: {
                 type: 'number',
-                description: 'Density factor for sampling particles from the text geometry',
+                description: 'Density factor for sampling particles from the text geometry. Default: 1.0',
                 minimum: 0.1,
                 maximum: 10
             },
             particleRandomness: {
                 type: 'number',
-                description: 'Randomness factor for particle distribution (0 to 1)',
+                description: 'Randomness factor for particle distribution (0 to 1). Default: 0.5',
                 minimum: 0,
                 maximum: 1
             },
             particleScale: {
                 type: 'number',
-                description: 'Uniform scale factor applied to each particle instance',
+                description: 'Uniform scale factor applied to each particle instance. Default: 1.0',
                 minimum: 0.1,
                 maximum: 10
             },
-            // Scene Control Properties
             backgroundOpacity: {
                 type: 'number',
-                description: 'Background opacity (0-1)',
+                description: 'Background opacity (0-1). Default: 1.0',
                 minimum: 0,
                 maximum: 1
             },
             fogEnabled: {
                 type: 'boolean',
-                description: 'Enable/disable fog effect'
+                description: 'Enable/disable fog effect. Default: false'
             },
             fogColor: {
                 type: 'string',
-                description: 'Color of the fog effect (hexadecimal)'
+                description: 'Color of the fog effect (hexadecimal). Default: #000000'
             },
             fogDensity: {
                 type: 'number',
-                description: 'Density of the fog effect (0-1)',
+                description: 'Density of the fog effect (0-1). Default: 0.1',
                 minimum: 0,
                 maximum: 1
             },
             ambientLightIntensity: {
                 type: 'number',
-                description: 'Intensity of ambient lighting (0-1)',
+                description: 'Intensity of ambient lighting (0-1). Default: 0.5',
                 minimum: 0,
                 maximum: 1
             },
             mainLightIntensity: {
                 type: 'number',
-                description: 'Intensity of main directional light (0-1)',
+                description: 'Intensity of main directional light (0-1). Default: 0.8',
                 minimum: 0,
                 maximum: 1
             },
             fillLightIntensity: {
                 type: 'number',
-                description: 'Intensity of fill light (0-1)',
+                description: 'Intensity of fill light (0-1). Default: 0.5',
                 minimum: 0,
                 maximum: 1
             },
             cameraDistance: {
                 type: 'number',
-                description: 'Camera distance from scene (10-100)',
+                description: 'Camera distance from scene (10-100). Default: 30',
                 minimum: 10,
                 maximum: 100
             },
             fieldOfView: {
                 type: 'number',
-                description: 'Camera field of view in degrees (30-120)',
+                description: 'Camera field of view in degrees (30-120). Default: 45',
                 minimum: 30,
                 maximum: 120
             },
             scenePositionX: {
                 type: 'number',
-                description: 'Horizontal position of the scene (-50 to 50)',
+                description: 'Horizontal position of the scene (-50 to 50). Default: 0',
                 minimum: -50,
                 maximum: 50
             },
             scenePositionY: {
                 type: 'number',
-                description: 'Vertical position of the scene (-50 to 50)',
+                description: 'Vertical position of the scene (-50 to 50). Default: 0',
                 minimum: -50,
                 maximum: 50
             },
-
-            // Text Geometry Properties
             textSize: {
                 type: 'number',
-                description: 'Size of the text (1-10)',
+                description: 'Size of the text (1-10). Default: 5',
                 minimum: 1,
                 maximum: 10
             },
             letterSpacing: {
                 type: 'number',
-                description: 'Spacing between letters (0-2)',
+                description: 'Spacing between letters (0-2). Default: 0.5',
                 minimum: 0,
                 maximum: 2
             },
             curveSegments: {
                 type: 'integer',
-                description: 'Number of curve segments for text geometry (4-32)',
+                description: 'Number of curve segments for text geometry (4-32). Default: 12',
                 minimum: 4,
                 maximum: 32
             },
             bevelEnabled: {
                 type: 'boolean',
-                description: 'Enable/disable bevel effect on text'
+                description: 'Enable/disable bevel effect on text. Default: true'
             },
             bevelThickness: {
                 type: 'number',
-                description: 'Thickness of bevel effect (0-1)',
+                description: 'Thickness of bevel effect (0-1). Default: 0.15',
                 minimum: 0,
                 maximum: 1
             },
             bevelSize: {
                 type: 'number',
-                description: 'Size of bevel effect (0-1)',
+                description: 'Size of bevel effect (0-1). Default: 0.3',
                 minimum: 0,
                 maximum: 1
             },
             bevelSegments: {
                 type: 'integer',
-                description: 'Number of bevel segments (1-10)',
+                description: 'Number of bevel segments (1-10). Default: 5',
                 minimum: 1,
                 maximum: 10
             },
-
-            // Projection Properties
             projectionEnabled: {
                 type: 'boolean',
-                description: 'Enable/disable projection effect'
+                description: 'Enable/disable projection effect. Default: false'
             },
             projectionType: {
                 type: 'string',
-                description: 'Type of projection to use',
+                description: 'Type of projection to use. Default: standard',
                 enum: ['standard', 'pattern']
             },
             projectionMode: {
                 type: 'string',
-                description: 'Shape to project onto',
+                description: 'Shape to project onto. Default: torusknot',
                 enum: ['torusknot', 'donut', 'sphere', 'cube', 'cylinder', 'cone', 'octahedron']
             },
             projectionScale: {
                 type: 'number',
-                description: 'Scale of the projection (0.1-3)',
+                description: 'Scale of the projection (0.1-3). Default: 1.0',
                 minimum: 0.1,
                 maximum: 3
             },
-
-            // Pattern Projection Properties
             patternAnimatePattern: {
                 type: 'boolean',
-                description: 'Enable/disable pattern animation'
+                description: 'Enable/disable pattern animation. Default: true'
             },
             patternAnimationDirection: {
                 type: 'string',
-                description: 'Direction of pattern animation',
+                description: 'Direction of pattern animation. Default: vertical',
                 enum: ['vertical', 'horizontal', 'diagonal']
             },
             patternAnimationSpeed: {
                 type: 'number',
-                description: 'Speed of pattern animation (0.001-0.05)',
+                description: 'Speed of pattern animation (0.001-0.05). Default: 0.009',
                 minimum: 0.001,
                 maximum: 0.05
             },
             patternAnimationReverse: {
                 type: 'boolean',
-                description: 'Reverse pattern animation direction'
+                description: 'Reverse pattern animation direction. Default: false'
             },
             patternRepeatX: {
                 type: 'integer',
-                description: 'Horizontal pattern repetitions (1-20)',
+                description: 'Horizontal pattern repetitions (1-20). Default: 4',
                 minimum: 1,
                 maximum: 20
             },
             patternRepeatY: {
                 type: 'integer',
-                description: 'Vertical pattern repetitions (1-20)',
+                description: 'Vertical pattern repetitions (1-20). Default: 4',
                 minimum: 1,
                 maximum: 20
             },
             patternLetterSpacing: {
                 type: 'number',
-                description: 'Letter spacing in pattern (0-2)',
+                description: 'Letter spacing in pattern (0-2). Default: 0.5',
                 minimum: 0,
                 maximum: 2
             },
             patternWordSpacing: {
                 type: 'number',
-                description: 'Word spacing in pattern (0.5-3)',
+                description: 'Word spacing in pattern (0.5-3). Default: 1.0',
                 minimum: 0.5,
                 maximum: 3
             },
             patternBackgroundColor: {
                 type: 'string',
-                description: 'Background color for pattern (hexadecimal)'
+                description: 'Background color for pattern (hexadecimal). Default: #000000'
             },
             patternTextColor: {
                 type: 'string',
-                description: 'Text color in pattern (hexadecimal)'
+                description: 'Text color in pattern (hexadecimal). Default: #ffffff'
             },
             patternOpacity: {
                 type: 'number',
-                description: 'Opacity of pattern (0-1)',
+                description: 'Opacity of pattern (0-1). Default: 1.0',
                 minimum: 0,
                 maximum: 1
             }
-        
         },
         required: [],
         additionalProperties: false
     }
 };
 
-const systemPrompt = `You are a typography expert helping users customize 3D text. 
+const systemPrompt = `
 
-You can change any number of parameters to capture the users prompt. Be tasteful in your choice of arguments. More is not always better. Try to make a symbiotic choice between parameters .
-
-If the user asks for projection to be enabled PLEASE DISABLE letter scramble, manipulations, particles, tesselation`;
+You can change any number of parameters to capture the users prompt. 
+Be tasteful in your choice of arguments. More is not always better. 
+If the user asks for projection to be enabled PLEASE DISABLE letter scramble, manipulations, particles, tesselation
+`;
 
 module.exports = {
     defaultState,
