@@ -1,10 +1,10 @@
-import * as THREE from 'three';
+// resetScene.js
 import { textParams } from '../parameters/textParams.js';
 import { materialParams } from '../parameters/materialParams.js';
 import { sceneParams } from '../parameters/sceneParams.js';
 import { animationParams } from '../parameters/animationParams.js';
 import { projectionParams } from '../parameters/projectionParams.js';
-import { createText, getTextMesh, getCamera } from '../utils/three.setup.js';
+import { createText } from './three.setup.js';
 
 // Store default parameters
 const defaultParams = {
@@ -71,35 +71,31 @@ export function resetScene() {
     // Reset UI controls
     updateUIControls();
     
-    // First recreate the text with default parameters
+    // Recreate the scene and center the text
     createText();
 
-    // After text is created, get the mesh and center it
-    setTimeout(() => {
-        const textMesh = getTextMesh();
-        const camera = getCamera();
+    // Get the text mesh and center it
+    const textMesh = getTextMesh(); // You'll need to export this from three.setup.js
+    if (textMesh) {
+        // Reset position
+        textMesh.position.set(0, 0, 0);
+        
+        // Center based on bounding box
+        textMesh.geometry.computeBoundingBox();
+        const boundingBox = textMesh.geometry.boundingBox;
+        const center = new THREE.Vector3();
+        boundingBox.getCenter(center);
+        textMesh.position.x = -center.x;
+        textMesh.position.y = -center.y;
+    }
 
-        if (textMesh) {
-            // Reset position
-            textMesh.position.set(0, 0, 0);
-            
-            // Center based on bounding box
-            textMesh.geometry.computeBoundingBox();
-            const boundingBox = textMesh.geometry.boundingBox;
-            const center = new THREE.Vector3();
-            boundingBox.getCenter(center);
-            textMesh.position.x = -center.x;
-            textMesh.position.y = -center.y;
-        }
-
-        if (camera) {
-            camera.position.set(0, 0, sceneParams.cameraDistance);
-            camera.lookAt(0, 0, 0);
-        }
-    }, 100); // Small delay to ensure text is created
+    // Reset camera position
+    const camera = getCamera(); // You'll need to export this from three.setup.js
+    if (camera) {
+        camera.position.set(0, 0, sceneParams.cameraDistance);
+        camera.lookAt(0, 0, 0);
+    }
 }
-
-
 
 function updateUIControls() {
     // Update text input
