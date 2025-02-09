@@ -375,7 +375,7 @@ function sampleGeometryPoints(geometry, density) {
     const samples = [];
     const positionAttribute = geometry.attributes.position;
     const faces = positionAttribute.count / 3;
-    const densityFactor = 50; // Adjust density factor as needed
+    const densityFactor = 5; // Adjust density factor as needed
 
     for (let face = 0; face < faces; face++) {
         const a = new THREE.Vector3();

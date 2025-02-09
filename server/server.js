@@ -18,23 +18,36 @@ app.use('/fonts', express.static(path.join(__dirname, '../public/fonts'), {
             res.setHeader('Content-Type', 'application/json');
         }
     },
-    // Enable file names with spaces
     fallthrough: true
 }));
 
-// Initialize OpenAI client
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// Current state
 let currentState = { ...defaultState };
+
+// Function to get differences between current state and default state
+function getStateDifferences() {
+    const differences = [];
+    for (const [key, value] of Object.entries(currentState)) {
+        if (JSON.stringify(value) !== JSON.stringify(defaultState[key])) {
+            differences.push(`${key}: ${JSON.stringify(defaultState[key])} -> ${JSON.stringify(value)}`);
+        }
+    }
+    return differences;
+}
 
 app.post('/api/customize', async (req, res) => {
     const { prompt } = req.body;
 
-    // Log the current state and user prompt
     console.log('\n=== New Request ===');
     console.log('User Prompt:', prompt);
     console.log('Current State:', currentState);
+
+    // Get current differences from default state
+    const differences = getStateDifferences();
+    const differenceText = differences.length > 0 
+        ? `\nCurrent parameters that differ from default:\n${differences.join('\n')}`
+        : '\nAll parameters are currently at their default values.';
 
     try {
         const completion = await openai.chat.completions.create({
@@ -43,6 +56,8 @@ app.post('/api/customize', async (req, res) => {
                 {
                     role: 'system',
                     content: `${systemPrompt}
+                    ${differenceText}
+                    
                     Current state:
                     ${Object.entries(currentState).map(([key, value]) => `${key}: ${value}`).join('\n')}`
                 },
@@ -62,26 +77,21 @@ app.post('/api/customize', async (req, res) => {
             });
         }
 
-        // Log the raw response from OpenAI
         console.log('\nOpenAI Response:');
         console.log(JSON.stringify(completion.choices[0].message, null, 2));
 
         const newState = JSON.parse(response.arguments);
         
-        // Collect the parameter changes
         const changes = [];
         Object.entries(newState).forEach(([key, value]) => {
             changes.push(`${key}: ${currentState[key]} -> ${value}`);
         });
 
-        // Update current state
         currentState = { ...currentState, ...newState };
         
-        // Log final state
         console.log('\nFinal State:', currentState);
         console.log('=== End Request ===\n');
 
-        // Send both the updated state and the changes
         res.json({
             response: currentState,
             changes: changes

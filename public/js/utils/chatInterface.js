@@ -8,6 +8,7 @@ import { createText, updateSceneBackground } from './three.setup.js';
 import { updateMultiTextCopies } from './animationManager.js';
 import { updateProjectionControls } from '../controls/setupProjectionControls.js';
 import fontManager from './fontManager.js';
+import { resetScene } from './resetScene.js';
 
 export function setupChatInterface() {
     const sendButton = document.getElementById('send');
@@ -493,89 +494,147 @@ function updateParticleControls() {
     }
 }
 
+// chatInterface.js - preset handling section
+
+const SCENE_PRESETS = {
+  radioactiveCluster: `Make a radioactive cluster effect with these exact parameters:
+- make sure projection is disabled
+- Set text height to 10 and letter spacing to 4.3
+- Use bright neon green color (#82ff05) for the text with no metalness or roughnes.
+- Enable particles:
+* Set particle size to 1
+* Use sphere shape
+* Set density to 1
+* Low randomness (0.1)
+* Enable manipulation animation with speed 0.1 and high intensity (3)
+- Set background to radioactive green (#0aae15)
+- Position scene slightly to the left and down (x: -10, y: -3)`,
+
+firecracker: `Create an explosive firecracker effect with these exact parameters:
+- Disable particle
+- Disable Tesselation
+- Disable projection
+- Set text height to 9.9 with no letter spacing
+- Use bright yellow color (#e1ff00) with high metalness (0.7) and roughness (0.7)
+- Enable wireframe effect:
+  * Set wireframe opacity to 0.8
+  * Enable manipulation animation with speed 0.4 and intensity 3
+- Set background to deep red (#940000)
+- Enable multiple effects:
+  * Turn on scramble animation with speed 0.7 and intensity 3
+  * Set scramble mode to "circular"
+  * Enable multiple copies (7) with spread of 50`,
+
+    futuristicArchitecture: `Create a futuristic architectural style with these exact parameters:
+    -"tessellationEnabled": true,
+    -"wireframeEnabled": false,
+    -"particlesEnabled": false,
+- Set text height to 10 with letter spacing 0.8
+- Use metallic grey color (#b3b3b3) with very high metalness (0.9) and low roughness (0.3)
+- Enable tessellation:
+  * Set segments to 1
+  * Enable manipulation animation with speed 0.2 and intensity 3
+- Set background to light grey (#adadad)
+- Position scene far left (x: -29)
+- Enable multiple copies (10) with wide spread (80)`,
+
+    organicFluid: `Create a flowing organic pattern with these exact parameters:
+    -"tessellationEnabled": false,
+    -"wireframeEnabled": false,
+    -"particlesEnabled": false,
+    -"scrambleEnabled": false,
+- Set text color to light blue (#80c1ff)
+- Enable projection with these settings:
+  * Type: pattern
+  * Mode: torusknot
+  * Animation direction: diagonal
+  * Slow animation speed (0.003)
+  * High repetition (20x10)
+  * Dark background color (#140000)
+  * 50% opacity
+- Set scene background to deep red (#510606)
+- Enable fog:
+  * Warm fog color (#fff4e5)
+  * High density (0.44)
+- Set camera closer (distance: 19)
+- Position scene center(x: 0)
+- High ambient light (0.8)`,
+
+rainfall: `Create a rainfall effect with these exact parameters:
+- "tessellationEnabled": false
+- "wireframeEnabled": false
+- "particlesEnabled": false
+- "scrambleEnabled": false
+- "multiTextEnabled": false
+- Use deep blue color (#01105b)
+- Enable projection:
+  * Type: pattern
+  * Mode: cube
+  * Animation direction: diagonal
+  * Animation speed: 0.005
+  * Reverse animation enabled
+  * Wide letter spacing (2) and word spacing (3)
+  * Dark blue background (#00000a)
+  * 80% opacity
+- Set scene background to black
+- Enable fog with yellow tint (#fff824)
+- Make camera very close with these exact settings:
+  * Set text size to 3
+  * Set text height to 1.5
+- Stretch pattern horizontally (20x1 repetition)`
+};
+
+
 
 function createSuggestionBubbles() {
-  const suggestions = [
-      {
-          prefix: "Prompt 1",
-          completion: "Radioactive Cluster",
-          configPath: "presets/radioactive_cluster.json"
-      },
-      {
-          prefix: "Prompt 2",
-          completion: "Futuristic Architecture",
-          configPath: "presets/futuristic_architecture.json"
-      },
-      {
-          prefix: "Prompt 3",
-          completion: "Fire Cracker",
-          configPath: "presets/fire_cracker.json"
-      },
-      {
-          prefix: "Prompt 4",
-          completion: "Organic Fluid",
-          configPath: "presets/organic_fluid.json"
-      },
-      {
-          prefix: "Prompt 5",
-          completion: "Rainfall",
-          configPath: "presets/rainfall.json"
-      }
-  ];
-
   const scrollContainer = document.createElement('div');
   scrollContainer.className = 'suggestions-scroll-container';
 
   const suggestionsContainer = document.createElement('div');
   suggestionsContainer.className = 'suggestions-container';
 
-  suggestions.forEach(suggestion => {
+  Object.entries(SCENE_PRESETS).forEach(([key, promptText], index) => {
       const bubble = document.createElement('button');
       bubble.className = 'suggestion-bubble';
       
       const prefix = document.createElement('div');
       prefix.className = 'suggestion-prefix';
-      prefix.textContent = suggestion.prefix;
+      prefix.textContent = `Prompt ${index + 1}`;
       
       const completion = document.createElement('div');
       completion.className = 'suggestion-completion';
-      completion.textContent = suggestion.completion;
+      completion.textContent = key.replace(/([A-Z])/g, ' $1').trim(); // Add spaces before capital letters
       
       bubble.appendChild(prefix);
       bubble.appendChild(completion);
       
       bubble.addEventListener('click', async () => {
-          try {
-              // Use regular fetch instead of window.fs.readFile
-              const response = await fetch(suggestion.configPath);
-              if (!response.ok) {
-                  throw new Error(`HTTP error! status: ${response.status}`);
-              }
-              const config = await response.json();
-
-              updateChatHistory('user', suggestion.completion);
-
-              const customizeResponse = await fetch('/api/customize', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ 
-                      prompt: `go over the parameters int the following json scheme and return the functions EXCETLY: ${suggestion.completion}`,
-                      config
-                  })
-              });
-
-              if (!customizeResponse.ok) {
-                  throw new Error(`HTTP error! status: ${customizeResponse.status}`);
-              }
-
-              const result = await customizeResponse.json();
-              handleAPIResponse(result);
-              
-          } catch (error) {
-              console.error('Error loading preset:', error);
-              updateChatHistory('ai', `Error: Could not load preset configuration - ${error.message}`);
-          }
-      });
+        try {
+            // Update chat history immediately
+            updateChatHistory('user', completion.textContent);
+    
+            // Reset parameters without updating scene
+            resetScene(true);  // Pass true to skip scene update
+            
+            // Get new parameters
+            const response = await fetch('/api/customize', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ prompt: promptText })
+            });
+    
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+    
+            const result = await response.json();
+            handleAPIResponse(result);
+            
+        } catch (error) {
+            console.error('Error applying preset:', error);
+            updateChatHistory('ai', `Error: Could not apply preset - ${error.message}`);
+        }
+    });
       
       suggestionsContainer.appendChild(bubble);
   });
@@ -585,3 +644,5 @@ function createSuggestionBubbles() {
   const chatInput = document.querySelector('.chat-input');
   chatInput.parentNode.insertBefore(scrollContainer, chatInput);
 }
+
+

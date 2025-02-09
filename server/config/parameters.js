@@ -101,7 +101,6 @@ const defaultState = {
 const functionSchema = {
     name: 'updateText',
     description: 'Update specific aspects of 3D text appearance based only on what the user explicitly mentions',
-    strict: true,
     parameters: {
         type: 'object',
         properties: {
@@ -316,7 +315,7 @@ const functionSchema = {
                 type: 'number',
                 description: 'Density factor for sampling particles from the text geometry. Default: 1.0',
                 minimum: 0.1,
-                maximum: 10
+                maximum: 3
             },
             particleRandomness: {
                 type: 'number',
@@ -371,13 +370,13 @@ const functionSchema = {
             cameraDistance: {
                 type: 'number',
                 description: 'Camera distance from scene (10-100). Default: 30',
-                minimum: 10,
+                minimum: 0,
                 maximum: 100
             },
             fieldOfView: {
                 type: 'number',
                 description: 'Camera field of view in degrees (30-120). Default: 45',
-                minimum: 30,
+                minimum: 0,
                 maximum: 120
             },
             scenePositionX: {
@@ -516,11 +515,121 @@ const functionSchema = {
 };
 
 const systemPrompt = `
-
 You can change any number of parameters to capture the users prompt. 
 Be tasteful in your choice of arguments. More is not always better. 
-If the user asks for projection to be enabled PLEASE DISABLE letter scramble, manipulations, particles, tesselation
-`;
+
+Instructions:
+
+If the projection is enabled PLEASE:
+- DISABLE letter scramble, manipulations, particles, tesselation
+- turn on projectiontype should be pattern
+
+ONLY one of the manipulations (wireframe, tesselation, particle) can be enabled at once. 
+
+If a user asks to make the scene "more X" or "less X" (where X is scary/psychedelic/calm/other):
+- Look at the corresponding scene preset below
+- If making it "more X", increase relevant parameters towards the preset values
+- If making it "less X", decrease relevant parameters away from the preset values
+- Never exceed the maximum values shown in the presets
+- Maintain smooth transitions - don't jump directly to preset values
+- Consider current parameter differences when making adjustments
+- Feel free to change other parameters as needed
+
+This is a scary scene:
+  "projectionEnabled": false,
+    "height": 10,
+    "letterSpacing": 0,
+    "color": "#a80000",
+    "metalness": 1,
+    "roughness": 0.6,
+    "fogEnabled": true,
+    "fogDensity": 0.5,
+    "ambientLightIntensity": 1,
+    "mainLightIntensity": 1,
+    "fillLightIntensity": 1,
+    "cameraDistance": 29,
+    "fieldOfView": 48,
+    "position": {
+      "x": -17,
+      "y": 0,
+      "z": 0
+    },
+    "rotateZ": -0.001,
+    "scaleSpeed": 0.01,
+    "scaleMin": 1,
+    "scaleMax": 2,
+    "multiTextEnabled": true,
+    "copyCount": 10,
+    "spread": 30,
+
+Scary characteristics to adjust gradually:
+- Darker red colors (shift color towards #660000)
+- Higher fog density
+- Slower, unsettling rotations
+- More copies with wider spread
+- Larger scale ranges
+- Higher metalness
+
+This is a psychedelic scene:
+    "backgroundColor": "#65af64",
+    "fogEnabled": true,
+    "fogColor": "#ffcb0f",
+    "ambientLightIntensity": 1,
+    "mainLightIntensity": 1,
+    "fillLightIntensity": 1,
+    "cameraDistance": 21,
+    "position": {
+      "x": 3,
+      "y": -2,
+      "z": 0
+    },
+    "multiTextEnabled": true,
+    "copyCount": 10,
+    "spread": 20,
+    "projectionEnabled": true,
+    "projectionType": "pattern",
+    "mode": "donut",
+    "animationDirection": "diagonal",
+    "animationSpeed": 0.01,
+    "animationReverse": true,
+    "repeatX": 3,
+    "repeatY": 1,
+    "letterSpacing": 0.1,
+    "wordSpacing": 0.5,
+    "backgroundColor": "#570553",
+    "textColor": "#00fbff",
+
+Psychedelic characteristics to adjust gradually:
+- More vibrant contrasting colors
+- Faster animation speeds
+- More copies with wider spread
+- More pattern repetitions
+- Enable additional rotations
+- Increase animation complexity
+
+This is a calm scene:
+  "projectionEnabled": false,
+    "color": "#00ffee",
+    "particlesEnabled": true,
+    "particleSize": 0.02,
+    "particleDensity": 0.2,
+    "particleRandomness": 0.45,
+    "particleShape": "torus",
+    "manipulationAnimationEnabled": true,
+    "manipulationAnimationSpeed": 0.1,
+    "manipulationAnimationIntensity": 3,
+    "basicMaterialColor": "#00ffee",
+    "backgroundColor": "#dedede",
+
+Calm characteristics to adjust gradually:
+- Softer blue/teal colors
+- Lower particle density
+- Slower animation speeds
+- Reduced manipulation intensity
+- Fewer copies
+- More neutral backgrounds
+
+Remember to consider the current parameter differences provided in each request when making adjustments.`;
 
 module.exports = {
     defaultState,

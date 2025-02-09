@@ -3,19 +3,36 @@ import { textParams } from '../parameters/textParams.js';
 import { createText } from '../utils/three.setup.js';
 import fontManager from '../utils/fontManager.js';
 
+// Add debounce function
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
 export function setupTextControls() {
     const textInput = document.getElementById('ai-text-input');
     const fontSelect = document.getElementById('ai-font-name');
     const heightSlider = document.getElementById('text-height-slider');
     const letterSpacingSlider = document.getElementById('letter-spacing-slider');
 
-    // Text input
-    textInput?.addEventListener('input', (e) => {
-        textParams.text = e.target.value;
-        // Let the font manager process the text and update font if needed
-        const { font } = fontManager.processText(e.target.value, textParams.font);
+    // Debounced text update function
+    const updateText = debounce((value) => {
+        textParams.text = value;
+        const { font } = fontManager.processText(value, textParams.font);
         textParams.font = font;
         createText();
+    }, 500); // 300ms delay
+
+    // Text input
+    textInput?.addEventListener('input', (e) => {
+        updateText(e.target.value);
     });
 
     // Font selection
