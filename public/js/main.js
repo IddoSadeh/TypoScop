@@ -9,26 +9,26 @@ import { exportCurrentParams } from './utils/exportParams.js';
 import { initSaveSystem } from './utils/saveSystem.js';
 import { initResetButton } from './utils/resetScene.js';
 
-function setupTabs() {
-    const tabButtons = document.querySelectorAll('.tab-button');
+function setupEditModeToggle() {
+    const toggleButton = document.getElementById('edit-mode-toggle');
     const aiTab = document.getElementById('ai-tab');
     const manualTab = document.getElementById('manual-tab');
 
-    tabButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            tabButtons.forEach(btn => btn.classList.remove('active'));
-            
-            button.classList.add('active');
-            
-            const tabId = button.dataset.tab;
-            if (tabId === 'ai') {
-                aiTab.style.display = 'flex';
-                manualTab.style.display = 'none';
-            } else {
-                aiTab.style.display = 'none';
-                manualTab.style.display = 'block';
-            }
-        });
+    // Start with AI mode
+    aiTab.style.display = 'flex';
+    manualTab.style.display = 'none';
+
+    toggleButton?.addEventListener('click', () => {
+        toggleButton.classList.toggle('active');
+        if (toggleButton.classList.contains('active')) {
+            // Switch to manual mode
+            aiTab.style.display = 'none';
+            manualTab.style.display = 'block';
+        } else {
+            // Switch to AI mode
+            aiTab.style.display = 'flex';
+            manualTab.style.display = 'none';
+        }
     });
 }
 
@@ -97,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupExportButton();
     initResetButton();
     // Setup UI components
-    setupTabs();
+    setupEditModeToggle();
     setupCollapsibles();
 
     const textarea = document.getElementById('promptInput');

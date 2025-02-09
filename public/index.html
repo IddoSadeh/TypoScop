@@ -54,11 +54,7 @@
 
   <main class="main-content">
     <aside class="controls">
-      <!-- Remove this when ready -->
-      <nav class="tabs">
-        <button class="tab-button active" data-tab="ai">AI Chat</button>
-        <button class="tab-button" data-tab="manual">Manual Edit</button>
-      </nav>
+
 
       <!-- AI Chat Tab -->
       <section class="tab-content active" id="ai-tab">
@@ -592,7 +588,6 @@
   </main>
 
   <footer class="footer-note">
-
     <div id="save-menu" class="save-menu">
       <button id="save-button" class="save-button" aria-label="Save Options">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -630,6 +625,12 @@
           Export as OBJ
         </button>
       </div>
+      <button id="edit-mode-toggle" class="edit-mode-button" aria-label="Toggle Edit Mode">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+        </svg>
+      </button>
       <button id="reset-button" class="reset-button" aria-label="Reset Scene">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
           stroke-linecap="round" stroke-linejoin="round">
