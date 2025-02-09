@@ -590,6 +590,9 @@ rainfall: `A cascading wall of text resembling digital rainfall, creating an imm
 
 
 function createSuggestionBubbles() {
+    if (window.innerWidth <= 768) {
+        return;
+      }
   const scrollContainer = document.createElement('div');
   scrollContainer.className = 'suggestions-scroll-container';
 

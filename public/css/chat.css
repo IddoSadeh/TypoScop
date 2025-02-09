@@ -31,16 +31,19 @@
   border-radius: 8px;
   margin: 0.5rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: 0.25rem 0.5rem;
+  padding: 0.1rem 0.5rem; /* Reduced padding */
+  height: 36px; /* Match height with font selector */
 }
 
 .text-input-container input {
   flex: 1;
   border: none;
-  padding: 0.75rem 0;
+  padding: 0.25rem 0;
   font-size: 1rem;
   outline: none;
+  height: 100%;
 }
+
 
 .send-text-btn {
   background: none;
@@ -217,27 +220,4 @@
   font-size: 12px;
   line-height: 1.4;
 }
-/* Add to your CSS */
-.export-button {
-  background-color: #0078ff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 16px;
-  font-size: 14px;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  margin: 16px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
 
-.export-button:hover {
-  background-color: #0056b3;
-}
-
-.export-button svg {
-  width: 16px;
-  height: 16px;
-}

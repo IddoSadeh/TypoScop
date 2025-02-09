@@ -66,40 +66,120 @@ html, body {
   }
   
   
-
-  /* Responsive adjustments */
-@media (max-width: 768px) {
-  .main-content {
-    flex-direction: column;
-      padding: 0.5rem;
+  @media (max-width: 768px) {
+    /* Adjust logo and span font sizes */
+    .logo {
+      font-size: 10px;
+    }
+    span {
+      font-size: 10px;
+    }
+  
+    /* Main layout: canvas on top, controls below */
+    .main-content {
+      flex-direction: column-reverse;
+      height: 100vh;
+      padding: 0;
+      gap: 0;
+    }
+  
+    /* Canvas: take remaining space above controls */
+    #canvas-container {
+      flex: 1;
+      margin: 0;
+    }
+  
+    /* Controls area: reduced overall height */
+    .controls {
+      height: 30vh;
+      width: 100%;
+      margin: 0;
+      background: white;
+      display: flex;
+      flex-direction: column;
+    }
+  
+    /* Each tab-content fills the available vertical space */
+    .controls .tab-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+    }
+  
+    /* --- Top Section: Text Input & Font Selector --- */
+    #ai-tab .control-section:first-of-type {
+      display: flex;
+      align-items: center;
+      padding: 0.1rem 0.25rem;  /* minimal padding */
+      margin: 0;
+      flex-shrink: 0;
+    }
+    .text-input-container {
+      margin: 0;
+      height: 26px;   /* slightly thinner */
+      flex: 1;
+      display: flex;
+    }
+    .text-input-container input {
+      flex: 1;
+      margin: 0;
+      padding: 0 0.25rem;
+      font-size: 0.8rem;
+      height: 100%;
+    }
+    .text-input-container button.send-text-btn {
+      margin: 0;
+      height: 100%;
+      width: 26px;  /* reduced width for a smaller button */
+    }
+  
+    /* --- Chat Area: maximize space by removing extra margins/padding --- */
+    #ai-tab .chat-box {
+      flex: 1;
+      margin: 0;
+      padding: 0;
+      overflow-y: auto;
+      min-height: 0;  /* allows the chat box to shrink as needed */
+    }
+    #ai-tab .chat-input {
+      display: flex;
+      gap: 0;
+      margin: 0;
+      padding: 0;
+      flex-shrink: 0;
+      border-top: 1px solid #ddd;  /* optional divider */
+    }
+    #promptInput {
+      flex: 1;
+      margin: 0;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.8rem;
+    }
+    #send {
+      margin: 0;
+      padding: 0.15rem 0.3rem;  /* smaller button for more space */
+      font-size: 0.75rem;
+      height: auto;
+    }
+  
+    /* --- Floating Save/Reset/Edit Buttons: place them on top of the navbar span --- */
+    .save-menu {
+      z-index: 10000;      /* high z-index to appear above the navbar span */
+      background: rgba(0, 0, 0, 0);  /* optional semi-transparent background */
+      padding: 0rem;
+      border-radius: 4px;
+      display: flex;
+      justify-content: flex-start;
       gap: 0.5rem;
-  }
+    }
+    .save-button,
+    .reset-button,
+    .edit-mode-button {
+      width: 32px;
+      height: 32px;
+    }
   
-  .controls {
-      min-height: 250px;
-      max-height: 50vh;
-  }
-  
-  #ai-tab {
-      padding: 0.5rem;
-  }
-  
-  .chat-box {
-      min-height: 150px;
-  }
-  
-  #canvas-container {
-      height: calc(100vh - 350px);
-      min-height: 300px;
-  }
 
-  /* Show control sections collapsed by default on mobile */
-  #ai-tab .collapsible-content {
-      max-height: 0;
   }
-
-  #ai-tab .collapsible-content.show {
-      max-height: none;
-      padding: 0.5rem;
-  }
-}
+  
