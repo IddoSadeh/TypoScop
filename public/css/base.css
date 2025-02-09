@@ -105,7 +105,7 @@ html, body {
         background: white;
         display: flex;
         flex-direction: column;
-        padding-bottom: 5vh;
+        padding-bottom: 10vh;
     }
 
     /* Tab content */
