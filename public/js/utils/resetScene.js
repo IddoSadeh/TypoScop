@@ -10,6 +10,7 @@ import { updateMultiTextCopies } from './animationManager.js';
 // Store default parameters
 const defaultParams = {
     text: {
+        text: 'Hello World',
         font: "helvetiker",   
         size: 5,
         height: 2,
@@ -61,18 +62,29 @@ const defaultParams = {
 };
 
 export function resetScene() {
-    // Reset all parameters to defaults
-    Object.assign(textParams, defaultParams.text);
-    Object.assign(materialParams, defaultParams.material);
-    Object.assign(sceneParams, defaultParams.scene);
-    Object.assign(animationParams, defaultParams.animation);
-    Object.assign(projectionParams, defaultParams.projection);
+    // Store the current text before reset
+    const currentText = textParams.text;
+    
+    // Reset all parameters to defaults, but handle text separately
+    const { text: defaultTextParams, ...otherDefaultParams } = defaultParams;
+    
+    // Reset text parameters except the actual text content
+    const { text: _, ...otherTextParams } = defaultTextParams;
+    Object.assign(textParams, otherTextParams);
+    textParams.text = currentText; // Preserve the current text
+    
+    // Reset all other parameter groups
+    Object.assign(materialParams, otherDefaultParams.material);
+    Object.assign(sceneParams, otherDefaultParams.scene);
+    Object.assign(animationParams, otherDefaultParams.animation);
+    Object.assign(projectionParams, otherDefaultParams.projection);
 
     // Reset UI controls
     updateUIControls();
     updateSceneBackground();
     updateMultiTextCopies();
-    // First recreate the text with default parameters
+    
+    // First recreate the text with updated parameters but preserved content
     createText();
 
     // After text is created, get the mesh and center it
@@ -112,7 +124,6 @@ export function resetScene() {
         }
     }, 100); // Small delay to ensure text is created
 }
-
 
 
 function updateUIControls() {
