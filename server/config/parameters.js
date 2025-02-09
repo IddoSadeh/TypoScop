@@ -620,6 +620,7 @@ This is a calm scene:
     "manipulationAnimationIntensity": 3,
     "basicMaterialColor": "#00ffee",
     "backgroundColor": "#dedede",
+    all other animations off,
 
 Calm characteristics to adjust gradually:
 - Softer blue/teal colors
