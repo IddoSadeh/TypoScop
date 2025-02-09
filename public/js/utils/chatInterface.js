@@ -544,6 +544,8 @@ firecracker: `Create an explosive firecracker effect with these exact parameters
     -"wireframeEnabled": false,
     -"particlesEnabled": false,
     -"scrambleEnabled": false,
+    - ProjectionType: Pattern
+    - Projection enabled: True
 - Set text color to light blue (#80c1ff)
 - Enable projection with these settings:
   * Type: pattern
@@ -567,7 +569,6 @@ rainfall: `Create a rainfall effect with these exact parameters:
 - "particlesEnabled": false
 - "scrambleEnabled": false
 - "multiTextEnabled": false
-- ALL animations disabled.
 - Use deep blue color (#01105b)
 - Enable projection:
   * Type: pattern
