@@ -47,14 +47,17 @@ html, body {
     gap: 2rem;
   }
   
-  /* Footer */
-  .footer-note {
+  .mobile-menu {
+    display: none;
+}
+
+.footer-note {
     text-align: right;
     font-size: 0.8rem;
     color: #888;
     padding: 0.5rem 1rem;
     height: 30px;
-  }
+}
   
   /* Canvas Container */
   #canvas-container {
@@ -67,119 +70,224 @@ html, body {
   
   
   @media (max-width: 768px) {
-    /* Adjust logo and span font sizes */
+    /* Hide footer on mobile */
+    .footer-note {
+        display: none;
+    }
+
+    /* Logo and span adjustments */
     .logo {
-      font-size: 10px;
+        font-size: 10px;
     }
     span {
-      font-size: 10px;
+        font-size: 10px;
     }
-  
-    /* Main layout: canvas on top, controls below */
+
+    /* Main layout adjustments */
     .main-content {
-      flex-direction: column-reverse;
-      height: 100vh;
-      padding: 0;
-      gap: 0;
+        flex-direction: column-reverse;
+        height: 100vh;
+        padding: 0;
+        gap: 0;
     }
-  
-    /* Canvas: take remaining space above controls */
+
+    /* Canvas container */
     #canvas-container {
-      flex: 1;
-      margin: 0;
+        flex: 1;
+        margin: 0;
     }
-  
-    /* Controls area: reduced overall height */
+
+    /* Controls area */
     .controls {
-      height: 30vh;
-      width: 100%;
-      margin: 0;
-      background: white;
-      display: flex;
-      flex-direction: column;
+        height: 30vh;
+        width: 100%;
+        margin: 0;
+        background: white;
+        display: flex;
+        flex-direction: column;
     }
-  
-    /* Each tab-content fills the available vertical space */
+
+    /* Tab content */
     .controls .tab-content {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      padding: 0;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 0;
     }
-  
-    /* --- Top Section: Text Input & Font Selector --- */
+
+    /* Text Input Section */
     #ai-tab .control-section:first-of-type {
-      display: flex;
-      align-items: center;
-      padding: 0.1rem 0.25rem;  /* minimal padding */
-      margin: 0;
-      flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        padding: 0.1rem 0.25rem;
+        margin: 0;
+        flex-shrink: 0;
     }
     .text-input-container {
-      margin: 0;
-      height: 26px;   /* slightly thinner */
-      flex: 1;
-      display: flex;
+        margin: 0;
+        height: 26px;
+        flex: 1;
+        display: flex;
     }
     .text-input-container input {
-      flex: 1;
-      margin: 0;
-      padding: 0 0.25rem;
-      font-size: 0.8rem;
-      height: 100%;
+        flex: 1;
+        margin: 0;
+        padding: 0 0.25rem;
+        font-size: 0.8rem;
+        height: 100%;
     }
     .text-input-container button.send-text-btn {
-      margin: 0;
-      height: 100%;
-      width: 26px;  /* reduced width for a smaller button */
+        margin: 0;
+        height: 100%;
+        width: 26px;
     }
-  
-    /* --- Chat Area: maximize space by removing extra margins/padding --- */
+
+    /* Chat Area */
     #ai-tab .chat-box {
-      flex: 1;
-      margin: 0;
-      padding: 0;
-      overflow-y: auto;
-      min-height: 0;  /* allows the chat box to shrink as needed */
+        flex: 1;
+        margin: 0;
+        padding: 0.5rem;
+        overflow-y: auto;
+        min-height: 0;
     }
     #ai-tab .chat-input {
-      display: flex;
-      gap: 0;
-      margin: 0;
-      padding: 0;
-      flex-shrink: 0;
-      border-top: 1px solid #ddd;  /* optional divider */
+        display: flex;
+        gap: 0;
+        margin: 0;
+        padding: 0.5rem;
+        flex-shrink: 0;
+        border-top: 1px solid #ddd;
     }
     #promptInput {
-      flex: 1;
-      margin: 0;
-      padding: 0.25rem 0.5rem;
-      font-size: 0.8rem;
+        flex: 1;
+        margin: 0;
+        padding: 0.25rem 0.5rem;
+        font-size: 0.8rem;
     }
     #send {
-      margin: 0;
-      padding: 0.15rem 0.3rem;  /* smaller button for more space */
-      font-size: 0.75rem;
-      height: auto;
+        margin: 0;
+        padding: 0.15rem 0.3rem;
+        font-size: 0.75rem;
+        height: auto;
     }
-  
-    /* --- Floating Save/Reset/Edit Buttons: place them on top of the navbar span --- */
-    .save-menu {
-      z-index: 10000;      /* high z-index to appear above the navbar span */
-      background: rgba(0, 0, 0, 0);  /* optional semi-transparent background */
-      padding: 0rem;
-      border-radius: 4px;
-      display: flex;
-      justify-content: flex-start;
-      gap: 0.5rem;
-    }
-    .save-button,
-    .reset-button,
-    .edit-mode-button {
-      width: 32px;
-      height: 32px;
-    }
-  
 
-  }
-  
+    /* Hide save menu but show mobile menu */
+    .save-menu {
+        display: none;
+    }
+
+    .mobile-menu {
+        display: block;
+        position: fixed;
+        top: 0.5rem;
+        right: 0.5rem;
+        z-index: 1000;
+    }
+
+    .mobile-menu-button {
+        background: rgba(0, 0, 0, 0.7);
+        border: none;
+        padding: 0.5rem;
+        cursor: pointer;
+        color: white;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .mobile-menu-dropdown {
+        display: none;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        min-width: 180px;
+        padding: 0.5rem 0;
+        margin-top: 0.5rem;
+    }
+
+    .mobile-menu-dropdown.show {
+        display: block;
+    }
+
+    .mobile-menu-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        color: #333;
+        text-decoration: none;
+        border: none;
+        background: none;
+        width: 100%;
+        text-align: left;
+        cursor: pointer;
+        font-size: 0.9rem;
+    }
+
+    .mobile-menu-item:hover {
+        background: #f5f5f5;
+    }
+
+    .mobile-menu-item svg {
+        width: 18px;
+        height: 18px;
+        stroke: currentColor;
+    }
+
+    /* Save options in mobile menu */
+    .save-options {
+        position: static;
+        display: none;
+        padding: 0;
+        margin: 0;
+        box-shadow: none;
+        border-top: 1px solid #eee;
+    }
+
+    .save-options.show {
+        display: block;
+    }
+
+    .save-option {
+        padding: 0.75rem 1rem 0.75rem 2rem;
+        color: #333;
+    }
+
+    /* Ensure proper spacing at the bottom */
+    .chat-input {
+        padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 1rem));
+        margin-bottom: 0;
+    }
+
+    /* Manual tab adjustments */
+    #manual-tab {
+        padding: 0.5rem;
+    }
+
+    /* Control section adjustments */
+    .control-section {
+        margin-bottom: 0.5rem;
+    }
+
+    .collapsible {
+        padding: 0.75rem;
+    }
+
+    .collapsible-content.show {
+        padding: 0.75rem;
+    }
+
+    /* Slider group adjustments */
+    .slider-group {
+        margin-bottom: 0.5rem;
+    }
+
+    /* Color picker adjustments */
+    .color-group input[type="color"] {
+        height: 24px;
+    }
+}

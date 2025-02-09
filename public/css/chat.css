@@ -33,6 +33,7 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 0.1rem 0.5rem; /* Reduced padding */
   height: 36px; /* Match height with font selector */
+  width: 60%;
 }
 
 .text-input-container input {
@@ -61,9 +62,7 @@
 
 /* Font Selector */
 .font-selector {
-  width: calc(100% - 1rem);
-  margin: 0 0.5rem 0.5rem;
-  padding: 0.5rem;
+height: 36px;
   border: none;
   border-radius: 8px;
   background: white;

@@ -68,6 +68,81 @@ function autoExpand(field) {
     field.style.height = `${height}px`;
 }
 
+
+// Add this to your main.js or create a new module
+
+function setupMobileMenu() {
+    const mobileMenuButton = document.querySelector('.mobile-menu-button');
+    const mobileMenuDropdown = document.querySelector('.mobile-menu-dropdown');
+    const mobileSave = document.getElementById('mobile-save');
+    const mobileEdit = document.getElementById('mobile-edit');
+    const mobileReset = document.getElementById('mobile-reset');
+
+    // Toggle menu
+    mobileMenuButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        mobileMenuDropdown.classList.toggle('show');
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!mobileMenuDropdown.contains(e.target) && !mobileMenuButton.contains(e.target)) {
+            mobileMenuDropdown.classList.remove('show');
+        }
+    });
+
+    // Handle save button click
+    mobileSave.addEventListener('click', () => {
+        // Add save options to dropdown
+        const saveOptions = document.createElement('div');
+        saveOptions.className = 'save-options show';
+        saveOptions.innerHTML = `
+            <button class="mobile-menu-item" data-type="png">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                    <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+                Export as PNG
+            </button>
+            <button class="mobile-menu-item" data-type="mp4">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="23 7 16 12 23 17 23 7"></polygon>
+                    <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+                </svg>
+                Export as WebM
+            </button>
+            <button class="mobile-menu-item" data-type="obj">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="12" y1="18" x2="12" y2="12"></line>
+                </svg>
+                Export as OBJ
+            </button>
+        `;
+        
+        // Replace existing save options if any
+        const existingSaveOptions = mobileMenuDropdown.querySelector('.save-options');
+        if (existingSaveOptions) {
+            existingSaveOptions.remove();
+        }
+        mobileMenuDropdown.appendChild(saveOptions);
+    });
+
+    // Link mobile buttons to their desktop counterparts
+    mobileEdit.addEventListener('click', () => {
+        document.getElementById('edit-mode-toggle').click();
+        mobileMenuDropdown.classList.remove('show');
+    });
+
+    mobileReset.addEventListener('click', () => {
+        document.getElementById('reset-button').click();
+        mobileMenuDropdown.classList.remove('show');
+    });
+}
+
+
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('canvas-container');
@@ -99,6 +174,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Setup UI components
     setupEditModeToggle();
     setupCollapsibles();
+    setupMobileMenu();
 
     const textarea = document.getElementById('promptInput');
     if (textarea) {
