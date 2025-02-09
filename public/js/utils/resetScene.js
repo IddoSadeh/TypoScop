@@ -83,6 +83,7 @@ export function resetScene() {
     updateUIControls();
     updateSceneBackground();
     updateMultiTextCopies();
+    clearChat();
     
     // First recreate the text with updated parameters but preserved content
     createText();
@@ -196,5 +197,16 @@ export function initResetButton() {
                 resetScene();
             }
         });
+    }
+}
+
+function clearChat() {
+    const chatBox = document.getElementById('chat-box');
+    if (chatBox) {
+        chatBox.innerHTML = '';
+    }
+    const promptInput = document.getElementById('promptInput');
+    if (promptInput) {
+        promptInput.value = '';
     }
 }
