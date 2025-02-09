@@ -621,6 +621,7 @@ This is a calm scene:
     "basicMaterialColor": "#00ffee",
     "backgroundColor": "#dedede",
     all other animations off,
+    projection off
 
 Calm characteristics to adjust gradually:
 - Softer blue/teal colors
