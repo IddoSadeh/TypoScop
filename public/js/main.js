@@ -51,6 +51,23 @@ function setupExportButton() {
     }
 }
 
+function autoExpand(field) {
+    // Reset field height
+    field.style.height = 'inherit';
+
+    // Get the computed styles for the element
+    const computed = window.getComputedStyle(field);
+
+    // Calculate the height
+    const height = parseInt(computed.getPropertyValue('border-top-width'), 10)
+                + parseInt(computed.getPropertyValue('padding-top'), 10)
+                + field.scrollHeight
+                + parseInt(computed.getPropertyValue('padding-bottom'), 10)
+                + parseInt(computed.getPropertyValue('border-bottom-width'), 10);
+
+    field.style.height = `${height}px`;
+}
+
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     const container = document.getElementById('canvas-container');
@@ -82,4 +99,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // Setup UI components
     setupTabs();
     setupCollapsibles();
+
+    const textarea = document.getElementById('promptInput');
+    if (textarea) {
+        // Convert input to textarea if it's not already
+        if (textarea.tagName.toLowerCase() !== 'textarea') {
+            const newTextarea = document.createElement('textarea');
+            for (let attr of textarea.attributes) {
+                newTextarea.setAttribute(attr.name, attr.value);
+            }
+            textarea.parentNode.replaceChild(newTextarea, textarea);
+            
+            // Add auto-expand functionality
+            newTextarea.addEventListener('input', function() {
+                autoExpand(this);
+            });
+            
+            // Handle initial content if any
+            autoExpand(newTextarea);
+        }
+    }
 });

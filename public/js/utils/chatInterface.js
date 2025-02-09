@@ -497,8 +497,10 @@ function updateParticleControls() {
 // chatInterface.js - preset handling section
 
 const SCENE_PRESETS = {
-  radioactiveCluster: `Make a radioactive cluster effect with these exact parameters:
+  radioactiveCluster: `A radioactive cluster spreading in an organic, uncontrolled manner. The dark green, glowing surface gives off a toxic, biohazard-like energy, resembling a mutation or an alien infection consuming the digital space. It appears unstable, pulsing with dangerous energy. \n
+  Make a radioactive cluster effect with these exact parameters:
 - make sure projection is disabled
+- make sure pulse is off
 - Set text height to 10 and letter spacing to 4.3
 - Use bright neon green color (#82ff05) for the text with no metalness or roughnes.
 - Enable particles:
@@ -510,7 +512,7 @@ const SCENE_PRESETS = {
 - Set background to radioactive green (#0aae15)
 - Position scene slightly to the left and down (x: 0, y: -3)`,
 
-firecracker: `Create an explosive firecracker effect with these exact parameters:
+firecracker: `Glowing letters scattered over a fiery red background, crackling with neon-like energy. Chaotic, flickering, and full of motion—like electric sparks or a digital punk aesthetic. \n
 - Disable particle
 - Disable Tesselation
 - Disable projection
@@ -525,7 +527,7 @@ firecracker: `Create an explosive firecracker effect with these exact parameters
   * Set scramble mode to "circular"
   * Enable multiple copies (7) with spread of 50`,
 
-    futuristicArchitecture: `Create a futuristic architectural style with these exact parameters:
+    futuristicArchitecture: `A futuristic, floating architectural structure suspended in space. The design consists of sharp, jagged geometric forms that appear to be breaking apart or assembling dynamically.\n
     -"tessellationEnabled": true,
     -"wireframeEnabled": false,
     -"particlesEnabled": false,
@@ -539,7 +541,7 @@ firecracker: `Create an explosive firecracker effect with these exact parameters
 - Position scene far left (x: -29)
 - Enable multiple copies (10) with wide spread (80)`,
 
-    organicFluid: `Create a flowing organic pattern with these exact parameters:
+    organicFluid: `Text morphing into fluid, organic forms, appearing as if it is melting or stretching in a surreal liquid-like motion. It flows dynamically, reacting to movement as if suspended in an unseen gravitational field.\n
     -"tessellationEnabled": false,
     -"wireframeEnabled": false,
     -"particlesEnabled": false,
@@ -561,7 +563,7 @@ firecracker: `Create an explosive firecracker effect with these exact parameters
 - Position scene center(x: 0)
 - High ambient light (0.8)`,
 
-rainfall: `Create a rainfall effect with these exact parameters:
+rainfall: `A cascading wall of text resembling digital rainfall, creating an immersive, hypnotic effect. The letters blur as they descend, mimicking the aesthetic of heavy rain in a cybernetic world.\n
 - "tessellationEnabled": false
 - "wireframeEnabled": false
 - "particlesEnabled": false
@@ -608,34 +610,17 @@ function createSuggestionBubbles() {
       
       bubble.appendChild(prefix);
       bubble.appendChild(completion);
-      
-      bubble.addEventListener('click', async () => {
-        try {
-            // Update chat history immediately
-            updateChatHistory('user', completion.textContent);
-    
-            // Reset parameters without updating scene
-            resetScene(true);  // Pass true to skip scene update
-            
-            // Get new parameters
-            const response = await fetch('/api/customize', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: promptText })
-            });
-    
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+        
+        bubble.addEventListener('click', () => {
+            resetScene(true); 
+            const promptInput = document.getElementById('promptInput');
+            if (promptInput) {
+                promptInput.value = promptText;
+                promptInput.focus();
+                // Scroll the input into view if needed
+                promptInput.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
-    
-            const result = await response.json();
-            handleAPIResponse(result);
-            
-        } catch (error) {
-            console.error('Error applying preset:', error);
-            updateChatHistory('ai', `Error: Could not apply preset - ${error.message}`);
-        }
-    });
+        });
       
       suggestionsContainer.appendChild(bubble);
   });
