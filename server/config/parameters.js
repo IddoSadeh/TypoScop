@@ -608,7 +608,7 @@ Psychedelic characteristics to adjust gradually:
 - Increase animation complexity
 
 This is a calm scene:
-  "projectionEnabled": false,
+    "projectionEnabled": false,
     "color": "#00ffee",
     "particlesEnabled": true,
     "particleSize": 0.02,
@@ -620,8 +620,6 @@ This is a calm scene:
     "manipulationAnimationIntensity": 3,
     "basicMaterialColor": "#00ffee",
     "backgroundColor": "#dedede",
-    all other animations off,
-    projection off
 
 Calm characteristics to adjust gradually:
 - Softer blue/teal colors

@@ -5,6 +5,7 @@ import { sceneParams } from '../parameters/sceneParams.js';
 import { animationParams } from '../parameters/animationParams.js';
 import { projectionParams } from '../parameters/projectionParams.js';
 import { createText, getTextMesh, getCamera, updateSceneBackground } from '../utils/three.setup.js';
+import { updateMultiTextCopies } from './animationManager.js';
 
 // Store default parameters
 const defaultParams = {
@@ -71,6 +72,7 @@ export function resetScene() {
     // Reset UI controls
     updateUIControls();
     updateSceneBackground();
+    updateMultiTextCopies();
     // First recreate the text with default parameters
     createText();
 
