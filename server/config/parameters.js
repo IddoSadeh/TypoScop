@@ -578,7 +578,100 @@ Calm characteristics to adjust gradually:
 - More neutral backgrounds
 - Lower particle size
 
-Remember to consider the current parameter differences provided in each request when making adjustments.`;
+
+Example Inputs and outputs:
+A radioactive cluster spreading in an organic, uncontrolled manner. The dark green, glowing surface gives off a toxic, biohazard-like energy, resembling a mutation or an alien infection consuming the digital space. It appears unstable, pulsing with dangerous energy.:
+  Make a radioactive cluster effect with these exact parameters:
+- make sure projection is disabled
+- make sure pulse is off
+- Set text height to 10 and letter spacing to 4.3
+- Use bright neon green color (#82ff05) for the text with no metalness or roughnes.
+- Enable particles:
+* Set particle size to 1
+* Use sphere shape
+* Set density to 1
+* Low randomness (0.1)
+* Enable manipulation animation with speed 0.1 and high intensity (3)
+- Set background to radioactive green (#0aae15)
+- Position scene slightly to the left and down (x: 0, y: -3)
+
+Glowing letters scattered over a fiery red background, crackling with neon-like energy. Chaotic, flickering, and full of motion—like electric sparks or a digital punk aesthetic.:
+- Disable particle
+- Disable Tesselation
+- Disable projection
+- Set text height to 9.9 with no letter spacing
+- Use bright yellow color (#e1ff00) with high metalness (0.7) and roughness (0.7)
+- Enable wireframe effect:
+  * Set wireframe opacity to 0.8
+  * Enable manipulation animation with speed 0.4 and intensity 3
+- Set background to deep red (#940000)
+- Enable ONLY the following effects:
+  * Turn on scramble animation with speed 0.7 and intensity 3
+  * Set scramble mode to "circular"
+  * Enable multiple copies (7) with spread of 50
+
+
+A futuristic, floating architectural structure suspended in space. The design consists of sharp, jagged geometric forms that appear to be breaking apart or assembling dynamically.:
+    -"tessellationEnabled": true,
+    -"wireframeEnabled": false,
+    -"particlesEnabled": false,
+    - Disable projection
+- Set text height to 10 with letter spacing 0.8
+- Use metallic grey color (#b3b3b3) with very high metalness (0.9) and low roughness (0.3)
+- Enable tessellation:
+  * Set segments to 1
+  * Enable manipulation animation with speed 0.2 and intensity 3
+- Set background to light grey (#adadad)
+- Position scene far left (x: -29)
+- Enable multiple copies (10) with wide spread (80)
+
+Text morphing into fluid, organic forms, appearing as if it is melting or stretching in a surreal liquid-like motion. It flows dynamically, reacting to movement as if suspended in an unseen gravitational field.:
+    -"tessellationEnabled": false,
+    -"wireframeEnabled": false,
+    -"particlesEnabled": false,
+    -"scrambleEnabled": false,
+- Set text color to light blue (#80c1ff)
+- Enable projection with these settings:
+  * Type: pattern
+  * Mode: torusknot
+  * Animation direction: diagonal
+  * Slow animation speed (0.003)
+  * High repetition (20x10)
+  * Dark background color (#140000)
+  * 50% opacity
+- Set scene background to deep red (#510606)
+- Enable fog:
+  * Warm fog color (#fff4e5)
+  * High density (0.44)
+- Set camera closer (distance: 19)
+- Position scene center(x: 0)
+- High ambient light (0.8)
+
+A cascading wall of text resembling digital rainfall, creating an immersive, hypnotic effect. The letters blur as they descend, mimicking the aesthetic of heavy rain in a cybernetic world.:
+- "tessellationEnabled": false
+- "wireframeEnabled": false
+- "particlesEnabled": false
+- "scrambleEnabled": false
+- "multiTextEnabled": false
+- Use deep blue color (#01105b)
+- Enable projection:
+  * Type: pattern
+  * Mode: cube
+  * Animation direction: diagonal
+  * Animation speed: 0.005
+  * Reverse animation enabled
+  * Wide letter spacing (2) and word spacing (3)
+  * Dark blue background (#00000a)
+  * 80% opacity
+- Set scene background to black
+- Enable fog with yellow tint (#fff824)
+- Make camera very close with these exact settings:
+  * Set text size to 3
+  * Set text height to 1.5
+- Stretch pattern horizontally (20x1 repetition)
+
+Remember to consider the current parameter differences provided in each request when making adjustments.
+`;
 
 module.exports = {
     defaultState,
