@@ -130,58 +130,6 @@ const functionSchema = {
                 type: 'string',
                 description: 'Update ONLY if user specifically mentions background or scene color (hexadecimal). Default: #000000'
             },
-            rotateX: {
-                type: 'number',
-                description: 'X-axis rotation speed (-0.1 to 0.1). Default: 0',
-                minimum: -0.1,
-                maximum: 0.1
-            },
-            rotateXEnabled: {
-                type: 'boolean',
-                description: 'Enable/disable X-axis rotation. Default: false'
-            },
-            rotateY: {
-                type: 'number',
-                description: 'Y-axis rotation speed (-0.1 to 0.1). Default: 0',
-                minimum: -0.1,
-                maximum: 0.1
-            },
-            rotateYEnabled: {
-                type: 'boolean',
-                description: 'Enable/disable Y-axis rotation. Default: false'
-            },
-            rotateZ: {
-                type: 'number',
-                description: 'Z-axis rotation speed (-0.1 to 0.1). Default: 0',
-                minimum: -0.1,
-                maximum: 0.1
-            },
-            rotateZEnabled: {
-                type: 'boolean',
-                description: 'Enable/disable Z-axis rotation. Default: false'
-            },
-            scaleEnabled: {
-                type: 'boolean',
-                description: 'Enable/disable scale/pulse animation. Default: false'
-            },
-            scaleSpeed: {
-                type: 'number',
-                description: 'Speed of scale/pulse animation (0.01 to 0.1). Default: 0.02',
-                minimum: 0.01,
-                maximum: 0.1
-            },
-            scaleMin: {
-                type: 'number',
-                description: 'Minimum scale factor (0.5 to 1). Default: 0.8',
-                minimum: 0.5,
-                maximum: 1
-            },
-            scaleMax: {
-                type: 'number',
-                description: 'Maximum scale factor (1 to 2). Default: 1.2',
-                minimum: 1,
-                maximum: 2
-            },
             scrambleEnabled: {
                 type: 'boolean',
                 description: 'Enable/disable letter scramble animation. Default: false'

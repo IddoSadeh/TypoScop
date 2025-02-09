@@ -522,7 +522,7 @@ firecracker: `Glowing letters scattered over a fiery red background, crackling w
   * Set wireframe opacity to 0.8
   * Enable manipulation animation with speed 0.4 and intensity 3
 - Set background to deep red (#940000)
-- Enable multiple effects:
+- Enable ONLY the following effects:
   * Turn on scramble animation with speed 0.7 and intensity 3
   * Set scramble mode to "circular"
   * Enable multiple copies (7) with spread of 50`,
