@@ -567,6 +567,7 @@ rainfall: `Create a rainfall effect with these exact parameters:
 - "particlesEnabled": false
 - "scrambleEnabled": false
 - "multiTextEnabled": false
+- ALL animations disabled.
 - Use deep blue color (#01105b)
 - Enable projection:
   * Type: pattern
