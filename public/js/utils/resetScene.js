@@ -4,7 +4,7 @@ import { materialParams } from '../parameters/materialParams.js';
 import { sceneParams } from '../parameters/sceneParams.js';
 import { animationParams } from '../parameters/animationParams.js';
 import { projectionParams } from '../parameters/projectionParams.js';
-import { createText } from './three.setup.js';
+import { createText, getTextMesh } from './three.setup.js';
 
 // Store default parameters
 const defaultParams = {
