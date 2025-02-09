@@ -22,11 +22,19 @@ export function initThreeJS(container) {
     scene = new THREE.Scene();
     scene.background = new THREE.Color(sceneParams.backgroundColor);
 
-    // Camera setup
+    // Camera setup with responsive positioning
     const width = container.clientWidth;
     const height = container.clientHeight;
-    camera = new THREE.PerspectiveCamera(45, width / height, 1, 1000);
-    camera.position.z = 30;
+    const aspectRatio = width / height;
+    const isMobile = width < 768; // Common mobile breakpoint
+    
+    // Adjust FOV and initial distance based on device/orientation
+    const fov = isMobile ? (aspectRatio < 1 ? 60 : 45) : 45;
+    const distance = isMobile ? (aspectRatio < 1 ? 60 : 45) : 30;
+    
+    camera = new THREE.PerspectiveCamera(fov, aspectRatio, 1, 1000);
+    camera.position.z = distance;
+    sceneParams.cameraDistance = distance; // Update scene params to match
 
     // Renderer setup
     renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -36,10 +44,16 @@ export function initThreeJS(container) {
     // Initialize managers
     initProjectionManager(scene, renderer, camera);
 
-    // Controls setup
+    // Controls setup with adjusted limits for mobile
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
+    
+    // Adjust control limits for mobile
+    if (isMobile) {
+        controls.minDistance = 30;
+        controls.maxDistance = 100;
+    }
 
     setupLighting();
     
@@ -53,13 +67,23 @@ export function initThreeJS(container) {
     // Initialize animation manager
     initAnimationManager(scene, textMesh, renderer, camera);
 
-    // Window resize handler
+    // Enhanced resize handler with responsive adjustments
     window.addEventListener('resize', () => {
-        const width = container.clientWidth;
-        const height = container.clientHeight;
-        camera.aspect = width / height;
+        const newWidth = container.clientWidth;
+        const newHeight = container.clientHeight;
+        const newAspectRatio = newWidth / newHeight;
+        const newIsMobile = newWidth < 768;
+        
+        // Update camera FOV and distance based on new dimensions
+        if (newIsMobile !== isMobile || Math.abs(newAspectRatio - aspectRatio) > 0.1) {
+            camera.fov = newIsMobile ? (newAspectRatio < 1 ? 60 : 45) : 45;
+            sceneParams.cameraDistance = newIsMobile ? (newAspectRatio < 1 ? 60 : 45) : 30;
+            camera.position.z = sceneParams.cameraDistance;
+        }
+        
+        camera.aspect = newAspectRatio;
         camera.updateProjectionMatrix();
-        renderer.setSize(width, height);
+        renderer.setSize(newWidth, newHeight);
     });
 
     return {
