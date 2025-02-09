@@ -14,22 +14,34 @@ export function initSaveSystem(scene, camera, renderer, textMesh) {
         return;
     }
 
-    // Toggle menu
-    saveButton.addEventListener('click', () => {
-        const isHidden = saveOptions.classList.contains('hidden');
-        saveOptions.classList.toggle('hidden', !isHidden);
-        saveOptions.classList.toggle('show', isHidden);
+    // Function to toggle save options
+    function toggleSaveOptions() {
+        const isHidden = saveOptions.style.display === "none" || saveOptions.classList.contains("hidden");
         
+        if (isHidden) {
+            saveOptions.style.display = "block"; // Show menu
+            saveOptions.classList.remove("hidden");
+            saveOptions.classList.add("show");
+        } else {
+            saveOptions.style.display = "none"; // Hide menu
+            saveOptions.classList.add("hidden");
+            saveOptions.classList.remove("show");
+        }
+
         // Update OBJ export button visibility
         const isSingleGeometry = !animationParams.multiTextEnabled && !animationParams.scrambleEnabled;
-        objExportButton.style.display = isSingleGeometry ? 'flex' : 'none';
-    });
+        objExportButton.style.display = isSingleGeometry ? "flex" : "none";
+    }
+
+    // Toggle menu on save button click
+    saveButton.addEventListener("click", toggleSaveOptions);
 
     // Close menu when clicking outside
-    document.addEventListener('click', (event) => {
-        if (!saveMenu.contains(event.target)) {
-            saveOptions.classList.add('hidden');
-            saveOptions.classList.remove('show');
+    document.addEventListener("click", (event) => {
+        if (!saveMenu.contains(event.target) && !saveButton.contains(event.target)) {
+            saveOptions.style.display = "none"; // Ensure it fully disappears
+            saveOptions.classList.add("hidden");
+            saveOptions.classList.remove("show");
         }
     });
 
@@ -37,103 +49,66 @@ export function initSaveSystem(scene, camera, renderer, textMesh) {
     const exportFunctions = {
         async png() {
             renderer.render(scene, camera);
-            const dataURL = renderer.domElement.toDataURL('image/png');
-            downloadFile(dataURL, 'typography-scene.png');
+            const dataURL = renderer.domElement.toDataURL("image/png");
+            downloadFile(dataURL, "typography-scene.png");
         },
 
         async mp4() {
-            try {
-                // Show loading indicator
-                const loadingMessage = document.createElement('div');
-                loadingMessage.textContent = 'Recording and converting video...';
-                loadingMessage.style.cssText = `
-                    position: fixed;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    background: rgba(0, 0, 0, 0.8);
-                    color: white;
-                    padding: 20px;
-                    border-radius: 8px;
-                    z-index: 9999;
-                `;
-                document.body.appendChild(loadingMessage);
+            const mimeTypes = [
+                "video/mp4;codecs=h264",
+                "video/webm;codecs=vp9",
+                "video/webm",
+            ];
 
-                // Record WebM
-                const stream = renderer.domElement.captureStream(30);
-                const mediaRecorder = new MediaRecorder(stream, {
-                    mimeType: 'video/webm',
-                    videoBitsPerSecond: 5000000
-                });
+            const mimeType = mimeTypes.find((type) => MediaRecorder.isTypeSupported(type));
 
-                const chunks = [];
-                
-                await new Promise((resolve, reject) => {
-                    mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
-                    mediaRecorder.onstop = resolve;
-                    mediaRecorder.onerror = reject;
-                    
-                    mediaRecorder.start();
-                    setTimeout(() => mediaRecorder.stop(), 5000); // Record for 5 seconds
-                });
-
-                // Create WebM blob
-                const webmBlob = new Blob(chunks, { type: 'video/webm' });
-
-                // Convert to MP4
-                const response = await fetch('/api/convert-video', {
-                    method: 'POST',
-                    body: webmBlob
-                });
-
-                if (!response.ok) {
-                    throw new Error('Video conversion failed');
-                }
-
-                const mp4Blob = await response.blob();
-                const url = URL.createObjectURL(mp4Blob);
-                downloadFile(url, 'typography-animation.mp4');
-                URL.revokeObjectURL(url);
-
-            } catch (error) {
-                console.error('Failed to create MP4:', error);
-                alert('Failed to create MP4. Falling back to WebM format.');
-                
-                // Fallback to WebM
-                const webmBlob = new Blob(chunks, { type: 'video/webm' });
-                const url = URL.createObjectURL(webmBlob);
-                downloadFile(url, 'typography-animation.webm');
-                URL.revokeObjectURL(url);
-            } finally {
-                // Remove loading message
-                const loadingMessage = document.querySelector('div');
-                if (loadingMessage) {
-                    loadingMessage.remove();
-                }
+            if (!mimeType) {
+                console.error("No supported video format found");
+                return;
             }
+
+            const stream = renderer.domElement.captureStream(30);
+            const mediaRecorder = new MediaRecorder(stream, {
+                mimeType: mimeType,
+                videoBitsPerSecond: 5000000,
+            });
+
+            const chunks = [];
+            mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+            mediaRecorder.onstop = async () => {
+                const blob = new Blob(chunks, { type: mimeType });
+                const url = URL.createObjectURL(blob);
+                const extension = mimeType.includes("mp4") ? "mp4" : "webm";
+                downloadFile(url, `typography-animation.${extension}`);
+                URL.revokeObjectURL(url);
+            };
+
+            mediaRecorder.start();
+            setTimeout(() => mediaRecorder.stop(), 5000);
         },
 
         async obj() {
             if (!textMesh) return;
             const exporter = new OBJExporter();
             const data = exporter.parse(textMesh);
-            const blob = new Blob([data], { type: 'text/plain' });
+            const blob = new Blob([data], { type: "text/plain" });
             const url = URL.createObjectURL(blob);
-            downloadFile(url, 'typography-model.obj');
+            downloadFile(url, "typography-model.obj");
             URL.revokeObjectURL(url);
-        }
+        },
     };
 
     // Handle export option clicks
-    saveOptions.addEventListener('click', async (event) => {
-        const button = event.target.closest('.save-option');
+    saveOptions.addEventListener("click", async (event) => {
+        const button = event.target.closest(".save-option");
         if (!button) return;
 
         const exportType = button.dataset.type;
         if (exportFunctions[exportType]) {
             try {
-                saveOptions.classList.add('hidden');
-                saveOptions.classList.remove('show');
+                saveOptions.style.display = "none"; // Hide after clicking
+                saveOptions.classList.add("hidden");
+                saveOptions.classList.remove("show");
                 await exportFunctions[exportType]();
             } catch (error) {
                 console.error(`Export failed: ${error}`);
@@ -143,7 +118,7 @@ export function initSaveSystem(scene, camera, renderer, textMesh) {
 
     // Helper function to download files
     function downloadFile(url, filename) {
-        const link = document.createElement('a');
+        const link = document.createElement("a");
         link.href = url;
         link.download = filename;
         document.body.appendChild(link);
