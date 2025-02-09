@@ -630,6 +630,7 @@ Calm characteristics to adjust gradually:
 - Reduced manipulation intensity
 - Fewer copies
 - More neutral backgrounds
+- Lower particle size
 
 Remember to consider the current parameter differences provided in each request when making adjustments.`;
 
