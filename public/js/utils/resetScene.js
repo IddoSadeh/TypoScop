@@ -10,7 +10,6 @@ import { updateMultiTextCopies } from './animationManager.js';
 // Store default parameters
 const defaultParams = {
     text: {
-        text: 'Hello World',
         font: "helvetiker",   
         size: 5,
         height: 2,
