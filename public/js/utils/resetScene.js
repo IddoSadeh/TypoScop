@@ -82,21 +82,34 @@ export function resetScene() {
         const camera = getCamera();
 
         if (textMesh) {
-            // Reset position
-            textMesh.position.set(0, 0, 0);
+            // Reset rotation
+            textMesh.rotation.set(0, 0, 0);
             
-            // Center based on bounding box
+            // Center the text
             textMesh.geometry.computeBoundingBox();
             const boundingBox = textMesh.geometry.boundingBox;
             const center = new THREE.Vector3();
             boundingBox.getCenter(center);
-            textMesh.position.x = -center.x;
-            textMesh.position.y = -center.y;
+            
+            // Calculate text dimensions
+            const size = new THREE.Vector3();
+            boundingBox.getSize(size);
+            
+            // Position text at origin, centered
+            textMesh.position.set(-center.x, -center.y, -center.z);
+            
+            // Calculate ideal camera distance based on text size
+            const maxDimension = Math.max(size.x, size.y);
+            const idealDistance = (maxDimension / 2) / Math.tan(THREE.MathUtils.degToRad(sceneParams.fieldOfView / 2));
+            sceneParams.cameraDistance = Math.max(idealDistance * 1.2, 30); // Add 20% margin
         }
 
         if (camera) {
+            // Reset camera position and orientation
             camera.position.set(0, 0, sceneParams.cameraDistance);
+            camera.rotation.set(0, 0, 0);
             camera.lookAt(0, 0, 0);
+            camera.updateProjectionMatrix();
         }
     }, 100); // Small delay to ensure text is created
 }
