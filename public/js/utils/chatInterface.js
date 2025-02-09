@@ -508,7 +508,7 @@ const SCENE_PRESETS = {
 * Low randomness (0.1)
 * Enable manipulation animation with speed 0.1 and high intensity (3)
 - Set background to radioactive green (#0aae15)
-- Position scene slightly to the left and down (x: -10, y: -3)`,
+- Position scene slightly to the left and down (x: 0, y: -3)`,
 
 firecracker: `Create an explosive firecracker effect with these exact parameters:
 - Disable particle
@@ -529,6 +529,7 @@ firecracker: `Create an explosive firecracker effect with these exact parameters
     -"tessellationEnabled": true,
     -"wireframeEnabled": false,
     -"particlesEnabled": false,
+    - Disable projection
 - Set text height to 10 with letter spacing 0.8
 - Use metallic grey color (#b3b3b3) with very high metalness (0.9) and low roughness (0.3)
 - Enable tessellation:

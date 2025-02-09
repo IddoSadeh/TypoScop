@@ -4,7 +4,7 @@ import { materialParams } from '../parameters/materialParams.js';
 import { sceneParams } from '../parameters/sceneParams.js';
 import { animationParams } from '../parameters/animationParams.js';
 import { projectionParams } from '../parameters/projectionParams.js';
-import { createText, getTextMesh, getCamera } from '../utils/three.setup.js';
+import { createText, getTextMesh, getCamera, updateSceneBackground } from '../utils/three.setup.js';
 
 // Store default parameters
 const defaultParams = {
@@ -70,7 +70,7 @@ export function resetScene() {
 
     // Reset UI controls
     updateUIControls();
-    
+    updateSceneBackground();
     // First recreate the text with default parameters
     createText();
 
@@ -152,7 +152,7 @@ function updateUIControls() {
     // Update color inputs
     const colorInputs = {
         'color-picker': materialParams.color,
-        'background-color': sceneParams.backgroundColor,
+        'background-color': defaultParams.backgroundColor,
         'fog-color': sceneParams.fogColor
     };
 
