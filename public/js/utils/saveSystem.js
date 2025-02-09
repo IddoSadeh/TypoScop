@@ -42,42 +42,75 @@ export function initSaveSystem(scene, camera, renderer, textMesh) {
         },
 
         async mp4() {
-            // Check what video formats are supported
-            const mimeTypes = [
-                'video/mp4;codecs=h264',
-                'video/webm;codecs=vp9',
-                'video/webm'
-            ];
+            try {
+                // Show loading indicator
+                const loadingMessage = document.createElement('div');
+                loadingMessage.textContent = 'Recording and converting video...';
+                loadingMessage.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: rgba(0, 0, 0, 0.8);
+                    color: white;
+                    padding: 20px;
+                    border-radius: 8px;
+                    z-index: 9999;
+                `;
+                document.body.appendChild(loadingMessage);
 
-            // Find first supported format
-            const mimeType = mimeTypes.find(type => MediaRecorder.isTypeSupported(type));
-            
-            if (!mimeType) {
-                console.error('No supported video format found');
-                return;
-            }
+                // Record WebM
+                const stream = renderer.domElement.captureStream(30);
+                const mediaRecorder = new MediaRecorder(stream, {
+                    mimeType: 'video/webm',
+                    videoBitsPerSecond: 5000000
+                });
 
-            const stream = renderer.domElement.captureStream(30);
-            const mediaRecorder = new MediaRecorder(stream, {
-                mimeType: mimeType,
-                videoBitsPerSecond: 5000000
-            });
-
-            const chunks = [];
-            mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
-            mediaRecorder.onstop = async () => {
-                const blob = new Blob(chunks, { type: mimeType });
-                const url = URL.createObjectURL(blob);
+                const chunks = [];
                 
-                // Set correct file extension based on mime type
-                const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
-                downloadFile(url, `typography-animation.${extension}`);
-                URL.revokeObjectURL(url);
-            };
+                await new Promise((resolve, reject) => {
+                    mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+                    mediaRecorder.onstop = resolve;
+                    mediaRecorder.onerror = reject;
+                    
+                    mediaRecorder.start();
+                    setTimeout(() => mediaRecorder.stop(), 5000); // Record for 5 seconds
+                });
 
-            // Record for 5 seconds
-            mediaRecorder.start();
-            setTimeout(() => mediaRecorder.stop(), 5000);
+                // Create WebM blob
+                const webmBlob = new Blob(chunks, { type: 'video/webm' });
+
+                // Convert to MP4
+                const response = await fetch('/api/convert-video', {
+                    method: 'POST',
+                    body: webmBlob
+                });
+
+                if (!response.ok) {
+                    throw new Error('Video conversion failed');
+                }
+
+                const mp4Blob = await response.blob();
+                const url = URL.createObjectURL(mp4Blob);
+                downloadFile(url, 'typography-animation.mp4');
+                URL.revokeObjectURL(url);
+
+            } catch (error) {
+                console.error('Failed to create MP4:', error);
+                alert('Failed to create MP4. Falling back to WebM format.');
+                
+                // Fallback to WebM
+                const webmBlob = new Blob(chunks, { type: 'video/webm' });
+                const url = URL.createObjectURL(webmBlob);
+                downloadFile(url, 'typography-animation.webm');
+                URL.revokeObjectURL(url);
+            } finally {
+                // Remove loading message
+                const loadingMessage = document.querySelector('div');
+                if (loadingMessage) {
+                    loadingMessage.remove();
+                }
+            }
         },
 
         async obj() {
