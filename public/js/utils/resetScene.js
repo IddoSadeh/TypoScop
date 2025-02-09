@@ -99,7 +99,7 @@ export function resetScene() {
     }, 100); // Small delay to ensure text is created
 }
 
-// ... rest of the code remains the same ...
+
 
 function updateUIControls() {
     // Update text input

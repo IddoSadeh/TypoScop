@@ -54,6 +54,7 @@
 
   <main class="main-content">
     <aside class="controls">
+      <!-- Remove this when ready -->
       <nav class="tabs">
         <button class="tab-button active" data-tab="ai">AI Chat</button>
         <button class="tab-button" data-tab="manual">Manual Edit</button>
@@ -63,8 +64,7 @@
       <section class="tab-content active" id="ai-tab">
         <!-- Text Controls Section -->
         <div class="control-section">
-          <button class="collapsible">Text Settings</button>
-          <div class="collapsible-content">
+
             <!-- Text Input with Send Button -->
             <div class="text-input-container">
               <input type="text" id="ai-text-input" placeholder="Enter Text" value="Hello World">
@@ -82,7 +82,7 @@
               <option value="gentilis">Gentilis</option>
               <option value="haim">Haim</option>
             </select>
-          </div>
+
         </div>
 
         <!-- Chat Interface Section -->
@@ -586,14 +586,8 @@
         </div>
 
       </section>
-      <button id="reset-button" class="reset-button" aria-label="Reset Scene">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-            <path d="M3 3v5h5"/>
-        </svg>
-    </button>
     </aside>
-    
+
 
     <div id="canvas-container" role="main" aria-label="3D Text Preview"></div>
   </main>
@@ -634,6 +628,13 @@
         Export as OBJ
       </button>
     </div>
+    <button id="reset-button" class="reset-button" aria-label="Reset Scene">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+        stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+        <path d="M3 3v5h5" />
+      </svg>
+    </button>
   </div>
   <footer class="footer-note"></footer>
 
