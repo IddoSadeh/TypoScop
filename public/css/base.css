@@ -3,9 +3,9 @@ html, body {
     margin: 0;
     padding: 0;
     height: 100vh;
-    background-color: #e0e0e0;
+    background-color: black;
     font-family: "Helvetica Neue", Arial, sans-serif;
-    color: #333;
+    color: white;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -26,7 +26,7 @@ html, body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background-color: #f3f3f3;
+    background-color: black;
     padding: 0.5rem 1rem;
     box-shadow: 0 0 8px rgba(0,0,0,0.1);
     height: 40px;
