@@ -522,7 +522,7 @@ Instructions:
 
 If the projection is enabled PLEASE:
 - DISABLE letter scramble, manipulations, particles, tesselation
-- turn on projectiontype should be pattern
+-  projectiontype = pattern!!!
 
 ONLY one of the manipulations (wireframe, tesselation, particle) can be enabled at once. 
 
@@ -534,7 +534,6 @@ If a user asks to make the scene "more X" or "less X" (where X is scary/psychede
 - Maintain smooth transitions - don't jump directly to preset values
 - Consider current parameter differences when making adjustments
 - Feel free to change other parameters as needed
-- If "X" is "other" consider also changing the current state of the manipulation/projection
 
 This is a scary scene:
   "projectionEnabled": false,
