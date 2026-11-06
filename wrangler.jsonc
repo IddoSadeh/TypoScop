@@ -1,0 +1,10 @@
+{
+  "name": "text2typo-preview",
+  "account_id": "a8d402fb6d8371d959f03478b920157f",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-05-22",
+  "workers_dev": true,
+  "assets": {"directory": "./public", "binding": "ASSETS", "run_worker_first": ["/api/*"]},
+  "vars": {"AI_ENABLED": "false"},
+  "observability": {"enabled": false}
+}

@@ -1,4 +1,5 @@
 // chatInterface.js
+import { getCurrentState } from './visitorState.js';
 import { textParams } from '../parameters/textParams.js';
 import { materialParams } from '../parameters/materialParams.js';
 import { sceneParams } from '../parameters/sceneParams.js';
@@ -13,33 +14,32 @@ import { resetScene } from './resetScene.js';
 export function setupChatInterface() {
     const sendButton = document.getElementById('send');
     const promptInput = document.getElementById('promptInput');
-    createSuggestionBubbles();
+    // Instant scenes replace prompt suggestions, without API calls.
 
     if (sendButton && promptInput) {
         sendButton.addEventListener('click', async () => {
             const prompt = promptInput.value.trim();
             if (!prompt) return;
 
+            if (sendButton.disabled) return;
+            sendButton.disabled = true;
             updateChatHistory('user', prompt);
             
             try {
                 const response = await fetch('/api/customize', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt })
+                    body: JSON.stringify({ prompt, state: getCurrentState() })
                 });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
                 const result = await response.json();
+                if (!response.ok) throw new Error(result.error || 'AI is unavailable. Manual controls and exports still work.');
                 handleAPIResponse(result);
                 promptInput.value = '';
             } catch (error) {
                 console.error('API Error:', error);
-                updateChatHistory('ai', 'Error: Could not connect to the server.');
-            }
+                updateChatHistory('ai', error.message || 'AI is unavailable. Manual controls and exports still work.');
+            } finally { sendButton.disabled = false; }
         });
     }
 }
@@ -53,13 +53,13 @@ function updateChatHistory(role, content) {
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-function handleAPIResponse(result) {
+export function handleAPIResponse(result) {
     if (result.response) {
         let message = result.changes?.length > 0 ? 
         'Parameters being updated:\n' + result.changes.join('\n') :
         'No parameters were changed.';
         
-        updateChatHistory('ai', message);
+        if (!result.silent) updateChatHistory('ai', message);
 
         // Update material parameters
         Object.assign(materialParams, {
@@ -91,6 +91,7 @@ function handleAPIResponse(result) {
 
         // Update text parameters
         Object.assign(textParams, {
+            text: result.response.text ?? textParams.text,
             height: result.response.height ?? textParams.height,
             size: result.response.textSize ?? textParams.size,
             letterSpacing: result.response.letterSpacing ?? textParams.letterSpacing,
@@ -128,7 +129,13 @@ function handleAPIResponse(result) {
 
         // Update animation parameters
         Object.assign(animationParams, {
-            // Previous animation parameters remain the same
+            rotateXEnabled: result.response.rotateXEnabled ?? animationParams.rotateXEnabled,
+            rotateYEnabled: result.response.rotateYEnabled ?? animationParams.rotateYEnabled,
+            rotateZEnabled: result.response.rotateZEnabled ?? animationParams.rotateZEnabled,
+            scaleEnabled: result.response.scaleEnabled ?? animationParams.scaleEnabled,
+            scaleSpeed: result.response.scaleSpeed ?? animationParams.scaleSpeed,
+            scaleMin: result.response.scaleMin ?? animationParams.scaleMin,
+            scaleMax: result.response.scaleMax ?? animationParams.scaleMax,
             rotateX: result.response.rotateX ?? animationParams.rotateX,
             rotateY: result.response.rotateY ?? animationParams.rotateY,
             rotateZ: result.response.rotateZ ?? animationParams.rotateZ,

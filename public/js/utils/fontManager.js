@@ -8,9 +8,9 @@ class FontManager {
         // Font mapping object
         this.FONTS = {
             latin: {
-                helvetiker: 'https://unpkg.com/three@0.152.0/examples/fonts/helvetiker_regular.typeface.json',
-                optimer: 'https://unpkg.com/three@0.152.0/examples/fonts/optimer_regular.typeface.json',
-                gentilis: 'https://unpkg.com/three@0.152.0/examples/fonts/gentilis_regular.typeface.json'
+                helvetiker: '/vendor/three/examples/fonts/helvetiker_regular.typeface.json',
+                optimer: '/vendor/three/examples/fonts/optimer_regular.typeface.json',
+                gentilis: '/vendor/three/examples/fonts/gentilis_regular.typeface.json'
             },
             hebrew: {
                 haim: '/fonts/Haim Classic v2 FM_Regular.json'

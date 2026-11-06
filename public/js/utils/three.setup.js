@@ -9,7 +9,7 @@ import { materialParams } from '../parameters/materialParams.js';
 import { sceneParams } from '../parameters/sceneParams.js';
 import { animationParams } from '../parameters/animationParams.js';
 import { projectionParams } from '../parameters/projectionParams.js';
-import { initProjectionManager, project } from './projectionManager.js';
+import { initProjectionManager, project, cleanupProjection } from './projectionManager.js';
 import { createMaterial, updateMaterialUniforms, updateParticleAnimation } from './materialManager.js';
 import { initAnimationManager, updateAnimation, updateMultiTextCopies, getLetterMeshes, cleanupLetterMeshes } from './animationManager.js';
 import fontManager from './fontManager.js';
@@ -165,12 +165,13 @@ export function createText() {
 
                 // Center the geometry
                 geometry.computeBoundingBox();
-                const centerOffset = -0.5 * (geometry.boundingBox.max.x - geometry.boundingBox.min.x);
+                centerOffset = -0.5 * (geometry.boundingBox.max.x + geometry.boundingBox.min.x);
                 
                 // Store old transform
                 const oldPosition = textMesh ? textMesh.position.clone() : new THREE.Vector3();
                 const oldRotation = textMesh ? textMesh.rotation.clone() : new THREE.Euler();
 
+                if (!projectionParams.enabled) cleanupProjection();
                 // Clean up old mesh
                 if (textMesh) {
                     scene.remove(textMesh);
@@ -199,7 +200,17 @@ export function createText() {
                     scene.add(textMesh);
                 }
 
-                camera.lookAt(textMesh.position);
+                // Frame the actual visual bounds, not the left-hand geometry origin.
+                const bounds = new THREE.Box3().setFromObject(textMesh);
+                const size = bounds.getSize(new THREE.Vector3());
+                const center = bounds.getCenter(new THREE.Vector3());
+                const tangent = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+                const distance = Math.max(size.y / (2*tangent), size.x / (2*tangent*camera.aspect)) * 1.28 + size.z;
+                camera.position.set(center.x, center.y, center.z + Math.max(20, distance));
+                controls.target.copy(center);
+                camera.lookAt(center);
+                sceneParams.cameraDistance = camera.position.z;
+                document.dispatchEvent(new Event('scene-ready'));
 
                 // Initialize managers
                 initAnimationManager(scene, textMesh, renderer, camera);
@@ -231,7 +242,8 @@ export function updateMaterial() {
     const oldRotation = textMesh.rotation.clone();
     const oldScale = textMesh.scale.clone();
     
-    // Clean up old mesh
+    if (!projectionParams.enabled) cleanupProjection();
+                // Clean up old mesh
     scene.remove(textMesh);
     textMesh.geometry.dispose();
     textMesh.material.dispose();

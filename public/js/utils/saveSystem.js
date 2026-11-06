@@ -1,5 +1,6 @@
 // saveSystem.js
 import { OBJExporter } from 'three/addons/exporters/OBJExporter.js';
+import { getTextMesh } from './three.setup.js';
 import { animationParams } from '../parameters/animationParams.js';
 
 export function initSaveSystem(scene, camera, renderer, textMesh) {
@@ -63,8 +64,7 @@ export function initSaveSystem(scene, camera, renderer, textMesh) {
             const mimeType = mimeTypes.find((type) => MediaRecorder.isTypeSupported(type));
 
             if (!mimeType) {
-                console.error("No supported video format found");
-                return;
+                throw new Error("Video export is unavailable in this browser. PNG and OBJ still work.");
             }
 
             const stream = renderer.domElement.captureStream(30);
@@ -80,27 +80,30 @@ export function initSaveSystem(scene, camera, renderer, textMesh) {
                 const url = URL.createObjectURL(blob);
                 const extension = mimeType.includes("mp4") ? "mp4" : "webm";
                 downloadFile(url, `typography-animation.${extension}`);
-                URL.revokeObjectURL(url);
+                setTimeout(() => URL.revokeObjectURL(url), 10000);
             };
 
+            window.dispatchEvent(new CustomEvent("scene-message", {detail: "Recording 5 seconds…"}));
             mediaRecorder.start();
             setTimeout(() => mediaRecorder.stop(), 5000);
         },
 
         async obj() {
-            if (!textMesh) return;
+            const textMesh = getTextMesh();
+            if (!textMesh) throw new Error("The text is still loading. Please try again.");
+            if (textMesh.isInstancedMesh) throw new Error("OBJ is available for solid or wireframe type. Use PNG or video for particles.");
             const exporter = new OBJExporter();
             const data = exporter.parse(textMesh);
             const blob = new Blob([data], { type: "text/plain" });
             const url = URL.createObjectURL(blob);
             downloadFile(url, "typography-model.obj");
-            URL.revokeObjectURL(url);
+            setTimeout(() => URL.revokeObjectURL(url), 10000);
         },
     };
 
     // Handle export option clicks
-    saveOptions.addEventListener("click", async (event) => {
-        const button = event.target.closest(".save-option");
+    document.addEventListener("click", async (event) => {
+        const button = event.target.closest(".save-option, .mobile-menu-item[data-type]");
         if (!button) return;
 
         const exportType = button.dataset.type;
@@ -111,7 +114,7 @@ export function initSaveSystem(scene, camera, renderer, textMesh) {
                 saveOptions.classList.remove("show");
                 await exportFunctions[exportType]();
             } catch (error) {
-                console.error(`Export failed: ${error}`);
+                window.dispatchEvent(new CustomEvent("scene-message", {detail: error.message}));
             }
         }
     });

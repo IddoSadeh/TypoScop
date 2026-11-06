@@ -1,5 +1,9 @@
 // Material parameters
 export const materialParams = {
+    colorHueStart: 0, colorHueRange: 0.2,
+    colorSatStart: 0.5, colorSatRange: 0.5,
+    colorLightStart: 0.5, colorLightRange: 0.3,
+    colorPattern: 'random',
     // Basic material properties
     color: '#ffffff',
     metalness: 0,

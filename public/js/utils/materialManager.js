@@ -292,28 +292,13 @@ function createParticleMaterial(geometry) {
         // Create the particle material.
         const particleMaterial = new THREE.MeshStandardMaterial({
             color: 0xffffff,
-            vertexColors: true,
+            vertexColors: false,
             metalness: materialParams.metalness || 0,
             roughness: materialParams.roughness || 0.5,
             emissive: new THREE.Color(materialParams.emissiveColor || 0x222222)
         });
 
-        // Modify the shader to pass instance colors.
-        particleMaterial.onBeforeCompile = (shader) => {
-            shader.vertexShader = 'varying vec3 vInstanceColor;\n' + shader.vertexShader;
-            shader.vertexShader = shader.vertexShader.replace(
-                '#include <begin_vertex>',
-                `#include <begin_vertex>
-    vInstanceColor = instanceColor;`
-            );
-            shader.fragmentShader = 'varying vec3 vInstanceColor;\n' + shader.fragmentShader;
-            shader.fragmentShader = shader.fragmentShader.replace(
-                '#include <dithering_fragment>',
-                `#include <dithering_fragment>
-    gl_FragColor.rgb *= vInstanceColor;`
-            );
-        };
-
+        // Three.js already applies instanceColor; applying it again darkens particles.
         // Create the instanced mesh.
         const instancedMesh = new THREE.InstancedMesh(particleGeometry, particleMaterial, instanceCount);
 

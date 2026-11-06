@@ -10,6 +10,7 @@ let renderer = null;
 let camera = null;
 let currentProjection = null;
 let renderTarget = null;
+let patternFrame = null;
 
 /*──────────────────────────────────────────────────────────────
   INITIALIZATION
@@ -46,7 +47,9 @@ function disposeMesh(mesh) {
     }
 }
 
-function cleanup() {
+export function cleanupProjection() {
+    if (patternFrame !== null) cancelAnimationFrame(patternFrame);
+    patternFrame = null;
     if (currentProjection) {
         disposeMesh(currentProjection);
         currentProjection = null;
@@ -120,7 +123,7 @@ export function project(originalMesh) {
         return originalMesh;
     }
 
-    cleanup();
+    cleanupProjection();
 
     if (projectionParams.projectionType === 'pattern') {
         const geometry = createProjectionGeometry();
@@ -132,8 +135,8 @@ export function project(originalMesh) {
 
         // Create canvas
         const canvas = document.createElement('canvas');
-        canvas.width = 512;
-        canvas.height = 512;
+        canvas.width = 1024;
+        canvas.height = 256;
         const ctx = canvas.getContext('2d');
         
         // Set background
@@ -141,21 +144,19 @@ export function project(originalMesh) {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
         // Setup text parameters
-        const fontSize = Math.floor(canvas.height * 0.2);
+        const fontSize = Math.floor(canvas.height * 0.7);
         ctx.fillStyle = projectionParams.pattern.textColor;
-        ctx.font = `${fontSize}px ${textParams.font}`;
+        ctx.font = `bold ${fontSize}px Arial, sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         
-        // Apply letter and word spacing
-        const text = textParams.text.split('').join('\u200B'.repeat(
-            Math.floor(projectionParams.pattern.letterSpacing * 5)
-        ));
-        const words = text.split(' ').join(' '.repeat(
-            Math.floor(projectionParams.pattern.wordSpacing * 5)
-        ));
-        
-        // Draw text
+        // Fit the complete text to each tile; keep the pattern readable.
+        const words = textParams.text || 'TYPE';
+        let fittedSize = fontSize;
+        while (ctx.measureText(words).width > canvas.width * 0.9 && fittedSize > 10) {
+            fittedSize -= 2;
+            ctx.font = `bold ${fittedSize}px Arial, sans-serif`;
+        }
         ctx.fillText(words, canvas.width/2, canvas.height/2);
 
         // Create texture
@@ -174,7 +175,7 @@ export function project(originalMesh) {
             side: THREE.DoubleSide,
             transparent: true,
             opacity: projectionParams.pattern.opacity,
-            color: projectionParams.pattern.objectColor
+            color: projectionParams.pattern.objectColor || '#ffffff'
         });
 
         // Create mesh
@@ -189,7 +190,7 @@ export function project(originalMesh) {
         function animate() {
             if (!projectionParams.pattern.animatePattern) return;
             
-            requestAnimationFrame(animate);
+            patternFrame = requestAnimationFrame(animate);
             const speed = projectionParams.pattern.animationSpeed * 
                          (projectionParams.pattern.animationReverse ? -1 : 1);
 
