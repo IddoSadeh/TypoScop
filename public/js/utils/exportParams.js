@@ -1,5 +1,6 @@
 // Add this to utils/exportParams.js
 
+import {motionParams} from '../parameters/motionParams.js';
 import { textParams } from '../parameters/textParams.js';
 import { materialParams } from '../parameters/materialParams.js';
 import { sceneParams } from '../parameters/sceneParams.js';
@@ -16,6 +17,7 @@ export function exportCurrentParams() {
     // Export clean parameters
     const paramsToExport = {
         textParams,
+        motionParams,
         materialParams,
         sceneParams,
         animationParams: cleanAnimationParams,

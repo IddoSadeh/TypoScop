@@ -12,11 +12,14 @@ server inspected November 6, 2026 uses GPT-4o and process-global scene state.
 ## Restoration preview — November 2026
 
 Frontend: pinned, locally served Three.js 0.152.0. Cloudflare Worker serves static
-assets and an explicit AI-unavailable API response. **AI is not yet connected.**
+assets and an OpenRouter API with ten tested models. A Durable Object enforces
+shared visitor allowances and pre-call spending reservations. See `docs/AI-PREVIEW.md`.
 The old Express backend in `server/` is retained as historical reference, not
 used by the Worker or the new npm commands. No API credential belongs in public/.
 
-- First-visit introduction, with About to reopen it.
+- First-visit factual introduction, with About to reopen it.
+- Ten-model selector; three successful prompts total across all models.
+- Free GPU wave, twist, ripple and float controls, with speed, amount and pause.
 - Free Solid, Wire, Cloud and Orbit presets; original manual controls retained.
 - Corrected framing, legacy material defaults, particle colours, projection
   texture, and projection animation cleanup.
@@ -24,7 +27,7 @@ used by the Worker or the new npm commands. No API credential belongs in public/
 - PNG, five-second browser video (WebM or MP4 depending on actual browser
   support), geometry OBJ, and scene-parameter JSON export.
 - OBJ is for solid/wireframe geometry; particle export reports a clear limitation.
-  OBJ does not package textures/materials or represent an animation.
+  OBJ exports undeformed base geometry, without textures/materials or animation.
 - Reduced-motion preference disables motion in presets. Manual animation remains
   an explicit choice.
 
@@ -44,7 +47,7 @@ Wrangler uses existing Mac OAuth. Explicit owner account is
 name is `text2typo-preview`, no custom production route. Public assets alone are
 uploaded, and preview responses include `X-Robots-Tag: noindex, nofollow`.
 
-Read `docs/RESTORATION.md` before AI integration or migration. A preview deployment
+Read `docs/RESTORATION.md` and `docs/AI-PREVIEW.md` before changing quotas or migration. A preview deployment
 is not production cutover and does not authorize deleting the droplet.
 
 ## Verification
@@ -58,5 +61,8 @@ npm run test:exports
 
 Use `REVIEW_URL=https://text2typo-preview.iddosadeh.workers.dev` for live preview
 checks. Artifacts go to ignored `outputs/`. These use Chromium mobile emulation,
-not physical iPhone testing. Both suites passed against the November 6 deployment
-(Worker version `69641517-9a0e-4d98-97cb-43469f5cfb32`).
+not physical iPhone testing. Current verification is recorded in `docs/AI-PREVIEW.md`.
+
+`node --test tests/safety.test.mjs` checks accounting and validation without paid calls.
+`tests/live-ai-check.mjs` and `scripts/benchmark.mjs` incur paid calls: do not run
+without an approved remaining budget. Never reset the persisted evaluation ledger.

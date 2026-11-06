@@ -1,5 +1,6 @@
 // three.setup.js
 import * as THREE from 'three';
+import {attachMotion,tickMotion} from './motion.js';
 import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
@@ -200,6 +201,7 @@ export function createText() {
                     scene.add(textMesh);
                 }
 
+                attachMotion(textMesh);
                 // Frame the actual visual bounds, not the left-hand geometry origin.
                 const bounds = new THREE.Box3().setFromObject(textMesh);
                 const size = bounds.getSize(new THREE.Vector3());
@@ -267,6 +269,7 @@ export function updateMaterial() {
         scene.add(textMesh);
     }
     
+    attachMotion(textMesh);
     // Update copies and letters
     if (animationParams.multiTextEnabled) {
         updateMultiTextCopies();
@@ -355,6 +358,7 @@ export function updateSceneCamera() {
 
 function animate() {
     requestAnimationFrame(animate);
+    tickMotion(performance.now());
 
     // Update shader materials
     if (materialParams.tessellationEnabled || materialParams.wireframeEnabled) {

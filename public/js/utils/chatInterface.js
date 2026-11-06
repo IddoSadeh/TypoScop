@@ -1,11 +1,13 @@
 // chatInterface.js
+import {motionParams} from '../parameters/motionParams.js';
+import {getModels,refreshAllowance} from './modelPicker.js';
 import { getCurrentState } from './visitorState.js';
 import { textParams } from '../parameters/textParams.js';
 import { materialParams } from '../parameters/materialParams.js';
 import { sceneParams } from '../parameters/sceneParams.js';
 import { animationParams } from '../parameters/animationParams.js';
 import { projectionParams } from '../parameters/projectionParams.js';
-import { createText, updateSceneBackground } from './three.setup.js';
+import { createText, updateSceneBackground, updateSceneLighting, updateSceneCamera } from './three.setup.js';
 import { updateMultiTextCopies } from './animationManager.js';
 import { updateProjectionControls } from '../controls/setupProjectionControls.js';
 import fontManager from './fontManager.js';
@@ -29,7 +31,7 @@ export function setupChatInterface() {
                 const response = await fetch('/api/customize', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ prompt, state: getCurrentState() })
+                    body: JSON.stringify({ prompt, state: getCurrentState(), model: document.querySelector('#ai-model')?.value })
                 });
 
                 const result = await response.json();
@@ -39,7 +41,7 @@ export function setupChatInterface() {
             } catch (error) {
                 console.error('API Error:', error);
                 updateChatHistory('ai', error.message || 'AI is unavailable. Manual controls and exports still work.');
-            } finally { sendButton.disabled = false; }
+            } finally { await refreshAllowance(); }
         });
     }
 }
@@ -55,9 +57,12 @@ function updateChatHistory(role, content) {
 
 export function handleAPIResponse(result) {
     if (result.response) {
-        let message = result.changes?.length > 0 ? 
+        for(const key of Object.keys(motionParams))if(result.response[key]!==undefined)motionParams[key]=result.response[key];
+        document.dispatchEvent(new Event('motion-settings-changed'));
+
+        let message = result.message || (result.changes?.length > 0 ?
         'Parameters being updated:\n' + result.changes.join('\n') :
-        'No parameters were changed.';
+        'No parameters were changed.');
         
         if (!result.silent) updateChatHistory('ai', message);
 
@@ -184,7 +189,10 @@ export function handleAPIResponse(result) {
         updateUIControls();
 
         // Update 3D scene
+        const input=document.querySelector('#ai-text-input');if(input)input.value=textParams.text;
         updateSceneBackground();
+        updateSceneLighting();
+        updateSceneCamera();
         createText(); // This will now use the font manager internally
     } else {
         updateChatHistory('ai', 'Error processing the request.');

@@ -1,3 +1,4 @@
+import {motionParams} from '../parameters/motionParams.js';
 import * as THREE from 'three';
 import { textParams } from '../parameters/textParams.js';
 import { materialParams } from '../parameters/materialParams.js';
@@ -62,6 +63,8 @@ const defaultParams = {
 };
 
 export function resetScene() {
+    motionParams.motionMode='none';
+    document.dispatchEvent(new Event('motion-settings-changed'));
     // Store the current text before reset
     const currentText = textParams.text;
     

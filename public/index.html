@@ -52,7 +52,7 @@
   <h1 id="intro-title">About Text2Typo</h1>
   <p>Text2Typo was designed and commissioned by <a href="https://www.ormitus.com/" target="_blank" rel="noopener noreferrer">Ori Mor</a> and developed by <a href="https://isadeh.com/" target="_blank" rel="noopener noreferrer">Iddo Sadeh</a> for Ori’s 2025 experimental design project at Shenkar. Development began in December 2024.</p>
   <p>The original app used GPT-4o to translate written prompts into changes to 3D typography. Three.js renders the text in the browser; the AI changes parameters rather than generating images.</p>
-  <div class="edition-note"><span>NOVEMBER 2026 UPDATE</span><p>This preview restores the app with fixes to rendering, mobile controls and exports, and adds preset scenes that work without AI.</p><p>AI is currently disabled. A replacement model has not yet been selected. Once restored, AI use will be limited to three successful prompts per visitor to keep costs down. Manual controls, presets and exports will remain available.</p></div>
+  <div class="edition-note"><span>NOVEMBER 2026 UPDATE</span><p>This preview restores the app with fixes to rendering, mobile controls and exports, and adds preset scenes that work without AI.</p><p>AI now runs through OpenRouter, with a choice of ten models. Each visitor can use three successful prompts in total, across all models, subject to a shared spending limit. An anonymous cookie records this allowance for 90 days. Manual controls, presets and exports remain available when AI is unavailable.</p></div>
   <form method="dialog"><button class="intro-start">Continue</button></form>
 </dialog>
     <div class="mobile-menu">
@@ -128,7 +128,7 @@
         <!-- Chat Interface Section -->
 
         <div class="instant-scenes"><p>START WITH A SCENE <span>NO AI NEEDED</span></p><div id="scene-presets"></div></div>
-        <div id="ai-availability" role="status">AI is paused in this preview. Explore the scenes or manual controls.</div>
+        <div id="ai-availability" role="status">Checking AI availability. Manual controls and exports are always available.</div>
         <div id="chat-box" class="chat-box" role="log" aria-live="polite"></div>
         <div class="chat-input">
           <textarea id="promptInput" maxlength="600" aria-label="Describe a typography change" placeholder="Describe how to customize the scene..."></textarea>
@@ -668,7 +668,7 @@
             <polyline points="14 2 14 8 20 8"></polyline>
             <line x1="12" y1="18" x2="12" y2="12"></line>
           </svg>
-          Export as OBJ
+          Export base geometry as OBJ
         </button>
       </div>
       <button id="edit-mode-toggle" aria-label="Toggle manual controls" class="edit-mode-button" aria-label="Toggle Edit Mode">
