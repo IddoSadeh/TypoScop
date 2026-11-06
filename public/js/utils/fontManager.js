@@ -45,10 +45,14 @@ class FontManager {
         if (containsHebrew && currentFontType !== 'hebrew') {
             selectedFont = 'haim';
             this.updateFontDropdown('haim');
+        } else if (!containsHebrew && currentFontType === 'hebrew') {
+            selectedFont = 'helvetiker';
         } else {
             selectedFont = currentFont?.toLowerCase() || 'helvetiker';
         }
         
+        this.updateFontDropdown(selectedFont);
+
         // Reverse text if Hebrew
         const processedText = containsHebrew ? text.split('').reverse().join('') : text;
         

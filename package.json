@@ -13,9 +13,9 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "Text2Typo \u2014 an experimental browser typography tool commissioned by Ori Mor",
+  "description": "Text2Typo — an experimental browser typography tool commissioned by Ori Mor",
   "devDependencies": {
-    "wrangler": "4.92.0",
-    "playwright-core": "1.63.0"
+    "playwright-core": "1.63.0",
+    "wrangler": "4.158.0"
   }
 }

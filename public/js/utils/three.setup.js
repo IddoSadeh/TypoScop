@@ -109,13 +109,16 @@ function setupLighting() {
     scene.add(fillLight);
 }
 
+let textRevision = 0;
 export function createText() {
+    const revision = ++textRevision;
     // Process text and get the appropriate font
     const { text, font: selectedFont, isHebrew } = fontManager.processText(textParams.text, textParams.font);
     textParams.font = selectedFont;
 
     fontManager.loadFont(selectedFont, isHebrew)
         .then((font) => {
+            if (revision !== textRevision) return;
             try {
                 let geometry;
 
