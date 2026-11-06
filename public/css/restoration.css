@@ -2,3 +2,5 @@
 
 @media(max-width:768px){#ai-tab>.control-section{display:grid!important;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:6px;padding:0!important;border:0!important;flex-shrink:0}.text-input-container{width:100%!important;min-width:0;margin:0!important}.font-selector{width:100%!important;min-width:0;margin:0!important}.text-input-container input{width:0;flex:1;min-width:0}.text-input-container button{flex-shrink:0}}
 #send{background:#222;border-radius:3px}.chat-box .ai-message,.chat-box .user-message{font-size:12px;line-height:1.5}
+
+#experiment-intro h1{font-size:24px;line-height:1.25;letter-spacing:0;font-weight:500;margin:0 0 22px}#experiment-intro .intro-start{justify-content:center}
