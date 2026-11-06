@@ -37,7 +37,7 @@ OBJ exports undeformed base geometry, not shader motion, textures or particles.
   requests TOTAL across every model. Cookie deletion plus IP changes can evade
   a unique-person limit; no anonymous scheme proves identity.
 - Atomic singleton SQLite Durable Object: visitor in-flight lock, 6 attempts per
-  visitor/hour, 12 per IP/hour, 40 globally/hour; 12 new cookies/IP/day and 9
+  visitor/hour, 12 per IP/hour, 40 globally/hour; 24 new cookies/IP/day and 12
   successes/IP/day. Shared networks can encounter limits. IPs are HMAC-hashed;
   daily IP records expire, visitor records expire after 90 days. No prompts or
   full scenes are persisted in the allowance ledger.

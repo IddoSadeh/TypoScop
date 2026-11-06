@@ -1,5 +1,8 @@
 # Restoration record — November 6, 2026
 
+Update: owner-approved production publication is complete. See [PRODUCTION.md](PRODUCTION.md).
+Backup/deletion gates below remain outstanding.
+
 ## Preservation and deployed inspection
 
 Original GitHub HEAD: 32fc068 (February 10, 2025). Deployed clean checkout:
@@ -40,4 +43,4 @@ credits; then update Iddo/Ori portfolio links as authorized. Verify private back
 on a separate storage target and rollback availability. Obtain explicit approval
 before deleting the droplet AND any attached billable resources identified in a
 fresh read-only inventory. Powering off does not stop DigitalOcean billing.
-No production cutover, new subscription or droplet deletion has occurred.
+Production publication is complete; no new subscription or droplet deletion occurred.

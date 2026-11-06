@@ -9,7 +9,11 @@ The Git history starts December 15, 2024 using GPT-4o, for Ori's Shenkar 2025
 experimental design project. Historical revisions also used GPT-4o-mini. The
 server inspected November 6, 2026 uses GPT-4o and process-global scene state.
 
-## Restoration preview — November 2026
+## Live release — November 2026
+
+**[Open Text2Typo](https://text2typo.iddosadeh.workers.dev/)**
+
+Production deployment and retirement notes: [docs/PRODUCTION.md](docs/PRODUCTION.md).
 
 Frontend: pinned, locally served Three.js 0.152.0. Cloudflare Worker serves static
 assets and an OpenRouter API with ten tested models. A Durable Object enforces
@@ -47,8 +51,9 @@ Wrangler uses existing Mac OAuth. Explicit owner account is
 name is `text2typo-preview`, no custom production route. Public assets alone are
 uploaded, and preview responses include `X-Robots-Tag: noindex, nofollow`.
 
-Read `docs/RESTORATION.md` and `docs/AI-PREVIEW.md` before changing quotas or migration. A preview deployment
-is not production cutover and does not authorize deleting the droplet.
+Read `docs/PRODUCTION.md`, `docs/RESTORATION.md` and `docs/AI-PREVIEW.md` before
+changes. The historically named preview Worker now backs production. Deployment
+does not authorize deleting the droplet.
 
 ## Verification
 
