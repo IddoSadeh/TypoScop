@@ -14,7 +14,8 @@
   "vars": {
     "AI_ENABLED": "true",
     "TOTAL_BUDGET_MICRO": "2000000",
-    "INITIAL_SPEND_MICRO": "139108"
+    "INITIAL_SPEND_MICRO": "139108",
+    "TESTING_UNTIL": "2026-11-07T20:31:43Z"
   },
   "observability": {
     "enabled": false
