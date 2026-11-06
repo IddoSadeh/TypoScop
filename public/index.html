@@ -97,11 +97,22 @@
 
   <main class="main-content">
     <aside class="controls">
-<div class="workbench-tabs"><button id="choose-ai" class="selected" aria-pressed="true">Explore + AI</button><button id="choose-manual" aria-pressed="false">Manual controls</button></div>
+<div class="workbench-tabs"><button id="choose-ai" class="selected" aria-pressed="true">AI</button><button id="choose-manual" aria-pressed="false">Manual controls</button></div>
 
 
       <!-- AI Chat Tab -->
       <section class="tab-content active" id="ai-tab">
+<p class="ai-hint">Ask to change the text, font, colour or motion.</p>
+        <div id="ai-availability" role="status">Checking AI availability. Manual controls and exports are always available.</div>
+        <div id="chat-box" class="chat-box" role="log" aria-live="polite"></div>
+        <div class="chat-input">
+          <textarea id="promptInput" maxlength="600" aria-label="Describe a typography change" placeholder="Change the text to HELLO, use a serif font and add a gentle wave…"></textarea>
+          <button id="send" aria-label="Send message">Send</button>
+      </div>
+      </section>
+
+      <!-- Manual Controls Tab -->
+      <section class="tab-content" id="manual-tab">
         <!-- Text Controls Section -->
         <div class="control-section">
 
@@ -125,19 +136,10 @@
 
         </div>
 
-        <!-- Chat Interface Section -->
+
 
         <div class="instant-scenes"><p>START WITH A SCENE <span>NO AI NEEDED</span></p><div id="scene-presets"></div></div>
-        <div id="ai-availability" role="status">Checking AI availability. Manual controls and exports are always available.</div>
-        <div id="chat-box" class="chat-box" role="log" aria-live="polite"></div>
-        <div class="chat-input">
-          <textarea id="promptInput" maxlength="600" aria-label="Describe a typography change" placeholder="Describe how to customize the scene..."></textarea>
-          <button id="send" aria-label="Send message">Send</button>
-      </div>
-      </section>
 
-      <!-- Manual Controls Tab -->
-      <section class="tab-content" id="manual-tab">
         <!-- Basic Material Controls -->
         <div class="control-section">
           <button class="collapsible active">Material</button>

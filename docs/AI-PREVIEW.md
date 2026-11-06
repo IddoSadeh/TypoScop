@@ -92,3 +92,16 @@ Original DigitalOcean droplet remains intact and billable at approximately
 US$4/month. Owner preview approval, production URL/cutover verification,
 separate-device backup verification and explicit resource-deletion approval
 are still required. See RESTORATION.md.
+
+## Follow-up: AI/Manual separation and text/font prompts
+
+Moved direct text/font inputs, scene presets and motion controls to Manual controls.
+AI tab now contains only prompting, model choice and availability. AI schema already
+supported text/font changes; system instructions now explicitly map sans/serif/Hebrew
+requests to the four bundled fonts. Hint/example makes wording/font changes discoverable.
+Local control suite passed 320/390/1440 and nine safety tests passed. Live assets tested
+at390/1440 with mocked status/provider response: HELLO + Optimer updated canvas, input
+and selector, with correct tab visibility and no overflow/errors. One real follow-up
+AI call returned429 from the existing connection throttle before a provider call; no
+new successful live model-generation claim or quota reset. Preview version
+ad3a7e55-fa57-4767-9f01-a5e447554e5f.
