@@ -25,7 +25,7 @@ export class Allowance extends DurableObject {
  const id=crypto.randomUUID();const held=await this.transact(l=>reserve(l,{visitor,ip,id,cost,now,limits,monthly:10000000,total:Math.min(10000000,Math.max(0,Number(this.env.TOTAL_BUDGET_MICRO)||0))}));if(held.status!==200)return json({error:held.error},held.status,{'Retry-After':'3600'});
  let output;try{output=await generate(this.env.OPENROUTER_API_KEY,body);}catch{output={error:'AI timed out or is unavailable. Your request allowance was not used; manual controls still work.',cost:null};}
  const remaining=await this.transact(l=>{settle(l,id,output.cost,!output.error);return Math.max(0,limits.success-(l.visitors[visitor]?.success||0));});
- if(output.error)return json({error:output.error,remaining},502);
+ if(output.error)return json({error:output.error,code:output.code||'provider_unavailable',remaining},502);
  return json({response:output.patch,message:output.message,remaining,model:model.id,usage:output.usage,costUSD:output.cost===null?null:output.cost/1e6});
  }
 }

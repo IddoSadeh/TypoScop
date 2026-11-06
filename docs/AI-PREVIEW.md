@@ -44,7 +44,7 @@ OBJ exports undeformed base geometry, not shader motion, textures or particles.
 - Failures consume attempts and billed/reserved cost, but not successful-request
   allowance. Invalid/malformed input is rejected before a provider call.
 - Prompt <=600 characters, HTTP body <=16KB, serialized provider request <=32KB,
-  text <=48 characters; typed parameter limits, <=24 changes. max_tokens=2048,
+  text <=48 characters; typed parameter limits; asks for <=24 changes, safely accepts up to48. max_tokens=2048,
   low reasoning effort, 45-second timeout, zero automatic retries or fallbacks.
 - Pre-call reserve: 2 tokens per serialized UTF-8 byte +8192 framing allowance,
   plus twice max_tokens for output/reasoning, at pinned maximum provider prices.
@@ -105,3 +105,24 @@ and selector, with correct tab visibility and no overflow/errors. One real follo
 AI call returned429 from the existing connection throttle before a provider call; no
 new successful live model-generation claim or quota reset. Preview version
 ad3a7e55-fa57-4767-9f01-a5e447554e5f.
+
+## Response reliability follow-up — November 6
+
+Owner reported generic unsupported-scene error with Sonnet5.5; exact original
+prompt/response unavailable, so its precise failure cause is unconfirmed. Parser
+previously rejected every change if one value failed validation, explanation
+exceeded300 characters, or changes exceeded24. It now truncates explanation only,
+accepts up to48 bounded settings, normalizes enum casing, numeric strings and short
+hex colours, and skips invalid/unknown/duplicate fields. Partial application has an
+explicit neutral warning rather than repeating model claims about skipped effects.
+All-invalid/empty/malformed/incomplete responses still fail without consuming a
+success. Numeric/geometry/text safety limits unchanged. No executable output,
+automatic retries, quota reset or increased spend. More specific public error
+messages distinguish length/refusal/no-supported-change/invalid JSON; API error
+codes contain no raw prompt/response.
+
+Thirteen safety/regression tests passed. Real live Sonnet5.5 complex retro-poster
+prompt returned200 and rendered NEON TIDE/Gentilis with no JS errors, costUS$0.01535,
+remaining9 under temporary testing allowance. App version
+bd7528d0-f5f4-4296-8c45-347d7a044b83. Evidence outputs/parser-fix/ and Assistant
+reports/text2typo-2026-11-06/parser-fix/.
